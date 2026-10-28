@@ -19,3 +19,10 @@ Project instructions for Claude Code go below.
   rsc removes this file on uninstall while it is still untouched. Edit it and it is yours —
   rsc then leaves it alone, and it keeps doing its job just as well.
 -->
+
+## Knowledge map
+
+| Read first | Path |
+|------------|------|
+| Project constitution (SDD non-negotiables) | `02-DOCS/wiki/sdd/constitution.md` |
+| SDD decisions log | `02-DOCS/wiki/sdd/decisions.md` |

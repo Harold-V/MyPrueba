@@ -5,13 +5,12 @@ description: The non-negotiable principles every rsc-sdd phase obeys.
 tags: [sdd, constitution]
 timestamp: 2026-10-28T05:10:00Z
 topic: sdd
-status: draft
 version: v1.0.0
 ---
 
 # MyPrueba — Constitution
 
-> Version: v1.0.0 · Ratified: pendiente · Last amended: 2026-10-28
+> Version: v1.0.0 · Ratified: 2026-10-28 · Last amended: 2026-10-28
 > Principios no negociables que obedece cada fase rsc-sdd. Las mecánicas del stack viven en
 > `02-DOCS/wiki/stack/*`; este archivo ratifica el principio y enlaza el detalle.
 > Objetivo: réplica funcional clean-room de Treinta (gestión para micronegocios), analizada con
@@ -104,4 +103,4 @@ Un cambio entra solo si se cumple TODO:
 | Date | Version | Change | Why |
 |------|---------|--------|-----|
 | 2026-10-28 | draft | Borrador generado por `rsc onboard`. | El SDD necesita una constitución. |
-| 2026-10-28 | v1.0.0 | Propuesta inicial: stack Java 25/Boot 4/Modulith + React/Vite/Tailwind, SQLite portable a PostgreSQL, clean-room. | Arranque del proyecto. Pendiente de ratificar. |
+| 2026-10-28 | v1.0.0 | Ratificada: stack Java 25/Boot 4/Modulith + React/Vite/Tailwind, SQLite portable a PostgreSQL, clean-room. | Arranque del proyecto. Ratificada por el usuario el 2026-10-28. |
