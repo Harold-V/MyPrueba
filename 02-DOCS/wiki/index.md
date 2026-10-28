@@ -11,6 +11,7 @@ title: Knowledge map
 |-----------|------|
 | Constitución v1.1.0 | [sdd/constitution.md](sdd/constitution.md) |
 | Decisiones | [sdd/decisions.md](sdd/decisions.md) |
+| Hoja de ruta | [sdd/roadmap.md](sdd/roadmap.md) |
 | Spec — Cuentas y negocio | [sdd/specs/cuentas-y-negocio.md](sdd/specs/cuentas-y-negocio.md) |
 | Plan — Cuentas y negocio | [sdd/plans/cuentas-y-negocio.md](sdd/plans/cuentas-y-negocio.md) |
 | Spec — Libro de ventas, gastos y balance | [sdd/specs/libro-ventas-gastos-balance.md](sdd/specs/libro-ventas-gastos-balance.md) |
@@ -36,6 +37,7 @@ title: Knowledge map
 
 | Artefacto | Ruta |
 |-----------|------|
+| Treinta — catálogo de funcionalidades y brecha | [research/treinta-funcionalidades.md](research/treinta-funcionalidades.md) |
 | Treinta — evidencia REA (HAR 2026-10-28) | [research/treinta-har-2026-10-28.md](research/treinta-har-2026-10-28.md) |
 
 ## harness
