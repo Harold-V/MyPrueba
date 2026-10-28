@@ -27,6 +27,7 @@ title: Knowledge map
 | Verificación — núcleo | [sdd/verifications/2026-10-28-nucleo.md](sdd/verifications/2026-10-28-nucleo.md) |
 | Verificación — inventario | [sdd/verifications/2026-10-28-inventario.md](sdd/verifications/2026-10-28-inventario.md) |
 | Verificación — deudas y fiados | [sdd/verifications/2026-10-28-deudas-fiados.md](sdd/verifications/2026-10-28-deudas-fiados.md) |
+| Verificación — alineación con Treinta | [sdd/verifications/2026-10-28-alineacion-treinta.md](sdd/verifications/2026-10-28-alineacion-treinta.md) |
 | Revisión — núcleo | [sdd/reviews/nucleo.md](sdd/reviews/nucleo.md) |
 
 ## product
