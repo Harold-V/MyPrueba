@@ -24,6 +24,8 @@ title: Knowledge map
 | Spec — Alineación con Treinta | [sdd/specs/alineacion-treinta.md](sdd/specs/alineacion-treinta.md) |
 | Plan — Alineación con Treinta | [sdd/plans/alineacion-treinta.md](sdd/plans/alineacion-treinta.md) |
 | Spec — Clientes completos | [sdd/specs/clientes-completo.md](sdd/specs/clientes-completo.md) |
+| Spec — Proveedores, compras y cuentas por pagar | [sdd/specs/proveedores-compras.md](sdd/specs/proveedores-compras.md) |
+| Plan — Proveedores, compras y cuentas por pagar | [sdd/plans/proveedores-compras.md](sdd/plans/proveedores-compras.md) |
 | Diseño web de escritorio (FTD) | [ftd/web-escritorio.md](ftd/web-escritorio.md) |
 | Verificación — núcleo | [sdd/verifications/2026-10-28-nucleo.md](sdd/verifications/2026-10-28-nucleo.md) |
 | Verificación — inventario | [sdd/verifications/2026-10-28-inventario.md](sdd/verifications/2026-10-28-inventario.md) |
