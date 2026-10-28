@@ -124,3 +124,5 @@ atención a clientes: necesita anotar rápido y consultar el balance al cerrar e
 
 - 2026-10-28 — Añadido el caso "editar una venta con producto eliminado" (edge + criterio). Lo
   encontró la revisión adversarial durante `verify`: el formulario descartaba esas líneas al editar.
+- 2026-10-28 — [deudas-fiados](deudas-fiados.md) convierte el balance en balance de caja: las ventas
+  fiadas no suman a "Ventas" y los abonos suman como ingreso.
