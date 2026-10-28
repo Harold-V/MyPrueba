@@ -13,7 +13,7 @@ export function normalizeAmount(input: string): string {
   return value.replace(/\./g, '');
 }
 
-function toCents(amount: string): bigint | null {
+export function toCents(amount: string): bigint | null {
   const match = /^(-?)(\d+)(?:\.(\d{1,2}))?$/.exec(amount.trim());
   if (!match) return null;
   const [, sign, whole = '0', fraction = ''] = match;
@@ -21,7 +21,7 @@ function toCents(amount: string): bigint | null {
   return sign === '-' ? -cents : cents;
 }
 
-function fromCents(cents: bigint): string {
+export function fromCents(cents: bigint): string {
   const negative = cents < 0n;
   const abs = negative ? -cents : cents;
   const fraction = (abs % 100n).toString().padStart(2, '0');

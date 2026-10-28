@@ -14,7 +14,8 @@ import { ConfirmDelete } from '../components/ConfirmDelete';
 import { Button, FormAlert, Loading, SelectField, TextField } from '../components/ui';
 import { cashPaymentMethods } from '../i18n/es';
 import { localDateOf, todayIn } from '../lib/dates';
-import { formatMoney, lineTotal, normalizeAmount, sumAmounts } from '../lib/money';
+import { discountCents, parseDiscount } from '../lib/discount';
+import { formatMoney, fromCents, lineTotal, normalizeAmount, toCents } from '../lib/money';
 import { normalizeQuantity, toMilli } from '../lib/quantity';
 import { matchesProduct } from '../lib/search';
 import { occurredAtFor, useMovementForm } from './useMovementForm';
@@ -26,10 +27,15 @@ interface Line {
   name: string;
   quantity: string;
   unitPrice: string;
+  /** As typed: "10%" or "1.500". */
+  discount: string;
 }
 
+const plainAmount = (amount: string | undefined) =>
+  !amount || amount === '0.00' ? '' : amount.replace(/\.00$/, '');
+
 /** Registers a customer at the till, without leaving the sale. */
-function NewCustomer({ onCreated }: { onCreated: (customer: Customer) => void }) {
+export function NewCustomer({ onCreated }: { onCreated: (customer: Customer) => void }) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -103,6 +109,9 @@ export function SaleFormPage() {
   const [amount, setAmount] = useState('');
   const [lines, setLines] = useState<Line[]>([]);
   const [search, setSearch] = useState('');
+  const [saleDiscount, setSaleDiscount] = useState('');
+  const [number, setNumber] = useState<number | null>(null);
+  const [received, setReceived] = useState<string | null>(null);
   const [concept, setConcept] = useState('');
   const [status, setStatus] = useState<'PAID' | 'CREDIT'>('PAID');
   const [dueDate, setDueDate] = useState('');
@@ -135,6 +144,7 @@ export function SaleFormPage() {
           name: item.name,
           quantity: item.quantity,
           unitPrice: item.unitPrice,
+          discount: plainAmount(item.discount),
         })),
       );
       setOriginalQuantities(
@@ -151,16 +161,32 @@ export function SaleFormPage() {
       setOriginal(sale.occurredAt);
       setDate(localDateOf(sale.occurredAt, business.timeZone));
       setNote(sale.note ?? '');
+      setNumber(sale.number ?? null);
+      setReceived(sale.received ?? null);
+      // The API returns all discounts together; what the lines don't explain is the sale's own.
+      const lineDiscounts = sale.items.reduce(
+        (sum, i) => sum + (toCents(i.discount ?? '0') ?? 0n),
+        0n,
+      );
+      const saleOwn = (toCents(sale.discountTotal ?? '0') ?? 0n) - lineDiscounts;
+      setSaleDiscount(saleOwn > 0n ? plainAmount(fromCents(saleOwn)) : '');
       setLoaded(true);
     }, fail);
     // fail is stable enough for a one-time load
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, business.timeZone]);
 
-  const lineTotals = lines.map((line) =>
-    lineTotal(normalizeQuantity(line.quantity), normalizeAmount(line.unitPrice)),
-  );
-  const total = sumAmounts(lineTotals.map((t) => t ?? '0'));
+  // Priced like the API: each line minus its discount, then the discount on the whole sale.
+  const afterLines = lines.reduce((sum, line) => {
+    const gross =
+      toCents(
+        lineTotal(normalizeQuantity(line.quantity), normalizeAmount(line.unitPrice)) ?? '0',
+      ) ?? 0n;
+    const off = discountCents(gross, parseDiscount(line.discount) ?? {});
+    return sum + (off > gross ? 0n : gross - off);
+  }, 0n);
+  const saleOff = discountCents(afterLines, parseDiscount(saleDiscount) ?? {});
+  const total = fromCents(saleOff > afterLines ? afterLines : afterLines - saleOff);
 
   /** Available units when the line asks for more than the stock (plus what this sale already took). */
   function shortage(line: Line): string | null {
@@ -178,7 +204,14 @@ export function SaleFormPage() {
     if (!product || lines.some((l) => l.productId === productId)) return;
     setLines([
       ...lines,
-      { key: productId, productId, name: product.name, quantity: '1', unitPrice: product.price },
+      {
+        key: productId,
+        productId,
+        name: product.name,
+        quantity: '1',
+        unitPrice: product.price,
+        discount: '',
+      },
     ]);
   }
 
@@ -192,10 +225,23 @@ export function SaleFormPage() {
     if (kind === 'FREE' && !amount.trim()) clientErrors.amount = 'required';
     if (kind === 'ITEMS' && lines.length === 0) clientErrors.items = 'sale_kind';
     if (status === 'CREDIT' && !customerId) clientErrors.customerId = 'required';
+    lines.forEach((line, index) => {
+      if (parseDiscount(line.discount) === null)
+        clientErrors[`items[${index}].discount`] = 'invalid_format';
+    });
+    if (kind === 'ITEMS' && parseDiscount(saleDiscount) === null)
+      clientErrors.discount = 'invalid_format';
+    // A cash sale keeps what the customer handed over, while it still covers the total.
+    const keepReceived =
+      status === 'PAID' &&
+      paymentMethod === 'CASH' &&
+      received !== null &&
+      (toCents(received) ?? 0n) >= (toCents(total) ?? 0n);
     const common = compact({
       concept: concept.trim(),
       // A credit sale (fiado) has no payment method yet: it is paid later with abonos.
       ...(status === 'CREDIT' ? { status, dueDate } : { paymentMethod }),
+      received: keepReceived ? received : undefined,
       occurredAt: occurredAtFor(date, original, business.timeZone),
       note: note.trim(),
       customerId,
@@ -208,7 +254,9 @@ export function SaleFormPage() {
               ...(line.productId ? { productId: line.productId } : { name: line.name }),
               quantity: normalizeQuantity(line.quantity),
               unitPrice: normalizeAmount(line.unitPrice),
+              ...parseDiscount(line.discount),
             })),
+            ...parseDiscount(saleDiscount),
             ...common,
           };
     void save(body, clientErrors);
@@ -218,7 +266,19 @@ export function SaleFormPage() {
 
   return (
     <form onSubmit={onSubmit} className="max-w-xl space-y-4" noValidate>
-      <h1 className="text-xl font-bold">{id ? 'Editar venta' : 'Nueva venta'}</h1>
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h1 className="text-xl font-bold">
+          {id ? `Editar venta${number ? ` #${number}` : ''}` : 'Nueva venta'}
+        </h1>
+        {id && (
+          <Link
+            to={`/ventas/${id}/comprobante`}
+            className="text-sm font-semibold text-emerald-800 underline"
+          >
+            Ver comprobante
+          </Link>
+        )}
+      </div>
 
       <fieldset className="flex gap-4">
         <legend className="sr-only">Tipo de venta</legend>
@@ -311,6 +371,13 @@ export function SaleFormPage() {
                     onChange={(e) => updateLine(index, { unitPrice: e.target.value })}
                     error={errors[`items[${index}].unitPrice`]}
                   />
+                  <TextField
+                    label="Descuento (opcional)"
+                    placeholder="$ o %"
+                    value={line.discount}
+                    onChange={(e) => updateLine(index, { discount: e.target.value })}
+                    error={errors[`items[${index}].discount`]}
+                  />
                 </div>
                 {shortage(line) && (
                   <p className="mt-2 text-sm text-amber-800">
@@ -323,6 +390,15 @@ export function SaleFormPage() {
               </li>
             ))}
           </ul>
+          {lines.length > 0 && (
+            <TextField
+              label="Descuento a toda la venta (opcional)"
+              placeholder="$ o %"
+              value={saleDiscount}
+              onChange={(e) => setSaleDiscount(e.target.value)}
+              error={errors.discount}
+            />
+          )}
           <p className="text-right text-lg font-semibold" aria-live="polite">
             Total: {formatMoney(total)}
           </p>

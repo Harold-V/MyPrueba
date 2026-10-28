@@ -20,6 +20,9 @@ export interface Business {
   category: BusinessCategory | null;
   currency: string;
   timeZone: string;
+  document?: string | null;
+  phone?: string | null;
+  address?: string | null;
 }
 
 export interface Me {
@@ -84,13 +87,20 @@ export interface SaleItem {
   name: string;
   unitPrice: string;
   quantity: string;
+  /** Quantity × unit price, before the line's discount. */
   lineTotal: string;
+  discount?: string;
 }
 
 export interface Sale {
   id: string;
+  number?: number;
   kind: 'FREE' | 'ITEMS';
+  subtotal?: string;
+  discountTotal?: string;
   total: string;
+  received?: string | null;
+  change?: string | null;
   items: SaleItem[];
   concept: string | null;
   paymentMethod: PaymentMethod;
@@ -245,5 +255,39 @@ export interface SupplierPayment {
   amount: string;
   paymentMethod: PaymentMethod;
   occurredAt: string;
+  note: string | null;
+}
+
+export interface Receipt {
+  id: string;
+  number: number;
+  occurredAt: string;
+  business: { name: string; document: string | null; phone: string | null; address: string | null };
+  customer: { name: string; document: string | null; phone: string | null } | null;
+  items: SaleItem[];
+  subtotal: string;
+  discountTotal: string;
+  total: string;
+  paymentMethod: PaymentMethod;
+  status: 'PAID' | 'CREDIT';
+  dueDate: string | null;
+  received: string | null;
+  change: string | null;
+  note: string | null;
+}
+
+/** A cash register session: open while `closedAt` is null. */
+export interface CashSession {
+  id: string;
+  openedAt: string;
+  opening: string;
+  cashSales: string;
+  cashPayments: string;
+  cashExpenses: string;
+  cashSupplierPayments: string;
+  expected: string;
+  closedAt: string | null;
+  counted: string | null;
+  difference: string | null;
   note: string | null;
 }

@@ -301,8 +301,11 @@ describe('payment page', () => {
       occurredAt: '2026-10-26T16:00:00Z',
     });
 
+    // Wait for the customer screen (the old form is gone) and for the payment to load again.
+    await screen.findByText('Debe $15.000');
     await router.navigate('/abonos/pay1');
-    await user.click(await screen.findByRole('button', { name: 'Eliminar' }));
+    await waitFor(() => expect(screen.getByLabelText('Valor del abono')).toHaveValue('5000'));
+    await user.click(screen.getByRole('button', { name: 'Eliminar' }));
     await user.click(await screen.findByRole('button', { name: 'Sí, eliminar' }));
     await waitFor(() => expect(calls.some((c) => c.method === 'DELETE')).toBe(true));
   });

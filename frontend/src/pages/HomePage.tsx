@@ -250,9 +250,9 @@ export function HomePage() {
           )}
         </section>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 content-start gap-3">
           <Link
-            to="/ventas/nueva"
+            to="/vender"
             className="flex items-center justify-center rounded-lg bg-emerald-700 py-3 font-semibold text-white"
           >
             Nueva venta
@@ -262,6 +262,12 @@ export function HomePage() {
             className="flex items-center justify-center rounded-lg bg-red-700 py-3 font-semibold text-white"
           >
             Nuevo gasto
+          </Link>
+          <Link
+            to="/ventas/nueva"
+            className="col-span-2 text-center text-sm font-semibold text-emerald-800 underline"
+          >
+            Venta libre (solo el valor)
           </Link>
         </div>
       </div>

@@ -52,10 +52,7 @@ describe('home', () => {
     expect(await screen.findByText('Aún no hay movimientos en este periodo.')).toBeInTheDocument();
     const summary = screen.getByRole('region', { name: 'Resumen' });
     expect(within(summary).getByText('Balance').nextSibling).toHaveTextContent('$0');
-    expect(screen.getByRole('link', { name: 'Nueva venta' })).toHaveAttribute(
-      'href',
-      '/ventas/nueva',
-    );
+    expect(screen.getByRole('link', { name: 'Nueva venta' })).toHaveAttribute('href', '/vender');
   });
 
   it('shows totals and movements, and changes period and filter', async () => {
@@ -230,8 +227,12 @@ describe('sales', () => {
       note: 'nota',
     });
 
+    // Navigations render as transitions: the router's location changes before the screen does.
+    // Wait for the home screen, so the old form is gone, then for the new form to load.
+    await screen.findByText('Aún no hay movimientos en este periodo.');
     await router.navigate('/ventas/s1');
-    await user.click(await screen.findByRole('button', { name: 'Eliminar' }));
+    await waitFor(() => expect(screen.getByLabelText('Valor')).toHaveValue('1000'));
+    await user.click(screen.getByRole('button', { name: 'Eliminar' }));
     await user.click(await screen.findByRole('button', { name: 'Sí, eliminar' }));
     await waitFor(() => expect(calls.some((c) => c.method === 'DELETE')).toBe(true));
   });

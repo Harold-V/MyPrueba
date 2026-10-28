@@ -223,8 +223,11 @@ describe('supplier details', () => {
       occurredAt: '2026-10-26T16:00:00Z',
     });
 
+    // Wait for the supplier screen (the old form is gone) and for the payment to load again.
+    await screen.findByText('Le debes $60.000');
     await router.navigate('/pagos-proveedor/sp1');
-    await user.click(await screen.findByRole('button', { name: 'Eliminar' }));
+    await waitFor(() => expect(screen.getByLabelText('Valor del pago')).toHaveValue('40000'));
+    await user.click(screen.getByRole('button', { name: 'Eliminar' }));
     await user.click(await screen.findByRole('button', { name: 'Sí, eliminar' }));
     await waitFor(() => expect(calls.some((c) => c.method === 'DELETE')).toBe(true));
   });

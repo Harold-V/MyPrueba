@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router';
-import { api, ApiError } from '../api/client';
+import { api, ApiError, compact } from '../api/client';
 import type { Business } from '../api/types';
 import { useMe, useSession } from '../auth/session-context';
 import { Button, FormAlert, SelectField, TextField } from '../components/ui';
@@ -12,6 +12,9 @@ export function BusinessPage() {
   const navigate = useNavigate();
   const [name, setName] = useState(me.business.name);
   const [category, setCategory] = useState<string>(me.business.category ?? '');
+  const [documentId, setDocumentId] = useState(me.business.document ?? '');
+  const [phone, setPhone] = useState(me.business.phone ?? '');
+  const [address, setAddress] = useState(me.business.address ?? '');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [alert, setAlert] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -32,6 +35,8 @@ export function BusinessPage() {
       const business = await api.put<Business>('/api/business', {
         name,
         category: category || null,
+        // Shown on receipts; an emptied field is cleared.
+        ...compact({ document: documentId.trim(), phone: phone.trim(), address: address.trim() }),
       });
       updateMe({ ...me, business });
       setErrors({});
@@ -77,6 +82,29 @@ export function BusinessPage() {
           onChange={(e) => setCategory(e.target.value)}
           error={errors.category}
         />
+        <fieldset className="space-y-4">
+          <legend className="font-semibold">Datos para tus comprobantes</legend>
+          <TextField
+            label="NIT o documento (opcional)"
+            value={documentId}
+            onChange={(e) => setDocumentId(e.target.value)}
+            error={errors.document}
+          />
+          <TextField
+            label="Teléfono (opcional)"
+            type="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            error={errors.phone}
+          />
+          <TextField
+            label="Dirección (opcional)"
+            autoComplete="street-address"
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            error={errors.address}
+          />
+        </fieldset>
         <p className="text-sm text-slate-600">Cuenta: {me.user.email}</p>
         <Button type="submit">Guardar</Button>
         <p role="status" className="text-sm text-emerald-800">
