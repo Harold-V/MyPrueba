@@ -1,0 +1,8 @@
+@import 'tailwindcss';
+
+@layer base {
+  :focus-visible {
+    outline: 3px solid var(--color-emerald-600);
+    outline-offset: 2px;
+  }
+}
