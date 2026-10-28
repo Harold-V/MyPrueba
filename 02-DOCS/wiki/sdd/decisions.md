@@ -23,3 +23,5 @@ topic: sdd
 | 2026-10-28 | Persistencia con JdbcClient + Flyway, sin JPA. | JPA + dialecto comunitario SQLite. | SQL explícito y portable; sin depender de un dialecto no oficial. |
 | 2026-10-28 | Sesión opaca en cookie HttpOnly SameSite=Strict con hash en BD. | JWT. | El cierre de sesión invalida de verdad (criterio de la spec). |
 | 2026-10-28 | Venta con productos guarda copia de nombre y precio por línea. | Referencia viva al producto. | El historial no cambia al editar o borrar productos. |
+| 2026-10-28 | Líneas de venta sin producto (nombre + precio) permitidas en la API. | Bloquear la edición de ventas con productos borrados. | Al editar no se pierden líneas; hallazgo de verify. |
+| 2026-10-28 | TypeScript 6.0.3 en lugar de 7.0. | TypeScript 7. | typescript-eslint 8 aún no soporta TypeScript 7. |
