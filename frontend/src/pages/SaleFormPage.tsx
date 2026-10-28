@@ -16,6 +16,7 @@ import { cashPaymentMethods } from '../i18n/es';
 import { localDateOf, todayIn } from '../lib/dates';
 import { formatMoney, lineTotal, normalizeAmount, sumAmounts } from '../lib/money';
 import { normalizeQuantity, toMilli } from '../lib/quantity';
+import { matchesProduct } from '../lib/search';
 import { occurredAtFor, useMovementForm } from './useMovementForm';
 
 interface Line {
@@ -101,6 +102,7 @@ export function SaleFormPage() {
   const [kind, setKind] = useState<'FREE' | 'ITEMS'>('FREE');
   const [amount, setAmount] = useState('');
   const [lines, setLines] = useState<Line[]>([]);
+  const [search, setSearch] = useState('');
   const [concept, setConcept] = useState('');
   const [status, setStatus] = useState<'PAID' | 'CREDIT'>('PAID');
   const [dueDate, setDueDate] = useState('');
@@ -245,12 +247,31 @@ export function SaleFormPage() {
         />
       ) : (
         <div className="space-y-3">
+          <TextField
+            label="Buscar producto (nombre o código)"
+            type="search"
+            hint="Con un lector de códigos: escanea y el producto se agrega."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key !== 'Enter') return;
+              // Enter submits the form otherwise; an exact barcode adds its product.
+              e.preventDefault();
+              const code = search.trim();
+              const product = products.find((p) => p.barcode && p.barcode === code);
+              if (product) {
+                addProduct(product.id);
+                setSearch('');
+              }
+            }}
+          />
           <SelectField
             label="Agregar producto"
             placeholder={products.length ? 'Elige un producto' : 'Aún no tienes productos'}
             options={Object.fromEntries(
               products
                 .filter((p) => !lines.some((l) => l.productId === p.id))
+                .filter((p) => matchesProduct(p, search))
                 .map((p) => [p.id, productLabel(p, stock[p.id])]),
             )}
             value=""

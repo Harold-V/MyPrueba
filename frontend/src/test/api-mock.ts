@@ -11,7 +11,8 @@ export function mockApi(handlers: Record<string, Handler>) {
   const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = new URL(String(input), 'http://localhost');
     const method = (init?.method ?? 'GET').toUpperCase();
-    const body = init?.body ? JSON.parse(String(init.body)) : undefined;
+    // JSON bodies are parsed; anything else (an uploaded file) is kept as sent.
+    const body = typeof init?.body === 'string' ? JSON.parse(init.body) : (init?.body ?? undefined);
     calls.push({ method, path: url.pathname, search: url.search, body });
     const handler = handlers[`${method} ${url.pathname}`];
     if (!handler) {

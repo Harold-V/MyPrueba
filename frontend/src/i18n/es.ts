@@ -145,6 +145,14 @@ const fieldMessages: Record<string, string> = {
   before_sale: 'No puede ser anterior a la fecha de la venta.',
   before_expense: 'No puede ser anterior a la fecha del gasto.',
   expense_kind: 'Indica un valor o agrega al menos un producto.',
+  duplicate: 'Está repetido.',
+  barcode_taken: 'Ya tienes un producto con ese código.',
+  product_name_taken: 'Ya tienes un producto con ese nombre.',
+  missing_columns: 'El archivo debe tener al menos las columnas Nombre y Precio.',
+  unreadable_file: 'No pudimos leer el archivo. Guárdalo como .xlsx o .csv.',
+  empty_file: 'El archivo no tiene productos.',
+  too_many_rows: 'El archivo tiene más de 2.000 filas. Divídelo en varios.',
+  too_large: 'El archivo pesa más de 2 MB.',
   purchase_category: 'Una compra con productos va en la categoría Compra de productos e insumos.',
 };
 
@@ -157,6 +165,9 @@ const formMessages: Record<string, string> = {
   network_error: 'No hay conexión. Revisa tu internet e intenta de nuevo.',
   validation_failed: 'Revisa los campos marcados.',
   not_tracked: 'Este producto no tiene control de inventario.',
+  category_name_taken: 'Ya tienes una categoría con ese nombre.',
+  category_not_found: 'La categoría ya no existe.',
+  barcode_taken: 'Ya tienes un producto con ese código.',
   customer_has_debt: 'No puedes eliminar un cliente con saldo pendiente.',
   customer_not_found: 'El cliente ya no existe.',
   supplier_has_debt: 'No puedes eliminar un proveedor al que le debes dinero.',
@@ -173,4 +184,22 @@ export function formMessage(code: string, details: Record<string, unknown> = {})
     return `No hay suficiente stock de ${String(details.productName)} (disponibles: ${String(details.available)}). Ajusta la cantidad o permite vender sin stock en Negocio.`;
   }
   return formMessages[code] ?? 'Algo salió mal. Intenta de nuevo.';
+}
+
+/** Columns of the bulk upload, as the API names them in row errors. */
+export const importColumns: Record<string, string> = {
+  name: 'Nombre',
+  barcode: 'Código de barras',
+  cost: 'Costo',
+  price: 'Precio',
+  category: 'Categoría',
+  stock: 'Stock',
+  minStock: 'Stock mínimo',
+};
+
+/** "rows[3].price" + "invalid_format" → "Fila 3 · Precio: El formato no es válido." */
+export function importError(field: string, code: string): string {
+  const match = /^rows\[(\d+)\]\.(\w+)$/.exec(field);
+  if (!match) return fieldMessage(code);
+  return `Fila ${match[1]} · ${importColumns[match[2]!] ?? match[2]}: ${fieldMessage(code)}`;
 }

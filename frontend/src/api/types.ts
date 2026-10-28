@@ -32,6 +32,17 @@ export interface Product {
   name: string;
   price: string;
   cost?: string | null;
+  categoryId?: string | null;
+  categoryName?: string | null;
+  barcode?: string | null;
+  /** Set on a variant: the product with variants it belongs to. */
+  groupId?: string | null;
+  variant?: string | null;
+}
+
+export interface Category {
+  id: string;
+  name: string;
 }
 
 export interface InventoryItem {

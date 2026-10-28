@@ -30,14 +30,23 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
+async function request<T>(
+  method: string,
+  path: string,
+  body?: unknown,
+  file?: { data: Blob; type: string },
+): Promise<T> {
   let response: Response;
   try {
     response = await fetch(path, {
       method,
       credentials: 'same-origin',
-      headers: body === undefined ? undefined : { 'Content-Type': 'application/json' },
-      body: body === undefined ? undefined : JSON.stringify(body),
+      headers: file
+        ? { 'Content-Type': file.type }
+        : body === undefined
+          ? undefined
+          : { 'Content-Type': 'application/json' },
+      body: file ? file.data : body === undefined ? undefined : JSON.stringify(body),
     });
   } catch {
     throw new ApiError(0, 'network_error');
@@ -61,6 +70,9 @@ export const api = {
   post: <T>(path: string, body?: unknown) => request<T>('POST', path, body),
   put: <T>(path: string, body: unknown) => request<T>('PUT', path, body),
   delete: (path: string) => request<void>('DELETE', path),
+  /** Sends a file as the raw body (not multipart), with its own content type. */
+  upload: <T>(path: string, data: Blob, type: string) =>
+    request<T>('POST', path, undefined, { data, type }),
 };
 
 /** Drops empty optional fields so the API receives only what the user filled in. */

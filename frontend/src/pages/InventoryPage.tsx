@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { api, ApiError, compact } from '../api/client';
-import type { Inventory, InventoryItem, StockMovement } from '../api/types';
+import type { Category, Inventory, InventoryItem, StockMovement } from '../api/types';
 import { useMe } from '../auth/session-context';
 import { Button, FormAlert, SelectField, TextField } from '../components/ui';
 import { adjustmentTypes, formMessage, stockMovementTypes } from '../i18n/es';
@@ -237,20 +237,31 @@ function InventoryRow({
 
 export function InventoryPage() {
   const [lowOnly, setLowOnly] = useState(false);
+  const [categoryId, setCategoryId] = useState('');
+  const [query, setQuery] = useState('');
+  const [categories, setCategories] = useState<Category[]>([]);
   const [inventory, setInventory] = useState<Inventory | null>(null);
   const [summaryVersion, setSummaryVersion] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
+    const params = new URLSearchParams();
+    if (lowOnly) params.set('lowOnly', 'true');
+    if (categoryId) params.set('categoryId', categoryId);
+    if (query.trim()) params.set('q', query.trim());
     api
-      .get<Inventory>(`/api/inventory${lowOnly ? '?lowOnly=true' : ''}`)
+      .get<Inventory>(`/api/inventory${params.size > 0 ? `?${params}` : ''}`)
       .then((data) => active && setInventory(data))
       .catch((e: { code?: string }) => active && setError(formMessage(e.code ?? '')));
     return () => {
       active = false;
     };
-  }, [lowOnly]);
+  }, [lowOnly, categoryId, query]);
+
+  useEffect(() => {
+    api.get<Category[]>('/api/product-categories').then(setCategories, () => undefined);
+  }, []);
 
   // After a change, the item comes back from the API; only the summary needs refreshing.
   useEffect(() => {
@@ -301,6 +312,21 @@ export function InventoryPage() {
           </div>
         </dl>
       </section>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <TextField
+          label="Buscar por nombre o código"
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+        <SelectField
+          label="Filtrar por categoría"
+          placeholder="Todas"
+          options={Object.fromEntries(categories.map((c) => [c.id, c.name]))}
+          value={categoryId}
+          onChange={(e) => setCategoryId(e.target.value)}
+        />
+      </div>
       <label className="flex items-center gap-2 text-base">
         <input
           type="checkbox"
@@ -312,8 +338,8 @@ export function InventoryPage() {
       </label>
       {inventory?.items.length === 0 && (
         <p className="rounded-xl bg-white p-6 text-center text-slate-600">
-          {lowOnly
-            ? 'Ningún producto está en stock bajo.'
+          {lowOnly || categoryId || query.trim()
+            ? 'Ningún producto coincide con los filtros.'
             : 'Aún no tienes productos. Créalos en Productos.'}
         </p>
       )}
