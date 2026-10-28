@@ -1,8 +1,18 @@
 export type BusinessCategory =
   'GROCERY' | 'FOOD' | 'CLOTHING' | 'BEAUTY' | 'CATALOG_SALES' | 'SERVICES' | 'OTHER';
-export type PaymentMethod = 'CASH' | 'CARD' | 'TRANSFER' | 'OTHER' | 'CREDIT';
+export type PaymentMethod =
+  'CASH' | 'CARD' | 'TRANSFER' | 'NEQUI' | 'DAVIPLATA' | 'PAYMENT_LINK' | 'OTHER' | 'CREDIT';
 export type ExpenseCategory =
-  'PURCHASES' | 'RENT' | 'UTILITIES' | 'PAYROLL' | 'TRANSPORT' | 'MAINTENANCE' | 'TAXES' | 'OTHER';
+  | 'UTILITIES'
+  | 'PURCHASES'
+  | 'RENT'
+  | 'PAYROLL'
+  | 'ADMINISTRATIVE'
+  | 'ADVERTISING'
+  | 'TRANSPORT'
+  | 'MAINTENANCE'
+  | 'EQUIPMENT'
+  | 'OTHER';
 
 export interface Business {
   id: string;
@@ -29,14 +39,13 @@ export interface InventoryItem {
   name: string;
   price: string;
   cost: string | null;
-  tracked: boolean;
-  stock: string | null;
+  stock: string;
   minStock: string | null;
   low: boolean;
 }
 
 export interface Inventory {
-  summary: { tracked: number; lowStock: number; value: string };
+  summary: { references: number; lowStock: number; value: string };
   items: InventoryItem[];
 }
 
@@ -70,6 +79,8 @@ export interface Sale {
   note: string | null;
   customerId?: string | null;
   customerName?: string | null;
+  status?: 'PAID' | 'CREDIT';
+  dueDate?: string | null;
 }
 
 export interface Expense {
@@ -116,7 +127,14 @@ export interface Customer {
 
 export interface Receivables {
   total: string;
-  customers: { customerId: string; name: string; phone: string | null; debt: string }[];
+  customers: {
+    customerId: string;
+    name: string;
+    phone: string | null;
+    debt: string;
+    oldestDebtAt?: string | null;
+    overdue?: boolean;
+  }[];
 }
 
 export interface AccountEntry {

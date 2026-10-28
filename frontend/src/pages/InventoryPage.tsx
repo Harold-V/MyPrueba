@@ -8,7 +8,7 @@ import { formatDateTime } from '../lib/dates';
 import { formatMoney } from '../lib/money';
 import { normalizeQuantity, signed } from '../lib/quantity';
 
-type Panel = 'activate' | 'configure' | 'adjust' | 'history' | null;
+type Panel = 'configure' | 'adjust' | 'history' | null;
 
 function useErrors() {
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -24,7 +24,8 @@ function useErrors() {
   };
 }
 
-function TrackingForm({
+/** Every product has stock; only the alert threshold is configurable here. */
+function MinStockForm({
   item,
   onSaved,
   onCancel,
@@ -33,38 +34,26 @@ function TrackingForm({
   onSaved: (item: InventoryItem) => void;
   onCancel: () => void;
 }) {
-  const [initialStock, setInitialStock] = useState('');
   const [minStock, setMinStock] = useState(item.minStock ?? '');
   const { errors, alert, fail } = useErrors();
 
-  async function save(tracked: boolean, event?: FormEvent) {
-    event?.preventDefault();
+  async function onSubmit(event: FormEvent) {
+    event.preventDefault();
     try {
-      const body = tracked
-        ? compact({
-            tracked: true,
-            initialStock: item.tracked ? undefined : normalizeQuantity(initialStock),
-            minStock: normalizeQuantity(minStock),
-          })
-        : { tracked: false };
-      onSaved(await api.put<InventoryItem>(`/api/inventory/${item.productId}`, body));
+      onSaved(
+        await api.put<InventoryItem>(
+          `/api/inventory/${item.productId}`,
+          compact({ minStock: normalizeQuantity(minStock) }),
+        ),
+      );
     } catch (error) {
       fail(error);
     }
   }
 
   return (
-    <form onSubmit={(e) => void save(true, e)} className="mt-3 space-y-3" noValidate>
+    <form onSubmit={onSubmit} className="mt-3 space-y-3" noValidate>
       <FormAlert message={alert} />
-      {!item.tracked && (
-        <TextField
-          label="Stock actual"
-          inputMode="decimal"
-          value={initialStock}
-          onChange={(e) => setInitialStock(e.target.value)}
-          error={errors.initialStock}
-        />
-      )}
       <TextField
         label="Stock mínimo (opcional)"
         inputMode="decimal"
@@ -74,12 +63,7 @@ function TrackingForm({
         error={errors.minStock}
       />
       <div className="flex flex-wrap gap-2">
-        <Button type="submit">{item.tracked ? 'Guardar' : 'Activar'}</Button>
-        {item.tracked && (
-          <Button variant="secondary" onClick={() => void save(false)}>
-            Desactivar inventario
-          </Button>
-        )}
+        <Button type="submit">Guardar</Button>
         <Button variant="secondary" onClick={onCancel}>
           Cancelar
         </Button>
@@ -204,14 +188,8 @@ function InventoryRow({
         <span>
           <span className="block font-medium">{item.name}</span>
           <span className="block text-sm text-slate-600">
-            {item.tracked ? (
-              <>
-                <span>{item.stock} en stock</span>
-                {item.minStock && <span> · mínimo {item.minStock}</span>}
-              </>
-            ) : (
-              'Sin control de inventario'
-            )}
+            <span>{item.stock} en stock</span>
+            {item.minStock && <span> · mínimo {item.minStock}</span>}
           </span>
         </span>
         {item.low && (
@@ -221,46 +199,33 @@ function InventoryRow({
         )}
       </div>
       <div className="mt-3 flex flex-wrap gap-2">
-        {item.tracked ? (
-          <>
-            <Button
-              variant="secondary"
-              aria-label={`Ajustar ${item.name}`}
-              aria-expanded={panel === 'adjust'}
-              onClick={() => toggle('adjust')}
-            >
-              Ajustar
-            </Button>
-            <Button
-              variant="secondary"
-              aria-label={`Historial de ${item.name}`}
-              aria-expanded={panel === 'history'}
-              onClick={() => toggle('history')}
-            >
-              Historial
-            </Button>
-            <Button
-              variant="secondary"
-              aria-label={`Configurar ${item.name}`}
-              aria-expanded={panel === 'configure'}
-              onClick={() => toggle('configure')}
-            >
-              Configurar
-            </Button>
-          </>
-        ) : (
-          <Button
-            variant="secondary"
-            aria-label={`Activar inventario de ${item.name}`}
-            aria-expanded={panel === 'activate'}
-            onClick={() => toggle('activate')}
-          >
-            Activar inventario
-          </Button>
-        )}
+        <Button
+          variant="secondary"
+          aria-label={`Ajustar ${item.name}`}
+          aria-expanded={panel === 'adjust'}
+          onClick={() => toggle('adjust')}
+        >
+          Ajustar
+        </Button>
+        <Button
+          variant="secondary"
+          aria-label={`Historial de ${item.name}`}
+          aria-expanded={panel === 'history'}
+          onClick={() => toggle('history')}
+        >
+          Historial
+        </Button>
+        <Button
+          variant="secondary"
+          aria-label={`Stock mínimo de ${item.name}`}
+          aria-expanded={panel === 'configure'}
+          onClick={() => toggle('configure')}
+        >
+          Stock mínimo
+        </Button>
       </div>
-      {(panel === 'activate' || panel === 'configure') && (
-        <TrackingForm item={item} onSaved={saved} onCancel={() => setPanel(null)} />
+      {panel === 'configure' && (
+        <MinStockForm item={item} onSaved={saved} onCancel={() => setPanel(null)} />
       )}
       {panel === 'adjust' && (
         <AdjustmentForm item={item} onSaved={saved} onCancel={() => setPanel(null)} />
@@ -317,8 +282,10 @@ export function InventoryPage() {
       >
         <dl className="grid grid-cols-3 gap-2 text-center">
           <div>
-            <dt className="text-sm text-slate-600">Con inventario</dt>
-            <dd className="text-lg font-semibold lg:text-2xl">{inventory?.summary.tracked ?? 0}</dd>
+            <dt className="text-sm text-slate-600">Productos</dt>
+            <dd className="text-lg font-semibold lg:text-2xl">
+              {inventory?.summary.references ?? 0}
+            </dd>
           </div>
           <div>
             <dt className="text-sm text-slate-600">Stock bajo</dt>

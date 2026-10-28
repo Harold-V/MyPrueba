@@ -61,7 +61,6 @@ export function ExpenseFormPage() {
   return (
     <form onSubmit={onSubmit} className="max-w-xl space-y-4" noValidate>
       <h1 className="text-xl font-bold">{id ? 'Editar gasto' : 'Nuevo gasto'}</h1>
-      <FormAlert message={alert} />
       <TextField
         label="Valor"
         inputMode="decimal"
@@ -105,6 +104,7 @@ export function ExpenseFormPage() {
         onChange={(e) => setNote(e.target.value)}
         error={errors.note}
       />
+      <FormAlert message={alert} />
       <Button type="submit" className="w-full" disabled={busy}>
         Guardar gasto
       </Button>

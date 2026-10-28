@@ -31,7 +31,7 @@ export function mockApi(handlers: Record<string, Handler>) {
 export const business = {
   id: 'b1',
   name: 'Tienda Doña Rosa',
-  category: 'GROCERY',
+  category: 'LOCAL_MARKET',
   currency: 'COP',
   timeZone: 'America/Bogota',
 };

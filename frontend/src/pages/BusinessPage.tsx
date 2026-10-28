@@ -1,10 +1,10 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router';
 import { api, ApiError } from '../api/client';
 import type { Business } from '../api/types';
 import { useMe, useSession } from '../auth/session-context';
 import { Button, FormAlert, SelectField, TextField } from '../components/ui';
-import { businessCategories, formMessage } from '../i18n/es';
+import { businessCategoryGroups, formMessage } from '../i18n/es';
 
 export function BusinessPage() {
   const me = useMe();
@@ -15,6 +15,14 @@ export function BusinessPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [alert, setAlert] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [allowNegativeStock, setAllowNegativeStock] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    api.get<{ allowNegativeStock: boolean }>('/api/business/settings').then(
+      (s) => setAllowNegativeStock(s.allowNegativeStock),
+      () => undefined,
+    );
+  }, []);
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
@@ -32,6 +40,16 @@ export function BusinessPage() {
       const apiError = error instanceof ApiError ? error : new ApiError(0, 'unknown_error');
       setErrors(apiError.fieldErrors());
       setAlert(formMessage(apiError.code));
+    }
+  }
+
+  async function onToggleNegativeStock(allow: boolean) {
+    setAllowNegativeStock(allow);
+    try {
+      await api.put('/api/business/settings', { allowNegativeStock: allow });
+    } catch (error) {
+      setAllowNegativeStock(!allow);
+      setAlert(formMessage(error instanceof ApiError ? error.code : 'unknown_error'));
     }
   }
 
@@ -54,7 +72,7 @@ export function BusinessPage() {
         <SelectField
           label="Tipo de negocio (opcional)"
           placeholder="Sin especificar"
-          options={businessCategories}
+          groups={businessCategoryGroups}
           value={category}
           onChange={(e) => setCategory(e.target.value)}
           error={errors.category}
@@ -65,6 +83,24 @@ export function BusinessPage() {
           {saved ? 'Cambios guardados.' : ''}
         </p>
       </form>
+      <section className="space-y-2 rounded-xl bg-white p-4 shadow-sm">
+        <h2 className="font-semibold">Inventario</h2>
+        <label className="flex items-start gap-3 text-base">
+          <input
+            type="checkbox"
+            className="mt-1 h-5 w-5 accent-emerald-700"
+            checked={allowNegativeStock ?? true}
+            disabled={allowNegativeStock === null}
+            onChange={(e) => void onToggleNegativeStock(e.target.checked)}
+          />
+          <span>
+            Permitir vender sin stock
+            <span className="block text-sm text-slate-600">
+              Si lo desactivas, no podrás registrar ventas de productos sin unidades disponibles.
+            </span>
+          </span>
+        </label>
+      </section>
       <Button variant="secondary" className="w-full" onClick={() => void onSignOut()}>
         Cerrar sesión
       </Button>

@@ -1,28 +1,90 @@
 // Every user-visible text lives here (constitution principle 12).
-import type {
-  BusinessCategory,
-  ExpenseCategory,
-  PaymentMethod,
-  StockMovementType,
-} from '../api/types';
+import type { ExpenseCategory, PaymentMethod, StockMovementType } from '../api/types';
 
 export const BRAND = 'MyPrueba';
 
-export const businessCategories: Record<BusinessCategory, string> = {
-  GROCERY: 'Tienda / abarrotes',
-  FOOD: 'Restaurante / comidas',
-  CLOTHING: 'Ropa / calzado',
-  BEAUTY: 'Belleza / peluquería',
-  CATALOG_SALES: 'Venta por catálogo',
-  SERVICES: 'Servicios',
-  OTHER: 'Otro',
+/** The 59 business types offered in Colombia, grouped as in the referent (verified with REA). */
+export const businessCategoryGroups: Record<string, Record<string, string>> = {
+  Comercio: {
+    ACCESSORIES_STORE: 'Accesorios y bisutería',
+    AGRICULTURE: 'Agricultura y ganadería',
+    WATER_ICE_GAS: 'Agua, hielo y gas',
+    CRAFTS_STORE: 'Artesanías y manualidades',
+    AUTO_PARTS_STORE: 'Artículos automotrices',
+    BEAUTY: 'Artículos de belleza',
+    SPORTS_STORE: 'Artículos deportivos',
+    HOME_ITEMS: 'Artículos para el hogar',
+    RELIGIOUS_STORE: 'Artículos religiosos y esotéricos',
+    BUTCHERY_STORE: 'Carnicería',
+    WHOLESALE_STORE: 'Distribuidora / mayorista',
+    COMPUTING: 'Electrónica e informática',
+    PHARMACY: 'Farmacia y droguería',
+    HARDWARE_STORE: 'Ferretería y construcción',
+    FLOWER_SHOP: 'Floristería y vivero',
+    INDUSTRY: 'Industria o manufactura',
+    FARM_SUPPLIES: 'Insumos agropecuarios',
+    TOY_STORE: 'Juguetería',
+    MINI_MARKET: 'Minimercado',
+    STATIONERY: 'Papelería y libros',
+    CLEANING_STORE: 'Productos de aseo y limpieza',
+    RECYCLING: 'Reciclaje y chatarra',
+    CLOTHING: 'Ropa y calzado',
+    DELICATESSEN_STORE: 'Salsamentaria',
+    ADULT_STORE: 'Sex shop',
+    LOCAL_MARKET: 'Tienda de barrio',
+    PET_SHOP: 'Tienda de mascotas o vet',
+    NATURAL_STORE: 'Tienda naturista y/o suplementos',
+    GIFT_STORE: 'Tiendas de regalos',
+    CIGARETTE_SHOP: 'Vape, tabaquería y smoke shop',
+    VARIETY_STORE: 'Variedades y bazares',
+    VEHICLE_DEALERSHIP: 'Venta de automóviles',
+    CATALOG_SALES: 'Venta por catálogo',
+  },
+  'Restaurantes, cafés y licores': {
+    BAR: 'Bar',
+    COFFEE_SHOP: 'Cafetería',
+    ICE_CREAM_AND_JUICES: 'Heladería, jugos y postres',
+    LIQUOR_STORE: 'Licorería',
+    BAKERY: 'Panadería y repostería',
+    RESTAURANT: 'Restaurante o comida rápida',
+  },
+  Servicios: {
+    PROPERTY_RENTAL: 'Arriendos y administración de propiedades',
+    HAIR_SALON: 'Barbería y peluquería',
+    MARKETING: 'Diseño, impresión y personalizados',
+    ENTERTAINMENT_VENUE: 'Entretenimiento y ocio',
+    HEALTH_AND_WELLNESS: 'Estética y salud',
+    FITNESS_CENTER: 'Gimnasio',
+    TOURISM: 'Hoteles y turismo',
+    CAR_WASH: 'Lavadero de autos y detailing',
+    LAUNDRY: 'Lavandería y tintorería',
+    EVENT_PLANNING: 'Organización de eventos',
+    FINANCIAL_SERVICES: 'Préstamos y financiamiento',
+    PAYMENTS_AND_LOTTERY: 'Recargas, giros y loterías',
+    MAINTENANCE_SERVICES: 'Reparaciones y mantenimiento',
+    TAILORING: 'Sastrería, modistería y arreglos',
+    EDUCATIONAL_SERVICES: 'Servicios educativos',
+    PROFESSIONAL_SERVICES: 'Servicios profesionales',
+    CARS: 'Taller automotriz',
+    TATTOO_STUDIO: 'Tatuajes y piercings',
+    LOGISTICS: 'Transporte y logística',
+    NAILS_AND_LASHES: 'Uñas, pestañas y cejas',
+  },
 };
+
+export const businessCategories: Record<string, string> = Object.assign(
+  {},
+  ...Object.values(businessCategoryGroups),
+);
 
 /** Methods that move money now: expenses and customer payments. */
 export const cashPaymentMethods: Record<Exclude<PaymentMethod, 'CREDIT'>, string> = {
   CASH: 'Efectivo',
   CARD: 'Tarjeta',
-  TRANSFER: 'Transferencia',
+  TRANSFER: 'Transferencia bancaria',
+  NEQUI: 'Nequi',
+  DAVIPLATA: 'Daviplata',
+  PAYMENT_LINK: 'Link de pago',
   OTHER: 'Otro',
 };
 
@@ -33,13 +95,15 @@ export const paymentMethods: Record<PaymentMethod, string> = {
 };
 
 export const expenseCategories: Record<ExpenseCategory, string> = {
-  PURCHASES: 'Compra de productos / insumos',
-  RENT: 'Arriendo',
   UTILITIES: 'Servicios públicos',
+  PURCHASES: 'Compra de productos e insumos',
+  RENT: 'Arriendo',
   PAYROLL: 'Nómina',
-  TRANSPORT: 'Transporte',
-  MAINTENANCE: 'Mantenimiento',
-  TAXES: 'Impuestos',
+  ADMINISTRATIVE: 'Gastos administrativos',
+  ADVERTISING: 'Mercadeo y publicidad',
+  TRANSPORT: 'Transporte, domicilios y logística',
+  MAINTENANCE: 'Mantenimiento y reparaciones',
+  EQUIPMENT: 'Muebles, equipos o maquinaria',
   OTHER: 'Otros',
 };
 
@@ -76,6 +140,7 @@ const fieldMessages: Record<string, string> = {
   before_from: 'Debe ser igual o posterior a la fecha inicial.',
   range_too_long: 'El rango no puede superar un año.',
   exceeds_debt: 'El abono no puede superar la deuda.',
+  before_sale: 'No puede ser anterior a la fecha de la venta.',
 };
 
 const formMessages: Record<string, string> = {
@@ -89,12 +154,16 @@ const formMessages: Record<string, string> = {
   not_tracked: 'Este producto no tiene control de inventario.',
   customer_has_debt: 'No puedes eliminar un cliente con saldo pendiente.',
   customer_not_found: 'El cliente ya no existe.',
+  insufficient_stock: 'No hay suficiente stock para esta venta.',
 };
 
 export function fieldMessage(code: string): string {
   return fieldMessages[code] ?? fieldMessages.invalid_format!;
 }
 
-export function formMessage(code: string): string {
+export function formMessage(code: string, details: Record<string, unknown> = {}): string {
+  if (code === 'insufficient_stock' && details.productName) {
+    return `No hay suficiente stock de ${String(details.productName)} (disponibles: ${String(details.available)}). Ajusta la cantidad o permite vender sin stock en Negocio.`;
+  }
   return formMessages[code] ?? 'Algo salió mal. Intenta de nuevo.';
 }

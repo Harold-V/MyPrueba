@@ -67,11 +67,14 @@ export function SelectField({
   label,
   error,
   hint,
-  options,
+  options = {},
+  groups,
   placeholder,
   ...props
 }: FieldProps & {
-  options: Record<string, string>;
+  options?: Record<string, string>;
+  /** Grouped options, rendered as labelled optgroups. */
+  groups?: Record<string, Record<string, string>>;
   placeholder?: string;
 } & SelectHTMLAttributes<HTMLSelectElement>) {
   const id = useId();
@@ -89,6 +92,15 @@ export function SelectField({
           <option key={value} value={value}>
             {text}
           </option>
+        ))}
+        {Object.entries(groups ?? {}).map(([groupLabel, groupOptions]) => (
+          <optgroup key={groupLabel} label={groupLabel}>
+            {Object.entries(groupOptions).map(([value, text]) => (
+              <option key={value} value={value}>
+                {text}
+              </option>
+            ))}
+          </optgroup>
         ))}
       </select>
     </Described>

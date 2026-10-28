@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { emptyBalance, me, mockApi } from '../test/api-mock';
@@ -30,7 +30,7 @@ describe('authentication', () => {
     await user.type(await screen.findByLabelText('Email'), 'rosa@example.com');
     await user.type(screen.getByLabelText('Contraseña'), 'secreto123');
     await user.type(screen.getByLabelText('Nombre del negocio'), 'Tienda Doña Rosa');
-    await user.selectOptions(screen.getByLabelText('Tipo de negocio (opcional)'), 'GROCERY');
+    await user.selectOptions(screen.getByLabelText('Tipo de negocio (opcional)'), 'HARDWARE_STORE');
     await user.click(screen.getByRole('button', { name: 'Crear cuenta' }));
 
     expect(await screen.findByText('Tienda Doña Rosa')).toBeInTheDocument();
@@ -38,7 +38,7 @@ describe('authentication', () => {
       email: 'rosa@example.com',
       password: 'secreto123',
       businessName: 'Tienda Doña Rosa',
-      businessCategory: 'GROCERY',
+      businessCategory: 'HARDWARE_STORE',
     });
   });
 
@@ -122,10 +122,36 @@ describe('authentication', () => {
     expect(await screen.findByRole('status')).toHaveTextContent('Cambios guardados.');
     expect(calls.find((c) => c.method === 'PUT')?.body).toEqual({
       name: 'Rosa Express',
-      category: 'GROCERY',
+      category: 'LOCAL_MARKET',
     });
 
     await user.click(screen.getByRole('button', { name: 'Cerrar sesión' }));
     await waitFor(() => expect(router.state.location.pathname).toBe('/entrar'));
+  });
+
+  it('lets the owner block sales without stock', async () => {
+    const calls = mockApi({
+      'GET /api/me': { body: me },
+      'GET /api/business/settings': { body: { allowNegativeStock: true } },
+      'PUT /api/business/settings': (body) => ({ body }),
+    });
+    renderAt('/negocio');
+    const user = userEvent.setup();
+    const toggle = await screen.findByRole('checkbox', { name: /Permitir vender sin stock/ });
+    await waitFor(() => expect(toggle).toBeEnabled());
+    expect(toggle).toBeChecked();
+    await user.click(toggle);
+    await waitFor(() => expect(calls.some((c) => c.method === 'PUT')).toBe(true));
+    expect(calls.find((c) => c.method === 'PUT')?.body).toEqual({ allowNegativeStock: false });
+    expect(toggle).not.toBeChecked();
+  });
+
+  it('groups business types like the referent', async () => {
+    mockApi({ 'GET /api/me': { status: 401, body: { code: 'unauthenticated' } } });
+    renderAt('/registro');
+    const select = await screen.findByLabelText('Tipo de negocio (opcional)');
+    expect(within(select).getByRole('group', { name: 'Comercio' })).toBeInTheDocument();
+    expect(within(select).getByRole('option', { name: 'Tienda de barrio' })).toBeInTheDocument();
+    expect(within(select).getAllByRole('option')).toHaveLength(60);
   });
 });

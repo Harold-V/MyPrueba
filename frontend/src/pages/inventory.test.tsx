@@ -9,7 +9,6 @@ const gaseosa = {
   name: 'Gaseosa',
   price: '3000.00',
   cost: '2500.00',
-  tracked: true,
   stock: '3',
   minStock: '5',
   low: true,
@@ -19,13 +18,12 @@ const pan = {
   name: 'Pan',
   price: '500.00',
   cost: null,
-  tracked: false,
-  stock: null,
+  stock: '0',
   minStock: null,
   low: false,
 };
 const inventory = {
-  summary: { tracked: 1, lowStock: 1, value: '7500.00' },
+  summary: { references: 2, lowStock: 1, value: '7500.00' },
   items: [gaseosa, pan],
 };
 
@@ -48,8 +46,9 @@ describe('inventory page', () => {
     expect(within(row).getByText('3 en stock')).toBeInTheDocument();
     expect(within(row).getByText('Stock bajo')).toBeInTheDocument();
     expect(
-      within(screen.getByRole('listitem', { name: 'Pan' })).getByText('Sin control de inventario'),
+      within(screen.getByRole('listitem', { name: 'Pan' })).getByText('0 en stock'),
     ).toBeInTheDocument();
+    expect(within(summary).getByText('Productos').nextSibling).toHaveTextContent('2');
 
     const user = userEvent.setup();
     await user.click(screen.getByRole('checkbox', { name: 'Solo stock bajo' }));
@@ -59,26 +58,22 @@ describe('inventory page', () => {
     expect(calls.some((c) => c.search === '?lowOnly=true')).toBe(true);
   });
 
-  it('activates stock control with the current stock', async () => {
+  it('changes the minimum stock of a product', async () => {
     const calls = mockApi({
       'GET /api/me': { body: me },
       'GET /api/inventory': { body: inventory },
-      'PUT /api/inventory/p2': () => ({
-        body: { ...pan, tracked: true, stock: '20', minStock: '5' },
-      }),
+      'PUT /api/inventory/p2': () => ({ body: { ...pan, minStock: '5', low: true } }),
     });
     renderAt('/inventario');
     const user = userEvent.setup();
-    await user.click(await screen.findByRole('button', { name: 'Activar inventario de Pan' }));
-    await user.type(screen.getByLabelText('Stock actual'), '20');
+    await user.click(await screen.findByRole('button', { name: 'Stock mínimo de Pan' }));
     await user.type(screen.getByLabelText('Stock mínimo (opcional)'), '5');
-    await user.click(screen.getByRole('button', { name: 'Activar' }));
+    await user.click(screen.getByRole('button', { name: 'Guardar' }));
     await waitFor(() => expect(calls.some((c) => c.method === 'PUT')).toBe(true));
-    expect(calls.find((c) => c.method === 'PUT')?.body).toEqual({
-      tracked: true,
-      initialStock: '20',
-      minStock: '5',
-    });
+    expect(calls.find((c) => c.method === 'PUT')?.body).toEqual({ minStock: '5' });
+    expect(
+      await within(screen.getByRole('listitem', { name: 'Pan' })).findByText('Stock bajo'),
+    ).toBeInTheDocument();
   });
 
   it('records an adjustment and shows field errors', async () => {
@@ -192,6 +187,41 @@ describe('inventory in other screens', () => {
     ).toBeInTheDocument();
   });
 
+  it('warns that the sale will be refused when selling without stock is off', async () => {
+    mockApi({
+      'GET /api/me': { body: me },
+      'GET /api/products': { body: [{ id: 'p1', name: 'Gaseosa', price: '3000.00', cost: null }] },
+      'GET /api/inventory': { body: inventory },
+      'GET /api/business/settings': { body: { allowNegativeStock: false } },
+      'POST /api/sales': {
+        status: 409,
+        body: { code: 'insufficient_stock', productName: 'Gaseosa', available: '3' },
+      },
+    });
+    renderAt('/ventas/nueva');
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole('radio', { name: 'Con productos' }));
+    const select = await screen.findByLabelText('Agregar producto');
+    await waitFor(() =>
+      expect(
+        within(select).getByRole('option', { name: 'Gaseosa — $3.000 · 3 disponibles' }),
+      ).toBeInTheDocument(),
+    );
+    await user.selectOptions(select, 'p1');
+    const quantity = screen.getByLabelText('Cantidad');
+    await user.clear(quantity);
+    await user.type(quantity, '4');
+    expect(
+      await screen.findByText(
+        /No podrás registrar esta venta: tu negocio no permite vender sin stock/,
+      ),
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Guardar venta' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'No hay suficiente stock de Gaseosa (disponibles: 3).',
+    );
+  });
+
   it('saves an optional product cost', async () => {
     const calls = mockApi({
       'GET /api/me': { body: me },
@@ -203,12 +233,16 @@ describe('inventory in other screens', () => {
     await user.type(await screen.findByLabelText('Nombre'), 'Arroz');
     await user.type(screen.getByLabelText('Precio'), '4.200');
     await user.type(screen.getByLabelText('Costo (opcional)'), '3.000');
+    await user.type(screen.getByLabelText('Stock inicial'), '24');
+    await user.type(screen.getByLabelText('Stock mínimo (opcional)'), '6');
     await user.click(screen.getByRole('button', { name: 'Agregar producto' }));
     await waitFor(() => expect(calls.some((c) => c.method === 'POST')).toBe(true));
     expect(calls.find((c) => c.method === 'POST')?.body).toEqual({
       name: 'Arroz',
       price: '4200',
       cost: '3000',
+      stock: '24',
+      minStock: '6',
     });
   });
 });

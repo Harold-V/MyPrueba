@@ -14,7 +14,7 @@ export function useMovementForm(resource: '/api/sales' | '/api/expenses', id: st
   function fail(error: unknown) {
     const apiError = error instanceof ApiError ? error : new ApiError(0, 'unknown_error');
     setErrors(apiError.fieldErrors());
-    setAlert(formMessage(apiError.code));
+    setAlert(formMessage(apiError.code, apiError.details));
   }
 
   async function save(body: Record<string, unknown>, clientErrors: Record<string, string>) {

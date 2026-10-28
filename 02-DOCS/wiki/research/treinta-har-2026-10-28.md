@@ -84,15 +84,15 @@ menú digital, planes/suscripción, configuración, notificaciones, ayuda.
 |---|---|---|---|
 | Ventas y gastos | Entidades separadas | Una transacción con tipo | Diferente por dentro, igual para el usuario |
 | Balance de caja (fiado no es ingreso) | Sí | Sí | ✅ Coincide |
-| Fiado | Método de pago "Fiado" | **Estado** a crédito, con fecha de vencimiento | ⚠️ Diferente |
+| Fiado | Estado a crédito con vencimiento (fase 1) | **Estado** a crédito, con fecha de vencimiento | ✅ Alineado |
 | Deudas con proveedores | Diferido | Sí (gastos a crédito) | ❌ Falta |
-| Métodos de pago | Efectivo, Tarjeta, Transferencia, Otro | + Nequi, Daviplata, Link de pago, pago dividido | ⚠️ Faltan |
-| Categorías de gasto | 8 (incluye Impuestos) | 10 (sin Impuestos; con Administrativos, Mercadeo, Muebles/equipos) | ⚠️ Diferentes |
-| Tipos de negocio | 7 | ~30 agrupados | ⚠️ Diferentes |
-| Descripción vacía en gasto | Se guarda vacía | Se genera "Gasto + fecha" | ⚠️ Diferente |
+| Métodos de pago | + Nequi, Daviplata, Link de pago (fase 1) | + pago dividido | ✅ Salvo pago dividido |
+| Categorías de gasto | Las 10 de Treinta (fase 1) | 10 | ✅ Alineado |
+| Tipos de negocio | Los 59 en 3 grupos (fase 1) | 59 agrupados | ✅ Alineado |
+| Descripción vacía en gasto | "Gasto ddMMaaHHmmss" (fase 1) | Igual | ✅ (zona horaria a confirmar) |
 | Producto: costo | Opcional | Sí | ✅ |
-| Stock | Control opcional por producto | Todo producto tiene stock y mínimo | ⚠️ Diferente |
-| Stock negativo | Permitido siempre | Configurable (permitido por defecto) | ⚠️ Parcial |
+| Stock | Todo producto con stock y mínimo (fase 1) | Igual | ✅ Alineado |
+| Stock negativo | Configurable, permitido por defecto (fase 1) | Igual | ✅ Alineado |
 | Categorías de producto, SKU, unidad, impuestos | No | Sí | ❌ Faltan |
 | Motivos de ajuste de stock | Entrada, pérdida, conteo | + motivos al editar venta | ⚠️ Parcial |
 | Resumen de inventario | Valor, stock bajo | Valor, referencias, precio promedio, stock bajo | ✅ Casi |

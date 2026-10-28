@@ -6,7 +6,7 @@ import { useMe } from '../auth/session-context';
 import { ConfirmDelete } from '../components/ConfirmDelete';
 import { Button, FormAlert, Loading, SelectField, TextField } from '../components/ui';
 import { cashPaymentMethods, formMessage } from '../i18n/es';
-import { formatDateTime, todayIn } from '../lib/dates';
+import { formatDate, formatDateTime, todayIn } from '../lib/dates';
 import { formatMoney, normalizeAmount } from '../lib/money';
 import { occurredAtFor } from './useMovementForm';
 
@@ -70,6 +70,7 @@ function CustomerFields({
 }
 
 export function CustomersPage() {
+  const { business } = useMe();
   const [customers, setCustomers] = useState<Customer[] | null>(null);
   const [receivables, setReceivables] = useState<Receivables | null>(null);
   const [version, setVersion] = useState(0);
@@ -96,6 +97,7 @@ export function CustomersPage() {
   const debts = Object.fromEntries(
     (receivables?.customers ?? []).map((c) => [c.customerId, c.debt]),
   );
+  const debtInfo = Object.fromEntries((receivables?.customers ?? []).map((c) => [c.customerId, c]));
   // Customers who owe the most come first; the rest keep alphabetical order.
   // Debts always have two decimals, so dropping the dot gives exact integer cents.
   const cents = (id: string) => BigInt((debts[id] ?? '0.00').replace('.', ''));
@@ -161,14 +163,27 @@ export function CustomersPage() {
                 >
                   <span className="min-w-0">
                     <span className="block truncate font-medium">{customer.name}</span>
-                    {customer.phone && (
-                      <span className="block text-sm text-slate-600">{customer.phone}</span>
-                    )}
+                    <span className="block text-sm text-slate-600">
+                      {[
+                        customer.phone,
+                        debtInfo[customer.id]?.oldestDebtAt &&
+                          `Debe desde el ${formatDate(debtInfo[customer.id]!.oldestDebtAt!, business.timeZone)}`,
+                      ]
+                        .filter(Boolean)
+                        .join(' · ')}
+                    </span>
                   </span>
-                  <span
-                    className={`shrink-0 text-sm font-semibold ${debts[customer.id] ? 'text-red-700' : 'text-emerald-800'}`}
-                  >
-                    {debtLabel(debts[customer.id])}
+                  <span className="flex shrink-0 flex-col items-end gap-1">
+                    <span
+                      className={`text-sm font-semibold ${debts[customer.id] ? 'text-red-700' : 'text-emerald-800'}`}
+                    >
+                      {debtLabel(debts[customer.id])}
+                    </span>
+                    {debtInfo[customer.id]?.overdue && (
+                      <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-800">
+                        Vencida
+                      </span>
+                    )}
                   </span>
                 </Link>
               </li>

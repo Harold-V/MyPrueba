@@ -158,7 +158,7 @@ describe('sales', () => {
     await user.type(quantities[0]!, '2');
     await user.clear(quantities[1]!);
     await user.type(quantities[1]!, '4');
-    await user.selectOptions(screen.getByLabelText('Método de pago'), 'TRANSFER');
+    await user.selectOptions(screen.getByLabelText('Método de pago'), 'NEQUI');
     await user.type(screen.getByLabelText('Fecha'), '2026-10-20');
     expect(screen.getByText('Total: $8.000')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Guardar venta' }));
@@ -169,7 +169,7 @@ describe('sales', () => {
         { productId: 'p1', quantity: '2', unitPrice: '3000.00' },
         { productId: 'p2', quantity: '4', unitPrice: '500.00' },
       ],
-      paymentMethod: 'TRANSFER',
+      paymentMethod: 'NEQUI',
       occurredAt: '2026-10-20T17:00:00.000Z',
     });
   });

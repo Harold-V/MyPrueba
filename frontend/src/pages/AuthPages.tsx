@@ -4,7 +4,7 @@ import { api, ApiError, compact } from '../api/client';
 import type { Me } from '../api/types';
 import { useSession } from '../auth/session-context';
 import { Button, FormAlert, SelectField, TextField } from '../components/ui';
-import { businessCategories, formMessage } from '../i18n/es';
+import { businessCategoryGroups, formMessage } from '../i18n/es';
 
 function useAuthSubmit(path: string) {
   const { signIn } = useSession();
@@ -118,7 +118,7 @@ export function RegisterPage() {
       <SelectField
         label="Tipo de negocio (opcional)"
         placeholder="Sin especificar"
-        options={businessCategories}
+        groups={businessCategoryGroups}
         value={form.businessCategory}
         onChange={set('businessCategory')}
         error={errors.businessCategory}

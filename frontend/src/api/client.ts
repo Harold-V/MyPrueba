@@ -8,12 +8,20 @@ export class ApiError extends Error {
   readonly status: number;
   readonly code: string;
   readonly errors: FieldError[];
+  /** Extra problem fields the API adds for some codes (e.g. productName for insufficient_stock). */
+  readonly details: Record<string, unknown>;
 
-  constructor(status: number, code: string, errors: FieldError[] = []) {
+  constructor(
+    status: number,
+    code: string,
+    errors: FieldError[] = [],
+    details: Record<string, unknown> = {},
+  ) {
     super(code);
     this.status = status;
     this.code = code;
     this.errors = errors;
+    this.details = details;
   }
 
   /** Field errors as `{ field: code }`. */
@@ -39,8 +47,11 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   }
   const data: unknown = await response.json().catch(() => ({}));
   if (!response.ok) {
-    const problem = data as { code?: string; errors?: FieldError[] };
-    throw new ApiError(response.status, problem.code ?? 'unknown_error', problem.errors ?? []);
+    const { code, errors, ...details } = data as {
+      code?: string;
+      errors?: FieldError[];
+    } & Record<string, unknown>;
+    throw new ApiError(response.status, code ?? 'unknown_error', errors ?? [], details);
   }
   return data as T;
 }

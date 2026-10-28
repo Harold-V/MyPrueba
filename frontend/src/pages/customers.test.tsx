@@ -46,7 +46,16 @@ describe('customers and debts', () => {
       'GET /api/receivables': {
         body: {
           total: '15000.00',
-          customers: [{ customerId: 'c1', name: 'Juan', phone: '300 123 4567', debt: '15000.00' }],
+          customers: [
+            {
+              customerId: 'c1',
+              name: 'Juan',
+              phone: '300 123 4567',
+              debt: '15000.00',
+              oldestDebtAt: '2026-10-20T15:00:00Z',
+              overdue: true,
+            },
+          ],
         },
       },
     });
@@ -55,6 +64,8 @@ describe('customers and debts', () => {
     expect(await within(summary).findByText('$15.000')).toBeInTheDocument();
     const row = await screen.findByRole('listitem', { name: 'Juan' });
     expect(within(row).getByText('Debe $15.000')).toBeInTheDocument();
+    expect(within(row).getByText(/Debe desde el 20 de oct/)).toBeInTheDocument();
+    expect(within(row).getByText('Vencida')).toBeInTheDocument();
     expect(within(row).getByRole('link', { name: 'Ver cuenta de Juan' })).toHaveAttribute(
       'href',
       '/clientes/c1',
@@ -178,17 +189,20 @@ describe('credit in other screens', () => {
     const router = renderAt('/ventas/nueva');
     const user = userEvent.setup();
     await user.type(await screen.findByLabelText('Valor'), '20.000');
-    await user.selectOptions(screen.getByLabelText('Método de pago'), 'CREDIT');
+    await user.click(screen.getByRole('radio', { name: 'Fiada (a crédito)' }));
+    expect(screen.queryByLabelText('Método de pago')).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Guardar venta' }));
     expect(await screen.findByText('Este campo es obligatorio.')).toBeInTheDocument();
     expect(calls.some((c) => c.method === 'POST')).toBe(false);
 
     await user.selectOptions(screen.getByLabelText('Cliente'), 'c1');
+    await user.type(screen.getByLabelText('Fecha de vencimiento (opcional)'), '2026-11-15');
     await user.click(screen.getByRole('button', { name: 'Guardar venta' }));
     await waitFor(() => expect(router.state.location.pathname).toBe('/'));
     expect(calls.find((c) => c.method === 'POST')?.body).toEqual({
       amount: '20000',
-      paymentMethod: 'CREDIT',
+      status: 'CREDIT',
+      dueDate: '2026-11-15',
       customerId: 'c1',
     });
   });

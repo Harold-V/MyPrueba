@@ -12,7 +12,7 @@ import type {
 import { useMe } from '../auth/session-context';
 import { ConfirmDelete } from '../components/ConfirmDelete';
 import { Button, FormAlert, Loading, SelectField, TextField } from '../components/ui';
-import { paymentMethods } from '../i18n/es';
+import { cashPaymentMethods } from '../i18n/es';
 import { localDateOf, todayIn } from '../lib/dates';
 import { formatMoney, lineTotal, normalizeAmount, sumAmounts } from '../lib/money';
 import { normalizeQuantity, toMilli } from '../lib/quantity';
@@ -29,7 +29,7 @@ interface Line {
 
 function productLabel(product: Product, item: InventoryItem | undefined): string {
   const label = `${product.name} — ${formatMoney(product.price)}`;
-  return item?.tracked ? `${label} · ${item.stock} disponibles` : label;
+  return item ? `${label} · ${item.stock} disponibles` : label;
 }
 
 export function SaleFormPage() {
@@ -39,12 +39,15 @@ export function SaleFormPage() {
   const [loaded, setLoaded] = useState(!id);
   const [products, setProducts] = useState<Product[]>([]);
   const [stock, setStock] = useState<Record<string, InventoryItem>>({});
+  const [allowNegativeStock, setAllowNegativeStock] = useState(true);
   // Quantities this sale already took from stock, so editing it does not warn about its own units.
   const [originalQuantities, setOriginalQuantities] = useState<Record<string, string>>({});
   const [kind, setKind] = useState<'FREE' | 'ITEMS'>('FREE');
   const [amount, setAmount] = useState('');
   const [lines, setLines] = useState<Line[]>([]);
   const [concept, setConcept] = useState('');
+  const [status, setStatus] = useState<'PAID' | 'CREDIT'>('PAID');
+  const [dueDate, setDueDate] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('CASH');
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [customerId, setCustomerId] = useState('');
@@ -55,6 +58,10 @@ export function SaleFormPage() {
   useEffect(() => {
     api.get<Product[]>('/api/products').then(setProducts, fail);
     api.get<Customer[]>('/api/customers').then(setCustomers, () => undefined);
+    api.get<{ allowNegativeStock: boolean }>('/api/business/settings').then(
+      (s) => setAllowNegativeStock(s.allowNegativeStock),
+      () => undefined,
+    );
     api.get<Inventory>('/api/inventory').then(
       (data) => setStock(Object.fromEntries(data.items.map((item) => [item.productId, item]))),
       () => undefined,
@@ -78,7 +85,10 @@ export function SaleFormPage() {
         ),
       );
       setConcept(sale.concept ?? '');
-      setPaymentMethod(sale.paymentMethod);
+      const credit = sale.status === 'CREDIT' || sale.paymentMethod === 'CREDIT';
+      setStatus(credit ? 'CREDIT' : 'PAID');
+      setPaymentMethod(credit ? 'CASH' : sale.paymentMethod);
+      setDueDate(sale.dueDate ?? '');
       setCustomerId(sale.customerId ?? '');
       setOriginal(sale.occurredAt);
       setDate(localDateOf(sale.occurredAt, business.timeZone));
@@ -97,7 +107,7 @@ export function SaleFormPage() {
   /** Available units when the line asks for more than the stock (plus what this sale already took). */
   function shortage(line: Line): string | null {
     const item = line.productId ? stock[line.productId] : undefined;
-    if (!item?.tracked || item.stock === null) return null;
+    if (!item) return null;
     const available =
       (toMilli(item.stock) ?? 0n) + (toMilli(originalQuantities[line.productId!] ?? '0') ?? 0n);
     const wanted = toMilli(line.quantity);
@@ -123,10 +133,11 @@ export function SaleFormPage() {
     const clientErrors: Record<string, string> = {};
     if (kind === 'FREE' && !amount.trim()) clientErrors.amount = 'required';
     if (kind === 'ITEMS' && lines.length === 0) clientErrors.items = 'sale_kind';
-    if (paymentMethod === 'CREDIT' && !customerId) clientErrors.customerId = 'required';
+    if (status === 'CREDIT' && !customerId) clientErrors.customerId = 'required';
     const common = compact({
       concept: concept.trim(),
-      paymentMethod,
+      // A credit sale (fiado) has no payment method yet: it is paid later with abonos.
+      ...(status === 'CREDIT' ? { status, dueDate } : { paymentMethod }),
       occurredAt: occurredAtFor(date, original, business.timeZone),
       note: note.trim(),
       customerId,
@@ -150,7 +161,6 @@ export function SaleFormPage() {
   return (
     <form onSubmit={onSubmit} className="max-w-xl space-y-4" noValidate>
       <h1 className="text-xl font-bold">{id ? 'Editar venta' : 'Nueva venta'}</h1>
-      <FormAlert message={alert} />
 
       <fieldset className="flex gap-4">
         <legend className="sr-only">Tipo de venta</legend>
@@ -227,7 +237,10 @@ export function SaleFormPage() {
                 </div>
                 {shortage(line) && (
                   <p className="mt-2 text-sm text-amber-800">
-                    Solo hay {shortage(line)} en inventario. La venta se registrará igual.
+                    Solo hay {shortage(line)} en inventario.{' '}
+                    {allowNegativeStock
+                      ? 'La venta se registrará igual.'
+                      : 'No podrás registrar esta venta: tu negocio no permite vender sin stock.'}
                   </p>
                 )}
               </li>
@@ -245,18 +258,50 @@ export function SaleFormPage() {
         onChange={(e) => setConcept(e.target.value)}
         error={errors.concept}
       />
-      <SelectField
-        label="Método de pago"
-        options={paymentMethods}
-        value={paymentMethod}
-        onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
-        error={errors.paymentMethod}
-      />
+      <fieldset className="flex gap-4">
+        <legend className="mb-1 text-sm font-medium text-slate-800">Estado del pago</legend>
+        {(
+          [
+            ['PAID', 'Pagada'],
+            ['CREDIT', 'Fiada (a crédito)'],
+          ] as const
+        ).map(([value, text]) => (
+          <label key={value} className="flex items-center gap-2 text-base">
+            <input
+              type="radio"
+              name="status"
+              value={value}
+              checked={status === value}
+              onChange={() => setStatus(value)}
+              className="h-5 w-5 accent-emerald-700"
+            />
+            {text}
+          </label>
+        ))}
+      </fieldset>
+      {status === 'PAID' ? (
+        <SelectField
+          label="Método de pago"
+          options={cashPaymentMethods}
+          value={paymentMethod}
+          onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
+          error={errors.paymentMethod}
+        />
+      ) : (
+        <TextField
+          label="Fecha de vencimiento (opcional)"
+          type="date"
+          hint="Hasta cuándo tiene el cliente para pagar."
+          value={dueDate}
+          onChange={(e) => setDueDate(e.target.value)}
+          error={errors.dueDate}
+        />
+      )}
       <SelectField
         label="Cliente"
-        placeholder={paymentMethod === 'CREDIT' ? 'Elige a quién le fías' : 'Sin cliente'}
+        placeholder={status === 'CREDIT' ? 'Elige a quién le fías' : 'Sin cliente'}
         hint={
-          paymentMethod === 'CREDIT'
+          status === 'CREDIT'
             ? 'Obligatorio en ventas fiadas: la deuda queda a su nombre.'
             : 'Opcional.'
         }
@@ -265,7 +310,7 @@ export function SaleFormPage() {
         onChange={(e) => setCustomerId(e.target.value)}
         error={errors.customerId}
       />
-      {paymentMethod === 'CREDIT' && customers.length === 0 && (
+      {status === 'CREDIT' && customers.length === 0 && (
         <Link to="/clientes" className="text-sm font-semibold text-emerald-800 underline">
           Crear un cliente
         </Link>
@@ -285,6 +330,8 @@ export function SaleFormPage() {
         onChange={(e) => setNote(e.target.value)}
         error={errors.note}
       />
+      {/* Next to the button: after submitting, the top of a long form is out of view. */}
+      <FormAlert message={alert} />
       <Button type="submit" className="w-full" disabled={busy}>
         Guardar venta
       </Button>

@@ -5,6 +5,7 @@ import { ConfirmDelete } from '../components/ConfirmDelete';
 import { Button, FormAlert, TextField } from '../components/ui';
 import { formMessage } from '../i18n/es';
 import { formatMoney, normalizeAmount } from '../lib/money';
+import { normalizeQuantity } from '../lib/quantity';
 
 function useProductErrors() {
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -124,6 +125,8 @@ export function ProductsPage() {
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
   const [cost, setCost] = useState('');
+  const [stock, setStock] = useState('');
+  const [minStock, setMinStock] = useState('');
   const [version, setVersion] = useState(0);
   const { errors, alert, clear, fail } = useProductErrors();
 
@@ -143,11 +146,19 @@ export function ProductsPage() {
     try {
       await api.post(
         '/api/products',
-        compact({ name, price: normalizeAmount(price), cost: normalizeAmount(cost) }),
+        compact({
+          name,
+          price: normalizeAmount(price),
+          cost: normalizeAmount(cost),
+          stock: normalizeQuantity(stock),
+          minStock: normalizeQuantity(minStock),
+        }),
       );
       setName('');
       setPrice('');
       setCost('');
+      setStock('');
+      setMinStock('');
       clear();
       reload();
     } catch (error) {
@@ -186,6 +197,23 @@ export function ProductsPage() {
             onChange={(e) => setCost(e.target.value)}
             error={errors.cost}
           />
+          <div className="grid grid-cols-2 gap-3">
+            <TextField
+              label="Stock inicial"
+              inputMode="decimal"
+              placeholder="0"
+              value={stock}
+              onChange={(e) => setStock(e.target.value)}
+              error={errors.stock}
+            />
+            <TextField
+              label="Stock mínimo (opcional)"
+              inputMode="decimal"
+              value={minStock}
+              onChange={(e) => setMinStock(e.target.value)}
+              error={errors.minStock}
+            />
+          </div>
           <Button type="submit" className="w-full">
             Agregar producto
           </Button>

@@ -32,6 +32,16 @@ export function localDateToInstant(date: string, timeZone: string): string {
   return new Date(guess.getTime() - offset).toISOString();
 }
 
+/** "20 de oct de 2026" in the business time zone. */
+export function formatDate(instant: string, timeZone: string): string {
+  return new Intl.DateTimeFormat('es-CO', {
+    timeZone,
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  }).format(new Date(instant));
+}
+
 export function formatDateTime(instant: string, timeZone: string): string {
   return new Intl.DateTimeFormat('es-CO', {
     timeZone,
