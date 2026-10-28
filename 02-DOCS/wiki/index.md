@@ -37,6 +37,13 @@ title: Knowledge map
 | Verificación — sistema de ventas | [sdd/verifications/2026-10-28-sistema-ventas.md](sdd/verifications/2026-10-28-sistema-ventas.md) |
 | Revisión — núcleo | [sdd/reviews/nucleo.md](sdd/reviews/nucleo.md) |
 
+## stack
+
+| Artefacto | Ruta |
+|-----------|------|
+| Despliegue (Oracle Always Free + Docker + Caddy) | [stack/deployment.md](stack/deployment.md) |
+| Hosting gratis con autodeploy (FTD) | [ftd/despliegue-gratis.md](ftd/despliegue-gratis.md) |
+
 ## product
 
 | Artefacto | Ruta |
