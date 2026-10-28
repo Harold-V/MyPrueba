@@ -132,3 +132,6 @@
 .opencode/commands/specify.md
 .opencode/commands/tasks.md
 .opencode/commands/verify.md
+
+# Local build logs
+scr.log
