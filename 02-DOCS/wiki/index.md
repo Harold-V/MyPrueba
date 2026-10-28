@@ -34,6 +34,7 @@ title: Knowledge map
 | Verificación — clientes completos | [sdd/verifications/2026-10-28-clientes-completo.md](sdd/verifications/2026-10-28-clientes-completo.md) |
 | Verificación — proveedores y compras | [sdd/verifications/2026-10-28-proveedores-compras.md](sdd/verifications/2026-10-28-proveedores-compras.md) |
 | Verificación — catálogo de productos | [sdd/verifications/2026-10-28-catalogo-productos.md](sdd/verifications/2026-10-28-catalogo-productos.md) |
+| Verificación — sistema de ventas | [sdd/verifications/2026-10-28-sistema-ventas.md](sdd/verifications/2026-10-28-sistema-ventas.md) |
 | Revisión — núcleo | [sdd/reviews/nucleo.md](sdd/reviews/nucleo.md) |
 
 ## product
