@@ -41,7 +41,7 @@ export function BusinessPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="max-w-xl space-y-8">
       <form onSubmit={onSubmit} className="space-y-4" noValidate>
         <h1 className="text-xl font-bold">Tu negocio</h1>
         <FormAlert message={alert} />

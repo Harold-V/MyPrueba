@@ -90,9 +90,11 @@ export function HomePage() {
 
   return (
     <div className="space-y-5">
-      <Toggle label="Periodo" options={periods} value={period} onChange={setPeriod} />
+      <div className="lg:max-w-md">
+        <Toggle label="Periodo" options={periods} value={period} onChange={setPeriod} />
+      </div>
       {period === 'range' && (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-1">
           <TextField
             label="Desde"
             type="date"
@@ -113,44 +115,55 @@ export function HomePage() {
         </p>
       )}
 
-      <section aria-label="Resumen" className="rounded-xl bg-white p-4 shadow-sm">
-        <dl className="grid grid-cols-3 gap-2 text-center">
-          <div>
-            <dt className="text-sm text-slate-600">Ventas</dt>
-            <dd className="text-lg font-semibold text-emerald-800">
-              {formatMoney(balance?.sales ?? '0')}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-sm text-slate-600">Gastos</dt>
-            <dd className="text-lg font-semibold text-red-700">
-              {formatMoney(balance?.expenses ?? '0')}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-sm text-slate-600">Balance</dt>
-            <dd className="text-lg font-bold">{formatMoney(balance?.balance ?? '0')}</dd>
-          </div>
-        </dl>
-      </section>
+      <div className="space-y-5 lg:grid lg:grid-cols-[1fr_16rem] lg:gap-5 lg:space-y-0">
+        <section aria-label="Resumen" className="rounded-xl bg-white p-4 shadow-sm lg:p-6">
+          <dl className="grid grid-cols-3 gap-2 text-center">
+            <div>
+              <dt className="text-sm text-slate-600">Ventas</dt>
+              <dd className="text-lg font-semibold text-emerald-800 lg:text-3xl">
+                {formatMoney(balance?.sales ?? '0')}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-sm text-slate-600">Gastos</dt>
+              <dd className="text-lg font-semibold text-red-700 lg:text-3xl">
+                {formatMoney(balance?.expenses ?? '0')}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-sm text-slate-600">Balance</dt>
+              <dd className="text-lg font-bold lg:text-3xl">
+                {formatMoney(balance?.balance ?? '0')}
+              </dd>
+            </div>
+          </dl>
+        </section>
 
-      <div className="grid grid-cols-2 gap-3">
-        <Link
-          to="/ventas/nueva"
-          className="rounded-lg bg-emerald-700 py-3 text-center font-semibold text-white"
-        >
-          Nueva venta
-        </Link>
-        <Link
-          to="/gastos/nuevo"
-          className="rounded-lg bg-red-700 py-3 text-center font-semibold text-white"
-        >
-          Nuevo gasto
-        </Link>
+        <div className="grid grid-cols-2 gap-3">
+          <Link
+            to="/ventas/nueva"
+            className="flex items-center justify-center rounded-lg bg-emerald-700 py-3 font-semibold text-white"
+          >
+            Nueva venta
+          </Link>
+          <Link
+            to="/gastos/nuevo"
+            className="flex items-center justify-center rounded-lg bg-red-700 py-3 font-semibold text-white"
+          >
+            Nuevo gasto
+          </Link>
+        </div>
       </div>
 
       <section aria-label="Movimientos" className="space-y-3">
-        <Toggle label="Tipo de movimiento" options={filters} value={filter} onChange={setFilter} />
+        <div className="lg:max-w-sm">
+          <Toggle
+            label="Tipo de movimiento"
+            options={filters}
+            value={filter}
+            onChange={setFilter}
+          />
+        </div>
         {movements !== null && movements.length === 0 && (
           <p className="rounded-xl bg-white p-6 text-center text-slate-600">
             Aún no hay movimientos en este periodo.

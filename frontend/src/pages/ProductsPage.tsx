@@ -141,39 +141,47 @@ export function ProductsPage() {
   return (
     <div className="space-y-5">
       <h1 className="text-xl font-bold">Productos</h1>
-      <form onSubmit={onCreate} className="space-y-3 rounded-xl bg-white p-4 shadow-sm" noValidate>
-        <FormAlert message={alert} />
-        <TextField
-          label="Nombre"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          error={errors.name}
-        />
-        <TextField
-          label="Precio"
-          inputMode="decimal"
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
-          error={errors.price}
-        />
-        <Button type="submit" className="w-full">
-          Agregar producto
-        </Button>
-      </form>
-      {products?.length === 0 && (
-        <p className="text-center text-slate-600">
-          Aún no tienes productos. Agrégalos para vender más rápido.
-        </p>
-      )}
-      <ul className="divide-y divide-slate-200 rounded-xl bg-white shadow-sm">
-        {products?.map((product) => (
-          <ProductRow
-            key={`${product.id}-${product.name}-${product.price}`}
-            product={product}
-            onChanged={reload}
+      <div className="space-y-5 lg:grid lg:grid-cols-[22rem_1fr] lg:items-start lg:gap-6 lg:space-y-0">
+        <form
+          onSubmit={onCreate}
+          className="space-y-3 rounded-xl bg-white p-4 shadow-sm lg:sticky lg:top-8"
+          noValidate
+        >
+          <FormAlert message={alert} />
+          <TextField
+            label="Nombre"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            error={errors.name}
           />
-        ))}
-      </ul>
+          <TextField
+            label="Precio"
+            inputMode="decimal"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            error={errors.price}
+          />
+          <Button type="submit" className="w-full">
+            Agregar producto
+          </Button>
+        </form>
+        <div className="space-y-3">
+          {products?.length === 0 && (
+            <p className="text-center text-slate-600">
+              Aún no tienes productos. Agrégalos para vender más rápido.
+            </p>
+          )}
+          <ul className="divide-y divide-slate-200 rounded-xl bg-white shadow-sm">
+            {products?.map((product) => (
+              <ProductRow
+                key={`${product.id}-${product.name}-${product.price}`}
+                product={product}
+                onChanged={reload}
+              />
+            ))}
+          </ul>
+        </div>
+      </div>
     </div>
   );
 }

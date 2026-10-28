@@ -59,7 +59,7 @@ export function ExpenseFormPage() {
   if (!loaded) return <Loading />;
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4" noValidate>
+    <form onSubmit={onSubmit} className="max-w-xl space-y-4" noValidate>
       <h1 className="text-xl font-bold">{id ? 'Editar gasto' : 'Nuevo gasto'}</h1>
       <FormAlert message={alert} />
       <TextField
