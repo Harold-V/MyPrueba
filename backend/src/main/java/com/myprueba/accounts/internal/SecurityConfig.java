@@ -41,8 +41,11 @@ class SecurityConfig {
                         .permitAll()
                         .requestMatchers("/actuator/health", "/v3/api-docs", "/v3/api-docs/**", "/error")
                         .permitAll()
+                        .requestMatchers("/api/**")
+                        .authenticated()
+                        // The built frontend (files and client routes) is public; its data is not.
                         .anyRequest()
-                        .authenticated())
+                        .permitAll())
                 .exceptionHandling(ex -> ex.authenticationEntryPoint((request, response, e) -> {
                     response.setStatus(HttpStatus.UNAUTHORIZED.value());
                     response.setContentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE);

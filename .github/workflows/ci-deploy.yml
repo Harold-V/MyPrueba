@@ -1,0 +1,138 @@
+name: ci-deploy
+
+# Pull requests: the full gate (scripts/verify.sh).
+# Merge to main: the gate, then one image to ghcr.io, then the VM pulls it and restarts.
+# Manual run with a tag: redeploy an earlier image (rollback) without building.
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Image tag to redeploy, e.g. sha-1a2b3c4 (empty = build main and deploy it)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  verify:
+    if: inputs.tag == ''
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: maven
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: bash scripts/verify.sh
+
+  image:
+    needs: verify
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && inputs.tag == ''
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      tag: sha-${{ steps.short.outputs.sha }}
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - id: short
+        run: echo "sha=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+      - uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: meta
+        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=sha,prefix=sha-,format=short
+            type=raw,value=main
+      # arm64 for Oracle's Always Free Ampere VM, amd64 for any other host.
+      - uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    needs: image
+    # Runs once the VM is configured (repository variable DEPLOY_HOST); until then main stays green.
+    if: >-
+      always() && vars.DEPLOY_HOST != '' && github.ref == 'refs/heads/main' &&
+      (needs.image.result == 'success' || (needs.image.result == 'skipped' && inputs.tag != ''))
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://${{ vars.DEPLOY_DOMAIN }}
+    permissions:
+      contents: read
+      packages: read
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    env:
+      HOST: ${{ vars.DEPLOY_HOST }}
+      USER_NAME: ${{ vars.DEPLOY_USER }}
+      DOMAIN: ${{ vars.DEPLOY_DOMAIN }}
+      TAG: ${{ inputs.tag || needs.image.outputs.tag }}
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - name: SSH key and pinned host key
+        env:
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_deploy && chmod 600 ~/.ssh/id_deploy
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+      - name: Copy the stack files
+        run: |
+          ssh -i ~/.ssh/id_deploy "$USER_NAME@$HOST" 'mkdir -p ~/myprueba/data'
+          scp -i ~/.ssh/id_deploy deploy/compose.yaml deploy/Caddyfile deploy/backup.sh "$USER_NAME@$HOST:myprueba/"
+      - name: Pull the image and restart
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          image="ghcr.io/${GITHUB_REPOSITORY,,}:$TAG"
+          # The token travels on stdin, never on a command line or in a file on the VM.
+          printf '%s' "$GHCR_TOKEN" | ssh -i ~/.ssh/id_deploy "$USER_NAME@$HOST" \
+            "set -e; cd ~/myprueba
+             docker login ghcr.io -u '$GITHUB_ACTOR' --password-stdin >/dev/null
+             printf 'APP_IMAGE=%s\nDOMAIN=%s\n' '$image' '$DOMAIN' > .env
+             sudo chown 1000:1000 data
+             ./backup.sh || true
+             docker compose pull --quiet
+             docker compose up -d --wait --wait-timeout 180
+             docker logout ghcr.io >/dev/null
+             docker image prune -f >/dev/null"
+      - name: Check it is live
+        run: |
+          for _ in $(seq 1 30); do
+            if curl -fsS "https://$DOMAIN/actuator/health" | grep -q UP; then echo "live: https://$DOMAIN ($TAG)"; exit 0; fi
+            sleep 5
+          done
+          echo "::error::https://$DOMAIN/actuator/health did not answer UP"
+          exit 1

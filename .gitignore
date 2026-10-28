@@ -149,3 +149,7 @@ scr.log
 .claude/skills/dashboard
 .codex/rsc/dashboard
 .opencode/rsc/dashboard
+.claude/skills/deployment
+.codex/rsc/deployment
+.opencode/rsc/deployment
+backend/src/main/resources/static/

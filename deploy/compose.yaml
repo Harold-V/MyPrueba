@@ -1,0 +1,46 @@
+# Production stack on the VM: the app plus Caddy for HTTPS (Let's Encrypt, renewed by itself).
+# The deploy workflow copies this folder to ~/myprueba and writes .env with APP_IMAGE and DOMAIN.
+services:
+  app:
+    image: ${APP_IMAGE:?set APP_IMAGE in .env}
+    restart: unless-stopped
+    environment:
+      APP_COOKIE_SECURE: "true"
+    volumes:
+      - ./data:/data # the SQLite database lives on the VM disk, outside the container
+    read_only: true
+    tmpfs:
+      - /tmp:exec # sqlite-jdbc unpacks and loads its native library from here
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    healthcheck:
+      # The JRE image has no curl: bash speaks HTTP to the actuator directly.
+      test:
+        - CMD
+        - bash
+        - -c
+        - exec 3<>/dev/tcp/127.0.0.1/8080 && printf 'GET /actuator/health HTTP/1.0\r\n\r\n' >&3 && grep -q UP <&3
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+      retries: 3
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN:?set DOMAIN in .env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      app:
+        condition: service_healthy
+
+volumes:
+  caddy_data:
+  caddy_config:

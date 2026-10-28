@@ -34,3 +34,8 @@ guarda en `backend/data/myprueba.db`; puedes cambiar la ruta con `APP_DB_PATH`.
 Ejecuta formato, lint, tipos, pruebas con cobertura ≥ 80 %, límites de módulos, presupuesto de
 bundle y auditoría de dependencias. Es el listón de la constitución
 (`02-DOCS/wiki/sdd/constitution.md`).
+
+## Desplegar
+
+Cada merge a `main` pasa `verify.sh`, publica la imagen en ghcr.io y la instala en la VM gratis de
+Oracle Cloud. Puesta en marcha y operación: `02-DOCS/wiki/stack/deployment.md`.
