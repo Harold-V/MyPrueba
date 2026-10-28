@@ -21,6 +21,34 @@ export interface Product {
   id: string;
   name: string;
   price: string;
+  cost?: string | null;
+}
+
+export interface InventoryItem {
+  productId: string;
+  name: string;
+  price: string;
+  cost: string | null;
+  tracked: boolean;
+  stock: string | null;
+  minStock: string | null;
+  low: boolean;
+}
+
+export interface Inventory {
+  summary: { tracked: number; lowStock: number; value: string };
+  items: InventoryItem[];
+}
+
+export type StockMovementType =
+  'INITIAL' | 'PURCHASE' | 'LOSS' | 'COUNT' | 'SALE' | 'SALE_EDIT' | 'SALE_DELETE';
+
+export interface StockMovement {
+  type: StockMovementType;
+  change: string;
+  stockAfter: string;
+  note: string | null;
+  occurredAt: string;
 }
 
 export interface SaleItem {

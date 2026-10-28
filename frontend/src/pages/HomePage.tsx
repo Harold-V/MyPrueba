@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { api } from '../api/client';
-import type { Balance, Movement, PeriodRange } from '../api/types';
+import type { Balance, Inventory, Movement, PeriodRange } from '../api/types';
 import { useMe } from '../auth/session-context';
 import { TextField } from '../components/ui';
 import { formatDateTime } from '../lib/dates';
 import { formatMoney } from '../lib/money';
-import { expenseCategories, formMessage, paymentMethods } from '../i18n/es';
+import { expenseCategories, formMessage, lowStockMessage, paymentMethods } from '../i18n/es';
 
 type PeriodName = 'today' | 'week' | 'month' | 'range';
 type Filter = 'all' | 'sales' | 'expenses';
@@ -46,6 +46,30 @@ function Toggle<T extends string>({
         </button>
       ))}
     </div>
+  );
+}
+
+/** Points to the inventory when products are running out; silent if inventory is unavailable. */
+function LowStockBanner() {
+  const [lowStock, setLowStock] = useState(0);
+  useEffect(() => {
+    let active = true;
+    api.get<Inventory>('/api/inventory?lowOnly=true').then(
+      (data) => active && setLowStock(data.summary.lowStock),
+      () => undefined,
+    );
+    return () => {
+      active = false;
+    };
+  }, []);
+  if (lowStock === 0) return null;
+  return (
+    <Link
+      to="/inventario"
+      className="block rounded-xl border border-amber-300 bg-amber-50 p-3 font-medium text-amber-900"
+    >
+      ⚠ {lowStockMessage(lowStock)}. Revisa tu inventario.
+    </Link>
   );
 }
 
@@ -90,6 +114,7 @@ export function HomePage() {
 
   return (
     <div className="space-y-5">
+      <LowStockBanner />
       <div className="lg:max-w-md">
         <Toggle label="Periodo" options={periods} value={period} onChange={setPeriod} />
       </div>

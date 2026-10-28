@@ -6,6 +6,7 @@ import { Loading } from './ui';
 const navItems: [to: string, label: string][] = [
   ['/', 'Inicio'],
   ['/productos', 'Productos'],
+  ['/inventario', 'Inventario'],
   ['/negocio', 'Negocio'],
 ];
 

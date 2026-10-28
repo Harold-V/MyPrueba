@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { api, ApiError } from '../api/client';
+import { api, ApiError, compact } from '../api/client';
 import type { Product } from '../api/types';
 import { ConfirmDelete } from '../components/ConfirmDelete';
 import { Button, FormAlert, TextField } from '../components/ui';
@@ -28,12 +28,17 @@ function ProductRow({ product, onChanged }: { product: Product; onChanged: () =>
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(product.name);
   const [price, setPrice] = useState(product.price.replace(/\.00$/, ''));
+  const [cost, setCost] = useState(product.cost?.replace(/\.00$/, '') ?? '');
   const { errors, alert, clear, fail } = useProductErrors();
 
   async function onSave(event: FormEvent) {
     event.preventDefault();
     try {
-      await api.put(`/api/products/${product.id}`, { name, price: normalizeAmount(price) });
+      await api.put(`/api/products/${product.id}`, {
+        name,
+        price: normalizeAmount(price),
+        cost: normalizeAmount(cost) || null,
+      });
       clear();
       setEditing(false);
       onChanged();
@@ -68,6 +73,13 @@ function ProductRow({ product, onChanged }: { product: Product; onChanged: () =>
             value={price}
             onChange={(e) => setPrice(e.target.value)}
             error={errors.price}
+          />
+          <TextField
+            label={`Costo de ${product.name} (opcional)`}
+            inputMode="decimal"
+            value={cost}
+            onChange={(e) => setCost(e.target.value)}
+            error={errors.cost}
           />
           <div className="flex gap-2">
             <Button type="submit" aria-label={`Guardar ${product.name}`}>
@@ -111,6 +123,7 @@ export function ProductsPage() {
   const [products, setProducts] = useState<Product[] | null>(null);
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
+  const [cost, setCost] = useState('');
   const [version, setVersion] = useState(0);
   const { errors, alert, clear, fail } = useProductErrors();
 
@@ -128,9 +141,13 @@ export function ProductsPage() {
   async function onCreate(event: FormEvent) {
     event.preventDefault();
     try {
-      await api.post('/api/products', { name, price: normalizeAmount(price) });
+      await api.post(
+        '/api/products',
+        compact({ name, price: normalizeAmount(price), cost: normalizeAmount(cost) }),
+      );
       setName('');
       setPrice('');
+      setCost('');
       clear();
       reload();
     } catch (error) {
@@ -160,6 +177,14 @@ export function ProductsPage() {
             value={price}
             onChange={(e) => setPrice(e.target.value)}
             error={errors.price}
+          />
+          <TextField
+            label="Costo (opcional)"
+            inputMode="decimal"
+            hint="Lo que te cuesta a ti. Sirve para valorar tu inventario."
+            value={cost}
+            onChange={(e) => setCost(e.target.value)}
+            error={errors.cost}
           />
           <Button type="submit" className="w-full">
             Agregar producto

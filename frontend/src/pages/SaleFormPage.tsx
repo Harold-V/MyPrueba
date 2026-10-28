@@ -1,13 +1,14 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useParams } from 'react-router';
 import { api, compact } from '../api/client';
-import type { PaymentMethod, Product, Sale } from '../api/types';
+import type { Inventory, InventoryItem, PaymentMethod, Product, Sale } from '../api/types';
 import { useMe } from '../auth/session-context';
 import { ConfirmDelete } from '../components/ConfirmDelete';
 import { Button, FormAlert, Loading, SelectField, TextField } from '../components/ui';
 import { paymentMethods } from '../i18n/es';
 import { localDateOf, todayIn } from '../lib/dates';
 import { formatMoney, lineTotal, normalizeAmount, sumAmounts } from '../lib/money';
+import { normalizeQuantity, toMilli } from '../lib/quantity';
 import { occurredAtFor, useMovementForm } from './useMovementForm';
 
 interface Line {
@@ -19,7 +20,10 @@ interface Line {
   unitPrice: string;
 }
 
-const normalizeQuantity = (value: string) => value.trim().replace(',', '.');
+function productLabel(product: Product, item: InventoryItem | undefined): string {
+  const label = `${product.name} — ${formatMoney(product.price)}`;
+  return item?.tracked ? `${label} · ${item.stock} disponibles` : label;
+}
 
 export function SaleFormPage() {
   const { id } = useParams();
@@ -27,6 +31,9 @@ export function SaleFormPage() {
   const { errors, alert, busy, save, remove, fail } = useMovementForm('/api/sales', id);
   const [loaded, setLoaded] = useState(!id);
   const [products, setProducts] = useState<Product[]>([]);
+  const [stock, setStock] = useState<Record<string, InventoryItem>>({});
+  // Quantities this sale already took from stock, so editing it does not warn about its own units.
+  const [originalQuantities, setOriginalQuantities] = useState<Record<string, string>>({});
   const [kind, setKind] = useState<'FREE' | 'ITEMS'>('FREE');
   const [amount, setAmount] = useState('');
   const [lines, setLines] = useState<Line[]>([]);
@@ -38,6 +45,10 @@ export function SaleFormPage() {
 
   useEffect(() => {
     api.get<Product[]>('/api/products').then(setProducts, fail);
+    api.get<Inventory>('/api/inventory').then(
+      (data) => setStock(Object.fromEntries(data.items.map((item) => [item.productId, item]))),
+      () => undefined,
+    );
     if (!id) return;
     api.get<Sale>(`/api/sales/${id}`).then((sale) => {
       setKind(sale.kind);
@@ -50,6 +61,11 @@ export function SaleFormPage() {
           quantity: item.quantity,
           unitPrice: item.unitPrice,
         })),
+      );
+      setOriginalQuantities(
+        Object.fromEntries(
+          sale.items.filter((i) => i.productId).map((i) => [i.productId!, i.quantity]),
+        ),
       );
       setConcept(sale.concept ?? '');
       setPaymentMethod(sale.paymentMethod);
@@ -66,6 +82,17 @@ export function SaleFormPage() {
     lineTotal(normalizeQuantity(line.quantity), normalizeAmount(line.unitPrice)),
   );
   const total = sumAmounts(lineTotals.map((t) => t ?? '0'));
+
+  /** Available units when the line asks for more than the stock (plus what this sale already took). */
+  function shortage(line: Line): string | null {
+    const item = line.productId ? stock[line.productId] : undefined;
+    if (!item?.tracked || item.stock === null) return null;
+    const available =
+      (toMilli(item.stock) ?? 0n) + (toMilli(originalQuantities[line.productId!] ?? '0') ?? 0n);
+    const wanted = toMilli(line.quantity);
+    if (wanted === null || wanted <= available) return null;
+    return item.stock;
+  }
 
   function addProduct(productId: string) {
     const product = products.find((p) => p.id === productId);
@@ -145,7 +172,7 @@ export function SaleFormPage() {
             options={Object.fromEntries(
               products
                 .filter((p) => !lines.some((l) => l.productId === p.id))
-                .map((p) => [p.id, `${p.name} — ${formatMoney(p.price)}`]),
+                .map((p) => [p.id, productLabel(p, stock[p.id])]),
             )}
             value=""
             onChange={(e) => addProduct(e.target.value)}
@@ -185,6 +212,11 @@ export function SaleFormPage() {
                     error={errors[`items[${index}].unitPrice`]}
                   />
                 </div>
+                {shortage(line) && (
+                  <p className="mt-2 text-sm text-amber-800">
+                    Solo hay {shortage(line)} en inventario. La venta se registrará igual.
+                  </p>
+                )}
               </li>
             ))}
           </ul>

@@ -1,5 +1,10 @@
 // Every user-visible text lives here (constitution principle 12).
-import type { BusinessCategory, ExpenseCategory, PaymentMethod } from '../api/types';
+import type {
+  BusinessCategory,
+  ExpenseCategory,
+  PaymentMethod,
+  StockMovementType,
+} from '../api/types';
 
 export const BRAND = 'MyPrueba';
 
@@ -31,6 +36,26 @@ export const expenseCategories: Record<ExpenseCategory, string> = {
   OTHER: 'Otros',
 };
 
+export const stockMovementTypes: Record<StockMovementType, string> = {
+  INITIAL: 'Stock inicial',
+  PURCHASE: 'Entrada',
+  LOSS: 'Pérdida',
+  COUNT: 'Conteo',
+  SALE: 'Venta',
+  SALE_EDIT: 'Venta editada',
+  SALE_DELETE: 'Venta eliminada',
+};
+
+export const adjustmentTypes = {
+  PURCHASE: 'Entrada (compra de mercancía)',
+  LOSS: 'Pérdida o daño',
+  COUNT: 'Conteo físico (fija el stock)',
+};
+
+export function lowStockMessage(count: number): string {
+  return count === 1 ? '1 producto con stock bajo' : `${count} productos con stock bajo`;
+}
+
 const fieldMessages: Record<string, string> = {
   required: 'Este campo es obligatorio.',
   too_short: 'Debe tener al menos 8 caracteres.',
@@ -53,6 +78,7 @@ const formMessages: Record<string, string> = {
   not_found: 'No encontramos este registro.',
   network_error: 'No hay conexión. Revisa tu internet e intenta de nuevo.',
   validation_failed: 'Revisa los campos marcados.',
+  not_tracked: 'Este producto no tiene control de inventario.',
 };
 
 export function fieldMessage(code: string): string {
