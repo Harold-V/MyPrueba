@@ -4,11 +4,13 @@ import com.myprueba.catalog.ProductCatalog;
 import com.myprueba.catalog.ProductCreated;
 import com.myprueba.catalog.ProductView;
 import com.myprueba.shared.ConflictException;
+import com.myprueba.shared.Ids;
 import com.myprueba.shared.Money;
 import com.myprueba.shared.NotFoundException;
 import com.myprueba.shared.Quantity;
 import com.myprueba.shared.Text;
 import com.myprueba.shared.Violations;
+import java.text.Normalizer;
 import java.time.Clock;
 import java.util.List;
 import java.util.Locale;
@@ -22,76 +24,145 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 class ProductService implements ProductCatalog {
 
-    private record Input(String name, String nameKey, long priceCents, Long costCents) {}
+    static final int MAX_NAME = 80;
+    static final int MAX_BARCODE = 40;
+    static final String VARIANT_SEPARATOR = " — ";
+
+    /** A validated product ready to store, with the stock it starts with. */
+    record Draft(
+            String name,
+            long priceCents,
+            Long costCents,
+            UUID categoryId,
+            String barcode,
+            UUID groupId,
+            String variant,
+            long stockMilli,
+            Long minStockMilli) {}
 
     private final ProductRepository products;
+    private final CategoryService categories;
     private final Clock clock;
     private final ApplicationEventPublisher events;
 
-    ProductService(ProductRepository products, Clock clock, ApplicationEventPublisher events) {
+    ProductService(
+            ProductRepository products, CategoryService categories, Clock clock, ApplicationEventPublisher events) {
         this.products = products;
+        this.categories = categories;
         this.clock = clock;
         this.events = events;
     }
 
+    /** Uniqueness key of names: case-insensitive. */
+    static String key(String name) {
+        return name.toLowerCase(Locale.ROOT);
+    }
+
+    /** Search key: case- and accent-insensitive ("Jabón" matches "jabon"). */
+    static String fold(String text) {
+        return Normalizer.normalize(text, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "")
+                .toLowerCase(Locale.ROOT);
+    }
+
+    static String variantName(String groupName, String variant) {
+        return groupName + VARIANT_SEPARATOR + variant;
+    }
+
     @Override
     public Optional<ProductView> find(UUID businessId, UUID productId) {
-        return products.find(businessId, productId);
+        return products.find(businessId, productId).map(ProductRow::view);
     }
 
     @Override
     public List<ProductView> list(UUID businessId) {
-        return products.findAll(businessId);
+        return products.findAll(businessId).stream().map(ProductRow::view).toList();
+    }
+
+    @Override
+    public List<ProductView> search(UUID businessId, UUID categoryId, String query) {
+        return rows(businessId, categoryId, query).stream()
+                .map(ProductRow::view)
+                .toList();
+    }
+
+    List<ProductRow> rows(UUID businessId, UUID categoryId, String query) {
+        String folded = query == null || query.isBlank() ? null : fold(query.strip());
+        return products.findAll(businessId).stream()
+                .filter(p -> categoryId == null || categoryId.equals(p.categoryId()))
+                .filter(p -> folded == null
+                        || fold(p.name()).contains(folded)
+                        || (p.barcode() != null && fold(p.barcode()).contains(folded)))
+                .toList();
     }
 
     @Transactional
-    ProductView create(UUID businessId, ProductRequest request) {
-        Input input = parse(request);
-        InitialStock stock = initialStock(request);
-        if (products.nameTaken(businessId, input.nameKey(), null)) {
-            throw new ConflictException("product_name_taken");
-        }
+    ProductRow create(UUID businessId, ProductRequest request) {
+        Violations violations = new Violations();
+        String name = violations.capture(() -> Text.required("name", request.name(), MAX_NAME));
+        Long price = violations.capture(() -> Money.parseCents("price", request.price()));
+        Long cost = violations.capture(() -> optionalMoney("cost", request.cost()));
+        UUID categoryId = violations.capture(() -> Ids.optional("categoryId", request.categoryId()));
+        String barcode = violations.capture(() -> Text.optional("barcode", request.barcode(), MAX_BARCODE));
+        Long stock = violations.capture(() -> optionalQuantity("stock", request.stock()));
+        Long min = violations.capture(() -> optionalQuantity("minStock", request.minStock()));
+        violations.throwIfAny();
+        categories.require(businessId, categoryId);
+        return insert(
+                businessId,
+                new Draft(name, price, cost, categoryId, barcode, null, null, stock == null ? 0 : stock, min));
+    }
+
+    /** Stores a validated product and gives it its starting stock (shared by groups and imports). */
+    ProductRow insert(UUID businessId, Draft draft) {
+        checkUnique(businessId, draft.name(), draft.barcode(), null);
         UUID id = UUID.randomUUID();
         try {
             products.insert(
                     businessId,
-                    id,
-                    input.name(),
-                    input.nameKey(),
-                    input.priceCents(),
-                    input.costCents(),
+                    new ProductRepository.NewProduct(
+                            id,
+                            draft.name(),
+                            draft.priceCents(),
+                            draft.costCents(),
+                            draft.categoryId(),
+                            draft.barcode(),
+                            draft.groupId(),
+                            draft.variant()),
                     clock.instant());
         } catch (DuplicateKeyException e) {
             throw new ConflictException("product_name_taken");
         }
-        events.publishEvent(new ProductCreated(businessId, id, stock.initial(), stock.min()));
-        return new ProductView(id, input.name(), input.priceCents(), input.costCents());
-    }
-
-    private record InitialStock(long initial, Long min) {}
-
-    private static InitialStock initialStock(ProductRequest request) {
-        Violations violations = new Violations();
-        Long initial = request.stock() == null || request.stock().isBlank()
-                ? Long.valueOf(0)
-                : violations.capture(() -> Quantity.parseNonNegativeMilli("stock", request.stock()));
-        Long min = request.minStock() == null || request.minStock().isBlank()
-                ? null
-                : violations.capture(() -> Quantity.parseNonNegativeMilli("minStock", request.minStock()));
-        violations.throwIfAny();
-        return new InitialStock(initial, min);
+        events.publishEvent(new ProductCreated(businessId, id, draft.stockMilli(), draft.minStockMilli()));
+        return products.find(businessId, id).orElseThrow();
     }
 
     @Transactional
-    ProductView update(UUID businessId, UUID id, ProductRequest request) {
-        Input input = parse(request);
-        products.find(businessId, id).orElseThrow(NotFoundException::new);
-        if (products.nameTaken(businessId, input.nameKey(), id)) {
-            throw new ConflictException("product_name_taken");
+    ProductRow update(UUID businessId, UUID id, ProductRequest request) {
+        ProductRow existing = products.find(businessId, id).orElseThrow(NotFoundException::new);
+        boolean variant = existing.groupId() != null;
+        Violations violations = new Violations();
+        // A variant is renamed through its label; its name and category follow its group.
+        String label = variant ? violations.capture(() -> Text.required("variant", request.variant(), 36)) : null;
+        String name = variant
+                ? (label == null ? null : variantName(existing.groupName(), label))
+                : violations.capture(() -> Text.required("name", request.name(), MAX_NAME));
+        Long price = violations.capture(() -> Money.parseCents("price", request.price()));
+        Long cost = violations.capture(() -> optionalMoney("cost", request.cost()));
+        UUID categoryId = variant
+                ? existing.categoryId()
+                : violations.capture(() -> Ids.optional("categoryId", request.categoryId()));
+        String barcode = violations.capture(() -> Text.optional("barcode", request.barcode(), MAX_BARCODE));
+        violations.throwIfAny();
+        if (!variant) {
+            categories.require(businessId, categoryId);
         }
+        checkUnique(businessId, name, barcode, id);
         products.update(
-                businessId, id, input.name(), input.nameKey(), input.priceCents(), input.costCents(), clock.instant());
-        return new ProductView(id, input.name(), input.priceCents(), input.costCents());
+                businessId,
+                new ProductRepository.NewProduct(id, name, price, cost, categoryId, barcode, existing.groupId(), label),
+                clock.instant());
+        return products.find(businessId, id).orElseThrow();
     }
 
     @Transactional
@@ -101,14 +172,28 @@ class ProductService implements ProductCatalog {
         }
     }
 
-    private static Input parse(ProductRequest request) {
-        Violations violations = new Violations();
-        String name = violations.capture(() -> Text.required("name", request.name(), 80));
-        Long price = violations.capture(() -> Money.parseCents("price", request.price()));
-        Long cost = request.cost() == null || request.cost().isBlank()
-                ? null
-                : violations.capture(() -> Money.parseCents("cost", request.cost()));
-        violations.throwIfAny();
-        return new Input(name, name.toLowerCase(Locale.ROOT), price, cost);
+    void checkUnique(UUID businessId, String name, String barcode, UUID exceptId) {
+        if (products.nameTaken(businessId, key(name), exceptId)) {
+            throw new ConflictException("product_name_taken");
+        }
+        if (barcode != null && products.barcodeTaken(businessId, barcode, exceptId)) {
+            throw new ConflictException("barcode_taken");
+        }
+    }
+
+    boolean nameTaken(UUID businessId, String name) {
+        return products.nameTaken(businessId, key(name), null);
+    }
+
+    boolean barcodeTaken(UUID businessId, String barcode) {
+        return products.barcodeTaken(businessId, barcode, null);
+    }
+
+    static Long optionalMoney(String field, String raw) {
+        return raw == null || raw.isBlank() ? null : Money.parseCents(field, raw);
+    }
+
+    static Long optionalQuantity(String field, String raw) {
+        return raw == null || raw.isBlank() ? null : Quantity.parseNonNegativeMilli(field, raw);
     }
 }

@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -44,7 +45,8 @@ class InventoryService {
         this.clock = clock;
     }
 
-    InventoryResponse overview(UUID businessId, boolean lowOnly) {
+    /** The summary covers every product; the list only those matching the filters. */
+    InventoryResponse overview(UUID businessId, boolean lowOnly, UUID categoryId, String query) {
         Map<UUID, Stock> stocks = inventory.findAll(businessId);
         List<ProductView> products = catalog.list(businessId);
         List<InventoryItem> items = products.stream()
@@ -58,8 +60,16 @@ class InventoryService {
                 value = Money.add(value, Money.lineTotalCents(stock.quantityMilli(), product.costCents()));
             }
         }
-        List<InventoryItem> shown =
-                lowOnly ? items.stream().filter(InventoryItem::low).toList() : items;
+        boolean filtered = categoryId != null || (query != null && !query.isBlank());
+        Set<UUID> matching = filtered
+                ? catalog.search(businessId, categoryId, query).stream()
+                        .map(ProductView::id)
+                        .collect(Collectors.toSet())
+                : null;
+        List<InventoryItem> shown = items.stream()
+                .filter(item -> !lowOnly || item.low())
+                .filter(item -> matching == null || matching.contains(item.productId()))
+                .toList();
         return new InventoryResponse(new InventorySummary(items.size(), low, Money.format(value)), shown);
     }
 

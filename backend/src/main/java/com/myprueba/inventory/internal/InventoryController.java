@@ -28,8 +28,11 @@ class InventoryController {
     }
 
     @GetMapping
-    InventoryResponse overview(@RequestParam(defaultValue = "false") boolean lowOnly) {
-        return inventory.overview(business.id(), lowOnly);
+    InventoryResponse overview(
+            @RequestParam(defaultValue = "false") boolean lowOnly,
+            @RequestParam(required = false) String categoryId,
+            @RequestParam(required = false) String q) {
+        return inventory.overview(business.id(), lowOnly, Ids.optional("categoryId", categoryId), q);
     }
 
     @PutMapping(path = "/{productId}", consumes = MediaType.APPLICATION_JSON_VALUE)

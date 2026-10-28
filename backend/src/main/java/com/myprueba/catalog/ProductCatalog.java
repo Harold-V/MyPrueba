@@ -11,4 +11,10 @@ public interface ProductCatalog {
 
     /** Every product of {@code businessId}, ordered by name. */
     List<ProductView> list(UUID businessId);
+
+    /**
+     * Products of {@code businessId} in {@code categoryId} (any when {@code null}) whose name or
+     * barcode contains {@code query} (any when blank), ignoring case and accents; ordered by name.
+     */
+    List<ProductView> search(UUID businessId, UUID categoryId, String query);
 }

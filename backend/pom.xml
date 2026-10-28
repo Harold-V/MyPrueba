@@ -20,6 +20,7 @@
   <properties>
     <java.version>25</java.version>
     <spring-modulith.version>2.1.2</spring-modulith.version>
+    <fastexcel.version>0.20.2</fastexcel.version>
     <sqlite-jdbc.version>3.53.4.0</sqlite-jdbc.version>
     <springdoc.version>3.2.0</springdoc.version>
     <spotless.version>3.10.4</spotless.version>
@@ -73,7 +74,18 @@
       <artifactId>springdoc-openapi-starter-webmvc-api</artifactId>
       <version>${springdoc.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.dhatim</groupId>
+      <artifactId>fastexcel-reader</artifactId>
+      <version>${fastexcel.version}</version>
+    </dependency>
 
+    <dependency>
+      <groupId>org.dhatim</groupId>
+      <artifactId>fastexcel</artifactId>
+      <version>${fastexcel.version}</version>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
