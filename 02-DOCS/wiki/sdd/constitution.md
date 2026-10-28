@@ -5,12 +5,12 @@ description: The non-negotiable principles every rsc-sdd phase obeys.
 tags: [sdd, constitution]
 timestamp: 2026-10-28T05:10:00Z
 topic: sdd
-version: v1.0.0
+version: v1.1.0
 ---
 
 # MyPrueba — Constitution
 
-> Version: v1.0.0 · Ratified: 2026-10-28 · Last amended: 2026-10-28
+> Version: v1.1.0 · Ratified: 2026-10-28 · Last amended: 2026-10-28
 > Principios no negociables que obedece cada fase rsc-sdd. Las mecánicas del stack viven en
 > `02-DOCS/wiki/stack/*`; este archivo ratifica el principio y enlaza el detalle.
 > Objetivo: réplica funcional clean-room de Treinta (gestión para micronegocios), analizada con
@@ -43,12 +43,16 @@ version: v1.0.0
 9. Un módulo Spring Modulith por dominio de negocio (p. ej. ventas, gastos, inventario, clientes,
    deudas, reportes). Un módulo usa otro solo por su API pública o por eventos de dominio; nunca por
    sus paquetes internos.
-10. Dinero: `BigDecimal` en Java, enteros o strings decimales en JSON y `NUMERIC`/`DECIMAL` en BD;
-    nunca `double`/`float`. Moneda explícita (ISO 4217, por defecto COP).
+~~10. Dinero: `BigDecimal` en Java, enteros o strings decimales en JSON y `NUMERIC`/`DECIMAL` en BD;
+    nunca `double`/`float`. Moneda explícita (ISO 4217, por defecto COP).~~ (superseded by 23)
 11. Errores de API en formato RFC 9457 (Problem Details); JSON en camelCase; fechas ISO 8601 con
     zona.
 12. Identificadores, código y commits en inglés; textos de UI en español, centralizados para i18n.
 13. Commits con gitmoji + Conventional Commits: `✨ feat(scope): subject`. Enforced: `gitmoji-guard`.
+
+23. Dinero: `BigDecimal` en Java y strings decimales en JSON; en BD, montos como `BIGINT` en
+    centavos y cantidades como `BIGINT` en milésimas; nunca `double`/`float` ni `NUMERIC` en SQLite.
+    Moneda explícita (ISO 4217, por defecto COP).
 
 ## 4. Branching & shipping
 
@@ -91,7 +95,7 @@ Un cambio entra solo si se cumple TODO:
 
 - [ ] Formato y lint limpios; TypeScript strict pasa (principios 5-6).
 - [ ] Tests en verde, cobertura ≥ 80 % en código cambiado, `ApplicationModules.verify()` pasa (7-8).
-- [ ] Convenciones de módulos, dinero, API, idioma y commits cumplidas (9-13).
+- [ ] Convenciones de módulos, dinero, API, idioma y commits cumplidas (9, 11-13, 23).
 - [ ] En rama, entra por PR, autoría humana (14-15).
 - [ ] Sin secretos; autenticación y aislamiento por negocio probados (16-17).
 - [ ] Nada de Treinta copiado; evidencia REA citada o marcada `sin verificar` (18, 22).
@@ -104,3 +108,4 @@ Un cambio entra solo si se cumple TODO:
 |------|---------|--------|-----|
 | 2026-10-28 | draft | Borrador generado por `rsc onboard`. | El SDD necesita una constitución. |
 | 2026-10-28 | v1.0.0 | Ratificada: stack Java 25/Boot 4/Modulith + React/Vite/Tailwind, SQLite portable a PostgreSQL, clean-room. | Arranque del proyecto. Ratificada por el usuario el 2026-10-28. |
+| 2026-10-28 | v1.1.0 | Principio 10 sustituido por 23: dinero en BD como BIGINT en centavos y cantidades en milésimas. | SQLite guarda NUMERIC como coma flotante; ratificado por el usuario. Specs y planes existentes: sin cambio de comportamiento. |
