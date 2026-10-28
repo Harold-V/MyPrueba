@@ -2,6 +2,7 @@ package com.myprueba.ledger.internal;
 
 import com.myprueba.catalog.ProductCatalog;
 import com.myprueba.catalog.ProductView;
+import com.myprueba.ledger.SaleItemsChanged;
 import com.myprueba.shared.Money;
 import com.myprueba.shared.NotFoundException;
 import com.myprueba.shared.Quantity;
@@ -9,10 +10,12 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,11 +25,13 @@ class LedgerService {
     private final LedgerRepository ledger;
     private final ProductCatalog catalog;
     private final Clock clock;
+    private final ApplicationEventPublisher events;
 
-    LedgerService(LedgerRepository ledger, ProductCatalog catalog, Clock clock) {
+    LedgerService(LedgerRepository ledger, ProductCatalog catalog, Clock clock, ApplicationEventPublisher events) {
         this.ledger = ledger;
         this.catalog = catalog;
         this.clock = clock;
+        this.events = events;
     }
 
     // --- sales -------------------------------------------------------------------------------
@@ -37,15 +42,17 @@ class LedgerService {
         SaleData sale = resolve(businessId, LedgerInput.sale(request, zone, now));
         UUID id = UUID.randomUUID();
         ledger.insertSale(businessId, id, sale, now);
+        publish(businessId, id, SaleItemsChanged.Kind.RECORDED, List.of(), sale.lines());
         return toResponse(id, sale);
     }
 
     @Transactional
     SaleResponse updateSale(UUID businessId, ZoneId zone, UUID id, SaleRequest request) {
         Instant now = clock.instant();
-        ledger.findSale(businessId, id).orElseThrow(NotFoundException::new);
+        SaleData previous = ledger.findSale(businessId, id).orElseThrow(NotFoundException::new);
         SaleData sale = resolve(businessId, LedgerInput.sale(request, zone, now));
         ledger.updateSale(businessId, id, sale, now);
+        publish(businessId, id, SaleItemsChanged.Kind.EDITED, previous.lines(), sale.lines());
         return toResponse(id, sale);
     }
 
@@ -55,9 +62,26 @@ class LedgerService {
 
     @Transactional
     void deleteSale(UUID businessId, UUID id) {
-        if (ledger.deleteSale(businessId, id) == 0) {
-            throw new NotFoundException();
+        SaleData previous = ledger.findSale(businessId, id).orElseThrow(NotFoundException::new);
+        ledger.deleteSale(businessId, id);
+        publish(businessId, id, SaleItemsChanged.Kind.DELETED, previous.lines(), List.of());
+    }
+
+    private void publish(
+            UUID businessId, UUID saleId, SaleItemsChanged.Kind kind, List<SaleLine> before, List<SaleLine> after) {
+        Map<UUID, Long> previous = quantities(before);
+        Map<UUID, Long> current = quantities(after);
+        if (!previous.isEmpty() || !current.isEmpty()) {
+            events.publishEvent(new SaleItemsChanged(businessId, saleId, kind, previous, current));
         }
+    }
+
+    private static Map<UUID, Long> quantities(List<SaleLine> lines) {
+        Map<UUID, Long> quantities = new HashMap<>();
+        lines.stream()
+                .filter(line -> line.productId() != null)
+                .forEach(line -> quantities.merge(line.productId(), line.quantityMilli(), Long::sum));
+        return Map.copyOf(quantities);
     }
 
     private SaleData resolve(UUID businessId, LedgerInput.SaleInput input) {

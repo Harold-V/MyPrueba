@@ -25,6 +25,14 @@ public final class Quantity {
         return milli;
     }
 
+    /** Like {@link #parseMilli} but accepts zero, for counts. */
+    public static long parseNonNegativeMilli(String field, String raw) {
+        if (raw != null && FORMAT.matcher(raw.strip()).matches() && new BigDecimal(raw.strip()).signum() == 0) {
+            return 0;
+        }
+        return parseMilli(field, raw);
+    }
+
     public static String format(long milli) {
         return BigDecimal.valueOf(milli, 3).stripTrailingZeros().toPlainString();
     }

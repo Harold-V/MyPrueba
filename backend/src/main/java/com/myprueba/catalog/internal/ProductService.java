@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 class ProductService implements ProductCatalog {
 
-    private record Input(String name, String nameKey, long priceCents) {}
+    private record Input(String name, String nameKey, long priceCents, Long costCents) {}
 
     private final ProductRepository products;
     private final Clock clock;
@@ -34,7 +34,8 @@ class ProductService implements ProductCatalog {
         return products.find(businessId, productId);
     }
 
-    List<ProductView> list(UUID businessId) {
+    @Override
+    public List<ProductView> list(UUID businessId) {
         return products.findAll(businessId);
     }
 
@@ -46,11 +47,18 @@ class ProductService implements ProductCatalog {
         }
         UUID id = UUID.randomUUID();
         try {
-            products.insert(businessId, id, input.name(), input.nameKey(), input.priceCents(), clock.instant());
+            products.insert(
+                    businessId,
+                    id,
+                    input.name(),
+                    input.nameKey(),
+                    input.priceCents(),
+                    input.costCents(),
+                    clock.instant());
         } catch (DuplicateKeyException e) {
             throw new ConflictException("product_name_taken");
         }
-        return new ProductView(id, input.name(), input.priceCents());
+        return new ProductView(id, input.name(), input.priceCents(), input.costCents());
     }
 
     @Transactional
@@ -60,8 +68,9 @@ class ProductService implements ProductCatalog {
         if (products.nameTaken(businessId, input.nameKey(), id)) {
             throw new ConflictException("product_name_taken");
         }
-        products.update(businessId, id, input.name(), input.nameKey(), input.priceCents(), clock.instant());
-        return new ProductView(id, input.name(), input.priceCents());
+        products.update(
+                businessId, id, input.name(), input.nameKey(), input.priceCents(), input.costCents(), clock.instant());
+        return new ProductView(id, input.name(), input.priceCents(), input.costCents());
     }
 
     @Transactional
@@ -75,7 +84,10 @@ class ProductService implements ProductCatalog {
         Violations violations = new Violations();
         String name = violations.capture(() -> Text.required("name", request.name(), 80));
         Long price = violations.capture(() -> Money.parseCents("price", request.price()));
+        Long cost = request.cost() == null || request.cost().isBlank()
+                ? null
+                : violations.capture(() -> Money.parseCents("cost", request.cost()));
         violations.throwIfAny();
-        return new Input(name, name.toLowerCase(Locale.ROOT), price);
+        return new Input(name, name.toLowerCase(Locale.ROOT), price, cost);
     }
 }

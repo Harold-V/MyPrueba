@@ -54,6 +54,10 @@ class ProductController {
     }
 
     private static ProductResponse toResponse(ProductView product) {
-        return new ProductResponse(product.id(), product.name(), Money.format(product.priceCents()));
+        return new ProductResponse(
+                product.id(),
+                product.name(),
+                Money.format(product.priceCents()),
+                product.costCents() == null ? null : Money.format(product.costCents()));
     }
 }

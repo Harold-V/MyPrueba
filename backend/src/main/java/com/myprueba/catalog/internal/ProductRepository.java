@@ -13,8 +13,11 @@ import org.springframework.stereotype.Repository;
 @Repository
 class ProductRepository {
 
-    private static final RowMapper<ProductView> MAPPER = (rs, n) ->
-            new ProductView(UUID.fromString(rs.getString("id")), rs.getString("name"), rs.getLong("price_cents"));
+    private static final RowMapper<ProductView> MAPPER = (rs, n) -> new ProductView(
+            UUID.fromString(rs.getString("id")),
+            rs.getString("name"),
+            rs.getLong("price_cents"),
+            rs.getObject("cost_cents") == null ? null : rs.getLong("cost_cents"));
 
     private final JdbcClient jdbc;
 
@@ -23,14 +26,15 @@ class ProductRepository {
     }
 
     List<ProductView> findAll(UUID businessId) {
-        return jdbc.sql("SELECT id, name, price_cents FROM products WHERE business_id = ? ORDER BY name_key, id")
+        return jdbc.sql(
+                        "SELECT id, name, price_cents, cost_cents FROM products WHERE business_id = ? ORDER BY name_key, id")
                 .param(businessId.toString())
                 .query(MAPPER)
                 .list();
     }
 
     Optional<ProductView> find(UUID businessId, UUID id) {
-        return jdbc.sql("SELECT id, name, price_cents FROM products WHERE business_id = ? AND id = ?")
+        return jdbc.sql("SELECT id, name, price_cents, cost_cents FROM products WHERE business_id = ? AND id = ?")
                 .params(businessId.toString(), id.toString())
                 .query(MAPPER)
                 .optional();
@@ -44,10 +48,10 @@ class ProductRepository {
                 > 0;
     }
 
-    void insert(UUID businessId, UUID id, String name, String nameKey, long priceCents, Instant now) {
+    void insert(UUID businessId, UUID id, String name, String nameKey, long priceCents, Long costCents, Instant now) {
         jdbc.sql("""
-                        INSERT INTO products (id, business_id, name, name_key, price_cents, created_at, updated_at)
-                        VALUES (?, ?, ?, ?, ?, ?, ?)
+                        INSERT INTO products (id, business_id, name, name_key, price_cents, cost_cents, created_at, updated_at)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                         """)
                 .params(
                         id.toString(),
@@ -55,17 +59,18 @@ class ProductRepository {
                         name,
                         nameKey,
                         priceCents,
+                        costCents,
                         Timestamp.from(now),
                         Timestamp.from(now))
                 .update();
     }
 
-    int update(UUID businessId, UUID id, String name, String nameKey, long priceCents, Instant now) {
+    int update(UUID businessId, UUID id, String name, String nameKey, long priceCents, Long costCents, Instant now) {
         return jdbc.sql("""
-                        UPDATE products SET name = ?, name_key = ?, price_cents = ?, updated_at = ?
+                        UPDATE products SET name = ?, name_key = ?, price_cents = ?, cost_cents = ?, updated_at = ?
                         WHERE business_id = ? AND id = ?
                         """)
-                .params(name, nameKey, priceCents, Timestamp.from(now), businessId.toString(), id.toString())
+                .params(name, nameKey, priceCents, costCents, Timestamp.from(now), businessId.toString(), id.toString())
                 .update();
     }
 

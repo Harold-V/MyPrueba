@@ -25,6 +25,20 @@ class QuantityTest {
     }
 
     @Test
+    void countsMayBeZeroButNotNegative() {
+        assertThat(Quantity.parseNonNegativeMilli("quantity", "0")).isZero();
+        assertThat(Quantity.parseNonNegativeMilli("quantity", "0.000")).isZero();
+        assertThat(Quantity.parseNonNegativeMilli("quantity", "1.5")).isEqualTo(1500);
+        assertThatThrownBy(() -> Quantity.parseNonNegativeMilli("quantity", "-1"))
+                .isInstanceOf(ValidationException.class);
+    }
+
+    @Test
+    void formatsNegativeQuantities() {
+        assertThat(Quantity.format(-2000)).isEqualTo("-2");
+    }
+
+    @Test
     void formatsWithoutTrailingZeros() {
         assertThat(Quantity.format(2000)).isEqualTo("2");
         assertThat(Quantity.format(2500)).isEqualTo("2.5");
