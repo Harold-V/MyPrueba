@@ -23,6 +23,7 @@ title: Knowledge map
 | Plan — Deudas y fiados | [sdd/plans/deudas-fiados.md](sdd/plans/deudas-fiados.md) |
 | Spec — Alineación con Treinta | [sdd/specs/alineacion-treinta.md](sdd/specs/alineacion-treinta.md) |
 | Plan — Alineación con Treinta | [sdd/plans/alineacion-treinta.md](sdd/plans/alineacion-treinta.md) |
+| Spec — Clientes completos | [sdd/specs/clientes-completo.md](sdd/specs/clientes-completo.md) |
 | Diseño web de escritorio (FTD) | [ftd/web-escritorio.md](ftd/web-escritorio.md) |
 | Verificación — núcleo | [sdd/verifications/2026-10-28-nucleo.md](sdd/verifications/2026-10-28-nucleo.md) |
 | Verificación — inventario | [sdd/verifications/2026-10-28-inventario.md](sdd/verifications/2026-10-28-inventario.md) |
