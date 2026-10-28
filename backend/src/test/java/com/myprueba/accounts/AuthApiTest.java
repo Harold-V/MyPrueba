@@ -125,6 +125,27 @@ class AuthApiTest extends ApiTest {
     }
 
     @Test
+    void overlongPasswordsAreRejectedNotCrashing() throws Exception {
+        String longPassword = "a".repeat(100);
+        mvc.perform(json(post("/api/auth/register"), """
+                        {"email":"%s","password":"%s","businessName":"X"}
+                        """.formatted(uniqueEmail(), longPassword)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors[?(@.field=='password')].code").value("too_long"));
+        String email = uniqueEmail();
+        registerOwner(email, "Largo");
+        mvc.perform(json(post("/api/auth/login"), """
+                        {"email":"%s","password":"%s"}
+                        """.formatted(email, longPassword)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value("invalid_credentials"));
+        mvc.perform(json(post("/api/auth/login"), "{}")).andExpect(status().isUnauthorized());
+        mvc.perform(json(post("/api/auth/login"), "{no es json"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("malformed_request"));
+    }
+
+    @Test
     void logoutInvalidatesTheSession() throws Exception {
         Cookie sid = registerOwner();
         mvc.perform(post("/api/auth/logout").cookie(sid))
@@ -181,6 +202,7 @@ class AuthApiTest extends ApiTest {
         mvc.perform(post("/api/auth/login")
                         .contentType("application/x-www-form-urlencoded")
                         .content("email=a%40b.co&password=x"))
-                .andExpect(status().isUnsupportedMediaType());
+                .andExpect(status().isUnsupportedMediaType())
+                .andExpect(jsonPath("$.code").value("unsupported_media_type"));
     }
 }

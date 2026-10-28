@@ -132,6 +132,34 @@ class LedgerApiTest extends ApiTest {
     }
 
     @Test
+    void saleWithDeletedProductKeepsItsLineWhenEdited() throws Exception {
+        String gaseosa = product("Gaseosa", "3000");
+        String id = postJson("/api/sales", """
+                {"items":[{"productId":"%s","quantity":"2"}],"paymentMethod":"CASH"}
+                """.formatted(gaseosa), sid);
+        mvc.perform(delete("/api/products/" + gaseosa).cookie(sid)).andExpect(status().isNoContent());
+        mvc.perform(json(put("/api/sales/" + id), """
+                        {"items":[{"name":"Gaseosa","quantity":"3","unitPrice":"3000.00"}],"paymentMethod":"CARD"}
+                        """).cookie(sid))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value("9000.00"))
+                .andExpect(jsonPath("$.items[0].name").value("Gaseosa"))
+                .andExpect(jsonPath("$.items[0].productId").doesNotExist());
+    }
+
+    @Test
+    void lineWithoutProductNeedsNameAndPrice() throws Exception {
+        mvc.perform(json(post("/api/sales"), """
+                        {"items":[{"quantity":"1"}],"paymentMethod":"CASH"}
+                        """).cookie(sid))
+                .andExpect(status().isBadRequest())
+                .andExpect(
+                        jsonPath("$.errors[?(@.field=='items[0].name')].code").value("required"))
+                .andExpect(jsonPath("$.errors[?(@.field=='items[0].unitPrice')].code")
+                        .value("required"));
+    }
+
+    @Test
     void expenseLowersBalance() throws Exception {
         postJson("/api/sales", """
                 {"amount":"100000","paymentMethod":"CASH"}

@@ -19,7 +19,7 @@ final class LedgerInput {
     static final int MAX_CONCEPT = 140;
     static final int MAX_NOTE = 500;
 
-    record ItemInput(UUID productId, long quantityMilli, Long unitPriceCents) {}
+    record ItemInput(UUID productId, String name, long quantityMilli, Long unitPriceCents) {}
 
     record SaleInput(
             Long amountCents,
@@ -45,13 +45,20 @@ final class LedgerInput {
             for (int i = 0; i < request.items().size(); i++) {
                 SaleItemRequest item = request.items().get(i);
                 String prefix = "items[" + i + "].";
-                UUID productId = violations.capture(() -> uuid(prefix + "productId", item.productId()));
+                boolean byProduct =
+                        item.productId() != null && !item.productId().isBlank();
+                boolean hasPrice = item.unitPrice() != null && !item.unitPrice().isBlank();
+                UUID productId =
+                        byProduct ? violations.capture(() -> uuid(prefix + "productId", item.productId())) : null;
+                String name =
+                        byProduct ? null : violations.capture(() -> Text.required(prefix + "name", item.name(), 80));
                 Long quantity = violations.capture(() -> Quantity.parseMilli(prefix + "quantity", item.quantity()));
-                Long unitPrice = item.unitPrice() == null || item.unitPrice().isBlank()
-                        ? null
-                        : violations.capture(() -> Money.parseCents(prefix + "unitPrice", item.unitPrice()));
-                if (productId != null && quantity != null) {
-                    items.add(new ItemInput(productId, quantity, unitPrice));
+                // A product supplies its own price; a line without product must bring one.
+                Long unitPrice = hasPrice || !byProduct
+                        ? violations.capture(() -> Money.parseCents(prefix + "unitPrice", item.unitPrice()))
+                        : null;
+                if ((productId != null || name != null) && quantity != null) {
+                    items.add(new ItemInput(productId, name, quantity, unitPrice));
                 }
             }
         }

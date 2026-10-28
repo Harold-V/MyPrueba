@@ -74,12 +74,19 @@ class LedgerService {
         List<SaleLine> lines = new ArrayList<>();
         long total = 0;
         for (LedgerInput.ItemInput item : input.items()) {
-            ProductView product = catalog.find(businessId, item.productId())
-                    .orElseThrow(() -> new NotFoundException("product_not_found"));
-            long unitPrice = item.unitPriceCents() != null ? item.unitPriceCents() : product.priceCents();
+            UUID productId = null;
+            String name = item.name();
+            Long unitPrice = item.unitPriceCents();
+            if (item.productId() != null) {
+                ProductView product = catalog.find(businessId, item.productId())
+                        .orElseThrow(() -> new NotFoundException("product_not_found"));
+                productId = product.id();
+                name = product.name();
+                unitPrice = unitPrice != null ? unitPrice : product.priceCents();
+            }
             long lineTotal = Money.lineTotalCents(item.quantityMilli(), unitPrice);
             total = Money.add(total, lineTotal);
-            lines.add(new SaleLine(product.id(), product.name(), unitPrice, item.quantityMilli(), lineTotal));
+            lines.add(new SaleLine(productId, name, unitPrice, item.quantityMilli(), lineTotal));
         }
         return new SaleData(
                 SaleKind.ITEMS, total, lines, input.concept(), input.paymentMethod(), input.occurredAt(), input.note());

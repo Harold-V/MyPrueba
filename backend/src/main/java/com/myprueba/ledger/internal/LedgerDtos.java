@@ -5,7 +5,11 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-record SaleItemRequest(String productId, String quantity, String unitPrice) {}
+/**
+ * A line either references a product ({@code productId}) or carries its own {@code name} and
+ * {@code unitPrice} — the latter keeps lines of deleted products editable.
+ */
+record SaleItemRequest(String productId, String name, String quantity, String unitPrice) {}
 
 record SaleRequest(
         String amount,
