@@ -2,6 +2,8 @@ package com.myprueba.ledger.internal;
 
 import com.myprueba.catalog.ProductCatalog;
 import com.myprueba.catalog.ProductView;
+import com.myprueba.customers.CustomerDirectory;
+import com.myprueba.customers.CustomerView;
 import com.myprueba.ledger.SaleItemsChanged;
 import com.myprueba.shared.Money;
 import com.myprueba.shared.NotFoundException;
@@ -26,12 +28,22 @@ class LedgerService {
     private final ProductCatalog catalog;
     private final Clock clock;
     private final ApplicationEventPublisher events;
+    private final CustomerDirectory customers;
+    private final ReceivablesRepository receivables;
 
-    LedgerService(LedgerRepository ledger, ProductCatalog catalog, Clock clock, ApplicationEventPublisher events) {
+    LedgerService(
+            LedgerRepository ledger,
+            ProductCatalog catalog,
+            Clock clock,
+            ApplicationEventPublisher events,
+            CustomerDirectory customers,
+            ReceivablesRepository receivables) {
         this.ledger = ledger;
         this.catalog = catalog;
         this.clock = clock;
         this.events = events;
+        this.customers = customers;
+        this.receivables = receivables;
     }
 
     // --- sales -------------------------------------------------------------------------------
@@ -85,6 +97,13 @@ class LedgerService {
     }
 
     private SaleData resolve(UUID businessId, LedgerInput.SaleInput input) {
+        CustomerView customer = input.customerId() == null
+                ? null
+                : customers
+                        .find(businessId, input.customerId())
+                        .orElseThrow(() -> new NotFoundException("customer_not_found"));
+        UUID customerId = customer == null ? null : customer.id();
+        String customerName = customer == null ? null : customer.name();
         if (input.amountCents() != null) {
             return new SaleData(
                     SaleKind.FREE,
@@ -93,7 +112,9 @@ class LedgerService {
                     input.concept(),
                     input.paymentMethod(),
                     input.occurredAt(),
-                    input.note());
+                    input.note(),
+                    customerId,
+                    customerName);
         }
         List<SaleLine> lines = new ArrayList<>();
         long total = 0;
@@ -113,7 +134,15 @@ class LedgerService {
             lines.add(new SaleLine(productId, name, unitPrice, item.quantityMilli(), lineTotal));
         }
         return new SaleData(
-                SaleKind.ITEMS, total, lines, input.concept(), input.paymentMethod(), input.occurredAt(), input.note());
+                SaleKind.ITEMS,
+                total,
+                lines,
+                input.concept(),
+                input.paymentMethod(),
+                input.occurredAt(),
+                input.note(),
+                customerId,
+                customerName);
     }
 
     private static SaleResponse toResponse(UUID id, SaleData sale) {
@@ -133,7 +162,9 @@ class LedgerService {
                 sale.concept(),
                 sale.paymentMethod(),
                 sale.occurredAt(),
-                sale.note());
+                sale.note(),
+                sale.customerId(),
+                sale.customerName());
     }
 
     // --- expenses ----------------------------------------------------------------------------
@@ -198,7 +229,8 @@ class LedgerService {
                         description(row, lines.get(row.id())),
                         row.paymentMethod(),
                         row.occurredAt(),
-                        row.category()))
+                        row.category(),
+                        row.customerName()))
                 .toList();
         return new MovementsResponse(PeriodView.of(resolved), items);
     }
@@ -214,9 +246,15 @@ class LedgerService {
 
     BalanceResponse balance(UUID businessId, ZoneId zone, String period, String from, String to) {
         Period resolved = Periods.resolve(period, from, to, zone, clock.instant());
-        long sales = ledger.sumSales(businessId, resolved);
+        long sales = ledger.sumPaidSales(businessId, resolved);
+        long payments = ledger.sumPayments(businessId, resolved);
         long expenses = ledger.sumExpenses(businessId, resolved);
         return new BalanceResponse(
-                PeriodView.of(resolved), Money.format(sales), Money.format(expenses), Money.format(sales - expenses));
+                PeriodView.of(resolved),
+                Money.format(sales),
+                Money.format(payments),
+                Money.format(expenses),
+                Money.format(sales + payments - expenses),
+                Money.format(receivables.totalDebt(businessId)));
     }
 }

@@ -4,7 +4,9 @@ enum PaymentMethod {
     CASH,
     CARD,
     TRANSFER,
-    OTHER
+    OTHER,
+    /** Fiado: the customer pays later. Only valid on sales, and requires a customer. */
+    CREDIT
 }
 
 enum ExpenseCategory {
@@ -25,5 +27,6 @@ enum SaleKind {
 
 enum MovementType {
     SALE,
-    EXPENSE
+    EXPENSE,
+    PAYMENT
 }

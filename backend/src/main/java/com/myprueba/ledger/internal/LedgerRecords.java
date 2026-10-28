@@ -14,7 +14,9 @@ record SaleData(
         String concept,
         PaymentMethod paymentMethod,
         Instant occurredAt,
-        String note) {}
+        String note,
+        UUID customerId,
+        String customerName) {}
 
 record ExpenseData(
         long amountCents,
@@ -31,4 +33,13 @@ record MovementRow(
         String concept,
         PaymentMethod paymentMethod,
         Instant occurredAt,
-        ExpenseCategory category) {}
+        ExpenseCategory category,
+        String customerName) {}
+
+record PaymentData(
+        UUID customerId,
+        String customerName,
+        long amountCents,
+        PaymentMethod paymentMethod,
+        Instant occurredAt,
+        String note) {}

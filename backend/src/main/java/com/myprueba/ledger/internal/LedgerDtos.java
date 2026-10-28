@@ -17,7 +17,8 @@ record SaleRequest(
         String concept,
         String paymentMethod,
         String occurredAt,
-        String note) {}
+        String note,
+        String customerId) {}
 
 record SaleItemResponse(UUID productId, String name, String unitPrice, String quantity, String lineTotal) {}
 
@@ -30,7 +31,9 @@ record SaleResponse(
         String concept,
         PaymentMethod paymentMethod,
         Instant occurredAt,
-        String note) {}
+        String note,
+        UUID customerId,
+        String customerName) {}
 
 record ExpenseRequest(
         String amount, String category, String concept, String paymentMethod, String occurredAt, String note) {}
@@ -59,8 +62,33 @@ record MovementResponse(
         String description,
         PaymentMethod paymentMethod,
         Instant occurredAt,
-        ExpenseCategory category) {}
+        ExpenseCategory category,
+        String customerName) {}
 
 record MovementsResponse(PeriodView period, List<MovementResponse> items) {}
 
-record BalanceResponse(PeriodView period, String sales, String expenses, String balance) {}
+/** Cash basis: {@code balance = sales (paid) + payments − expenses}; {@code receivable} is all-time. */
+record BalanceResponse(
+        PeriodView period, String sales, String payments, String expenses, String balance, String receivable) {}
+
+record PaymentRequest(String customerId, String amount, String paymentMethod, String occurredAt, String note) {}
+
+record PaymentResponse(
+        UUID id,
+        MovementType type,
+        UUID customerId,
+        String customerName,
+        String amount,
+        PaymentMethod paymentMethod,
+        Instant occurredAt,
+        String note) {}
+
+record CustomerDebt(UUID customerId, String name, String phone, String debt) {}
+
+record ReceivablesResponse(String total, List<CustomerDebt> customers) {}
+
+record AccountCustomer(UUID id, String name, String phone) {}
+
+record AccountEntry(UUID id, MovementType type, String amount, String description, Instant occurredAt) {}
+
+record AccountResponse(AccountCustomer customer, String debt, List<AccountEntry> entries) {}

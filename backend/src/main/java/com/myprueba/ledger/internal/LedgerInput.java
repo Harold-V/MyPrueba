@@ -27,7 +27,11 @@ final class LedgerInput {
             String concept,
             PaymentMethod paymentMethod,
             Instant occurredAt,
-            String note) {}
+            String note,
+            UUID customerId) {}
+
+    record PaymentInput(
+            UUID customerId, long amountCents, PaymentMethod paymentMethod, Instant occurredAt, String note) {}
 
     private LedgerInput() {}
 
@@ -67,8 +71,34 @@ final class LedgerInput {
                 () -> Text.requiredEnum("paymentMethod", request.paymentMethod(), PaymentMethod.class));
         Instant occurredAt = violations.capture(() -> occurredAt(request.occurredAt(), zone, now));
         String note = violations.capture(() -> Text.optional("note", request.note(), MAX_NOTE));
+        boolean hasCustomer =
+                request.customerId() != null && !request.customerId().isBlank();
+        UUID customerId = hasCustomer ? violations.capture(() -> uuid("customerId", request.customerId())) : null;
+        if (method == PaymentMethod.CREDIT && !hasCustomer) {
+            violations.add("customerId", "required");
+        }
         violations.throwIfAny();
-        return new SaleInput(amount, items, concept, method, occurredAt, note);
+        return new SaleInput(amount, items, concept, method, occurredAt, note, customerId);
+    }
+
+    static PaymentInput payment(PaymentRequest request, ZoneId zone, Instant now) {
+        Violations violations = new Violations();
+        UUID customerId = violations.capture(() -> uuid("customerId", request.customerId()));
+        Long amount = violations.capture(() -> Money.parseCents("amount", request.amount()));
+        PaymentMethod method = violations.capture(() -> cashMethod(request.paymentMethod()));
+        Instant occurredAt = violations.capture(() -> occurredAt(request.occurredAt(), zone, now));
+        String note = violations.capture(() -> Text.optional("note", request.note(), MAX_NOTE));
+        violations.throwIfAny();
+        return new PaymentInput(customerId, amount, method, occurredAt, note);
+    }
+
+    /** A payment method that moves money now: anything but {@link PaymentMethod#CREDIT}. */
+    private static PaymentMethod cashMethod(String raw) {
+        PaymentMethod method = Text.requiredEnum("paymentMethod", raw, PaymentMethod.class);
+        if (method == PaymentMethod.CREDIT) {
+            throw ValidationException.of("paymentMethod", "invalid_value");
+        }
+        return method;
     }
 
     static ExpenseData expense(ExpenseRequest request, ZoneId zone, Instant now) {
@@ -77,8 +107,7 @@ final class LedgerInput {
         ExpenseCategory category =
                 violations.capture(() -> Text.requiredEnum("category", request.category(), ExpenseCategory.class));
         String concept = violations.capture(() -> Text.optional("concept", request.concept(), MAX_CONCEPT));
-        PaymentMethod method = violations.capture(
-                () -> Text.requiredEnum("paymentMethod", request.paymentMethod(), PaymentMethod.class));
+        PaymentMethod method = violations.capture(() -> cashMethod(request.paymentMethod()));
         Instant occurredAt = violations.capture(() -> occurredAt(request.occurredAt(), zone, now));
         String note = violations.capture(() -> Text.optional("note", request.note(), MAX_NOTE));
         violations.throwIfAny();

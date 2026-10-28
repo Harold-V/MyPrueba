@@ -26,8 +26,8 @@ class LedgerRepository {
     void insertSale(UUID businessId, UUID id, SaleData sale, Instant now) {
         jdbc.sql("""
                         INSERT INTO sales (id, business_id, kind, total_cents, concept, payment_method, occurred_at, note,
-                                           created_at, updated_at)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                           customer_id, customer_name, created_at, updated_at)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                         """)
                 .params(
                         id.toString(),
@@ -38,6 +38,8 @@ class LedgerRepository {
                         sale.paymentMethod().name(),
                         Timestamp.from(sale.occurredAt()),
                         sale.note(),
+                        sale.customerId() == null ? null : sale.customerId().toString(),
+                        sale.customerName(),
                         Timestamp.from(now),
                         Timestamp.from(now))
                 .update();
@@ -47,7 +49,7 @@ class LedgerRepository {
     int updateSale(UUID businessId, UUID id, SaleData sale, Instant now) {
         int updated = jdbc.sql("""
                         UPDATE sales SET kind = ?, total_cents = ?, concept = ?, payment_method = ?, occurred_at = ?,
-                                         note = ?, updated_at = ?
+                                         note = ?, customer_id = ?, customer_name = ?, updated_at = ?
                         WHERE business_id = ? AND id = ?
                         """)
                 .params(
@@ -57,6 +59,8 @@ class LedgerRepository {
                         sale.paymentMethod().name(),
                         Timestamp.from(sale.occurredAt()),
                         sale.note(),
+                        sale.customerId() == null ? null : sale.customerId().toString(),
+                        sale.customerName(),
                         Timestamp.from(now),
                         businessId.toString(),
                         id.toString())
@@ -93,7 +97,7 @@ class LedgerRepository {
 
     Optional<SaleData> findSale(UUID businessId, UUID id) {
         return jdbc.sql("""
-                        SELECT kind, total_cents, concept, payment_method, occurred_at, note
+                        SELECT kind, total_cents, concept, payment_method, occurred_at, note, customer_id, customer_name
                         FROM sales WHERE business_id = ? AND id = ?
                         """)
                 .params(businessId.toString(), id.toString())
@@ -104,7 +108,9 @@ class LedgerRepository {
                         rs.getString("concept"),
                         PaymentMethod.valueOf(rs.getString("payment_method")),
                         instant(rs, "occurred_at"),
-                        rs.getString("note")))
+                        rs.getString("note"),
+                        uuidOrNull(rs.getString("customer_id")),
+                        rs.getString("customer_name")))
                 .optional()
                 .map(sale -> new SaleData(
                         sale.kind(),
@@ -113,7 +119,9 @@ class LedgerRepository {
                         sale.concept(),
                         sale.paymentMethod(),
                         sale.occurredAt(),
-                        sale.note()));
+                        sale.note(),
+                        sale.customerId(),
+                        sale.customerName()));
     }
 
     private List<SaleLine> findLines(UUID saleId) {
@@ -202,18 +210,32 @@ class LedgerRepository {
 
     // --- movements & balance -----------------------------------------------------------------
 
-    List<MovementRow> movements(UUID businessId, Period period, boolean sales, boolean expenses) {
+    /** Sales and customer payments ({@code income}) and/or expenses in the period, newest first. */
+    List<MovementRow> movements(UUID businessId, Period period, boolean income, boolean expenses) {
         String salesQuery = """
                 SELECT id, 'SALE' AS type, total_cents AS amount_cents, concept, payment_method, occurred_at,
-                       NULL AS category, created_at
+                       NULL AS category, created_at, customer_name
                 FROM sales WHERE business_id = :business AND occurred_at >= :start AND occurred_at < :end
                 """;
+        String paymentsQuery = """
+                SELECT id, 'PAYMENT' AS type, amount_cents, note AS concept, payment_method, occurred_at,
+                       NULL AS category, created_at, customer_name
+                FROM customer_payments WHERE business_id = :business AND occurred_at >= :start AND occurred_at < :end
+                """;
         String expensesQuery = """
-                SELECT id, 'EXPENSE' AS type, amount_cents, concept, payment_method, occurred_at, category, created_at
+                SELECT id, 'EXPENSE' AS type, amount_cents, concept, payment_method, occurred_at, category, created_at,
+                       NULL AS customer_name
                 FROM expenses WHERE business_id = :business AND occurred_at >= :start AND occurred_at < :end
                 """;
-        String union =
-                sales && expenses ? salesQuery + " UNION ALL " + expensesQuery : sales ? salesQuery : expensesQuery;
+        List<String> parts = new java.util.ArrayList<>();
+        if (income) {
+            parts.add(salesQuery);
+            parts.add(paymentsQuery);
+        }
+        if (expenses) {
+            parts.add(expensesQuery);
+        }
+        String union = String.join(" UNION ALL ", parts);
         return jdbc.sql("SELECT * FROM (" + union + ") m ORDER BY occurred_at DESC, created_at DESC, id")
                 .param("business", businessId.toString())
                 .param("start", Timestamp.from(period.start()))
@@ -225,7 +247,8 @@ class LedgerRepository {
                         rs.getString("concept"),
                         PaymentMethod.valueOf(rs.getString("payment_method")),
                         instant(rs, "occurred_at"),
-                        rs.getString("category") == null ? null : ExpenseCategory.valueOf(rs.getString("category"))))
+                        rs.getString("category") == null ? null : ExpenseCategory.valueOf(rs.getString("category")),
+                        rs.getString("customer_name")))
                 .list();
     }
 
@@ -252,19 +275,29 @@ class LedgerRepository {
         return lines;
     }
 
-    long sumSales(UUID businessId, Period period) {
-        return sum("SELECT COALESCE(SUM(total_cents), 0) FROM sales", businessId, period);
+    /** Paid sales only: a credit sale is not income until the customer pays (cash basis). */
+    long sumPaidSales(UUID businessId, Period period) {
+        return sum("SELECT COALESCE(SUM(total_cents), 0) FROM sales", "payment_method <> 'CREDIT'", businessId, period);
+    }
+
+    long sumPayments(UUID businessId, Period period) {
+        return sum("SELECT COALESCE(SUM(amount_cents), 0) FROM customer_payments", "1 = 1", businessId, period);
     }
 
     long sumExpenses(UUID businessId, Period period) {
-        return sum("SELECT COALESCE(SUM(amount_cents), 0) FROM expenses", businessId, period);
+        return sum("SELECT COALESCE(SUM(amount_cents), 0) FROM expenses", "1 = 1", businessId, period);
     }
 
-    private long sum(String select, UUID businessId, Period period) {
-        return jdbc.sql(select + " WHERE business_id = ? AND occurred_at >= ? AND occurred_at < ?")
+    private long sum(String select, String condition, UUID businessId, Period period) {
+        return jdbc.sql(select + " WHERE " + condition
+                        + " AND business_id = ? AND occurred_at >= ? AND occurred_at < ?")
                 .params(businessId.toString(), Timestamp.from(period.start()), Timestamp.from(period.end()))
                 .query(Long.class)
                 .single();
+    }
+
+    static UUID uuidOrNull(String value) {
+        return value == null ? null : UUID.fromString(value);
     }
 
     private static Instant instant(ResultSet rs, String column) throws SQLException {
