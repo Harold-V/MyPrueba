@@ -105,8 +105,11 @@ class AccountService {
         String name = violations.capture(() -> Text.required("name", request.name(), 80));
         BusinessCategory category =
                 violations.capture(() -> Text.optionalEnum("category", request.category(), BusinessCategory.class));
+        String document = violations.capture(() -> Text.optional("document", request.document(), 30));
+        String phone = violations.capture(() -> Text.optional("phone", request.phone(), 40));
+        String address = violations.capture(() -> Text.optional("address", request.address(), 200));
         violations.throwIfAny();
-        accounts.updateBusiness(owner.businessId(), name, category, clock.instant());
+        accounts.updateBusiness(owner.businessId(), name, category, document, phone, address, clock.instant());
         return accounts.findBusinessByOwner(owner.userId()).orElseThrow();
     }
 

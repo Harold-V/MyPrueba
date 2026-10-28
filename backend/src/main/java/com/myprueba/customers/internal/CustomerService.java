@@ -34,7 +34,9 @@ class CustomerService implements CustomerDirectory {
 
     @Override
     public Optional<CustomerView> find(UUID businessId, UUID customerId) {
-        return customers.find(businessId, customerId).map(c -> new CustomerView(c.id(), c.name(), c.phone()));
+        return customers
+                .find(businessId, customerId)
+                .map(c -> new CustomerView(c.id(), c.name(), c.phone(), c.document()));
     }
 
     List<CustomerResponse> list(UUID businessId) {

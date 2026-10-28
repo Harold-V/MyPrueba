@@ -6,10 +6,18 @@ record RegisterRequest(String email, String password, String businessName, Strin
 
 record LoginRequest(String email, String password) {}
 
-record BusinessRequest(String name, String category) {}
+record BusinessRequest(String name, String category, String document, String phone, String address) {}
 
 record UserView(UUID id, String email) {}
 
-record BusinessView(UUID id, String name, BusinessCategory category, String currency, String timeZone) {}
+record BusinessView(
+        UUID id,
+        String name,
+        BusinessCategory category,
+        String currency,
+        String timeZone,
+        String document,
+        String phone,
+        String address) {}
 
 record MeView(UserView user, BusinessView business) {}

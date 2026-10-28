@@ -1,5 +1,6 @@
 package com.myprueba.ledger.internal;
 
+import com.myprueba.accounts.BusinessProfiles;
 import com.myprueba.catalog.ProductCatalog;
 import com.myprueba.catalog.ProductView;
 import com.myprueba.customers.CustomerDirectory;
@@ -36,6 +37,7 @@ class LedgerService {
     private final ReceivablesRepository receivables;
     private final SupplierDirectory suppliers;
     private final PayablesRepository payables;
+    private final BusinessProfiles profiles;
 
     LedgerService(
             LedgerRepository ledger,
@@ -45,7 +47,8 @@ class LedgerService {
             CustomerDirectory customers,
             ReceivablesRepository receivables,
             SupplierDirectory suppliers,
-            PayablesRepository payables) {
+            PayablesRepository payables,
+            BusinessProfiles profiles) {
         this.ledger = ledger;
         this.catalog = catalog;
         this.clock = clock;
@@ -54,6 +57,7 @@ class LedgerService {
         this.receivables = receivables;
         this.suppliers = suppliers;
         this.payables = payables;
+        this.profiles = profiles;
     }
 
     // --- sales -------------------------------------------------------------------------------
@@ -61,9 +65,9 @@ class LedgerService {
     @Transactional
     SaleResponse createSale(UUID businessId, ZoneId zone, SaleRequest request) {
         Instant now = clock.instant();
-        SaleData sale = resolve(businessId, LedgerInput.sale(request, zone, now));
+        SaleData sale = resolve(businessId, null, LedgerInput.sale(request, zone, now));
         UUID id = UUID.randomUUID();
-        ledger.insertSale(businessId, id, sale, now);
+        sale = ledger.insertSale(businessId, id, sale, now);
         publish(businessId, id, SaleItemsChanged.Kind.RECORDED, List.of(), sale.lines());
         return toResponse(id, sale);
     }
@@ -72,7 +76,7 @@ class LedgerService {
     SaleResponse updateSale(UUID businessId, ZoneId zone, UUID id, SaleRequest request) {
         Instant now = clock.instant();
         SaleData previous = ledger.findSale(businessId, id).orElseThrow(NotFoundException::new);
-        SaleData sale = resolve(businessId, LedgerInput.sale(request, zone, now));
+        SaleData sale = resolve(businessId, previous.number(), LedgerInput.sale(request, zone, now));
         ledger.updateSale(businessId, id, sale, now);
         publish(businessId, id, SaleItemsChanged.Kind.EDITED, previous.lines(), sale.lines());
         return toResponse(id, sale);
@@ -80,6 +84,39 @@ class LedgerService {
 
     SaleResponse getSale(UUID businessId, UUID id) {
         return toResponse(id, ledger.findSale(businessId, id).orElseThrow(NotFoundException::new));
+    }
+
+    /** The receipt shows the business and the customer as they are now. */
+    ReceiptResponse receipt(UUID businessId, UUID id) {
+        SaleData sale = ledger.findSale(businessId, id).orElseThrow(NotFoundException::new);
+        SaleResponse view = toResponse(id, sale);
+        BusinessProfiles.BusinessProfile business = profiles.profile(businessId);
+        ReceiptCustomer customer = null;
+        if (sale.customerId() != null) {
+            customer = customers
+                    .find(businessId, sale.customerId())
+                    .map(c -> new ReceiptCustomer(c.name(), c.document(), c.phone()))
+                    .orElse(null);
+        }
+        if (customer == null && sale.customerName() != null) {
+            customer = new ReceiptCustomer(sale.customerName(), null, null);
+        }
+        return new ReceiptResponse(
+                id,
+                view.number(),
+                sale.occurredAt(),
+                new ReceiptBusiness(business.name(), business.document(), business.phone(), business.address()),
+                customer,
+                view.items(),
+                view.subtotal(),
+                view.discountTotal(),
+                view.total(),
+                sale.paymentMethod(),
+                view.status(),
+                sale.dueDate(),
+                view.received(),
+                view.change(),
+                sale.note());
     }
 
     @Transactional
@@ -106,7 +143,11 @@ class LedgerService {
         return Map.copyOf(quantities);
     }
 
-    private SaleData resolve(UUID businessId, LedgerInput.SaleInput input) {
+    /**
+     * Prices the sale: each line is quantity × price minus its discount; the sale discount comes off
+     * what the lines add up to. A discount can never exceed what it applies to.
+     */
+    private SaleData resolve(UUID businessId, Long number, LedgerInput.SaleInput input) {
         CustomerView customer = input.customerId() == null
                 ? null
                 : customers
@@ -114,38 +155,54 @@ class LedgerService {
                         .orElseThrow(() -> new NotFoundException("customer_not_found"));
         UUID customerId = customer == null ? null : customer.id();
         String customerName = customer == null ? null : customer.name();
-        if (input.amountCents() != null) {
-            return new SaleData(
-                    SaleKind.FREE,
-                    input.amountCents(),
-                    List.of(),
-                    input.concept(),
-                    input.paymentMethod(),
-                    input.occurredAt(),
-                    input.note(),
-                    customerId,
-                    customerName,
-                    input.dueDate());
-        }
         List<SaleLine> lines = new ArrayList<>();
-        long total = 0;
-        for (LedgerInput.ItemInput item : input.items()) {
-            UUID productId = null;
-            String name = item.name();
-            Long unitPrice = item.unitPriceCents();
-            if (item.productId() != null) {
-                ProductView product = catalog.find(businessId, item.productId())
-                        .orElseThrow(() -> new NotFoundException("product_not_found"));
-                productId = product.id();
-                name = product.name();
-                unitPrice = unitPrice != null ? unitPrice : product.priceCents();
+        long subtotal;
+        long afterLineDiscounts;
+        long saleDiscount = 0;
+        Violations violations = new Violations();
+        if (input.amountCents() != null) {
+            subtotal = input.amountCents();
+            afterLineDiscounts = subtotal;
+        } else {
+            subtotal = 0;
+            afterLineDiscounts = 0;
+            for (int i = 0; i < input.items().size(); i++) {
+                LedgerInput.ItemInput item = input.items().get(i);
+                UUID productId = null;
+                String name = item.name();
+                Long unitPrice = item.unitPriceCents();
+                if (item.productId() != null) {
+                    ProductView product = catalog.find(businessId, item.productId())
+                            .orElseThrow(() -> new NotFoundException("product_not_found"));
+                    productId = product.id();
+                    name = product.name();
+                    unitPrice = unitPrice != null ? unitPrice : product.priceCents();
+                }
+                long lineTotal = Money.lineTotalCents(item.quantityMilli(), unitPrice);
+                long lineDiscount = item.discount().of(lineTotal);
+                if (lineDiscount > lineTotal) {
+                    violations.add("items[" + i + "].discount", "exceeds_line");
+                    lineDiscount = 0;
+                }
+                subtotal = Money.add(subtotal, lineTotal);
+                afterLineDiscounts = Money.add(afterLineDiscounts, lineTotal - lineDiscount);
+                lines.add(new SaleLine(productId, name, unitPrice, item.quantityMilli(), lineTotal, lineDiscount));
             }
-            long lineTotal = Money.lineTotalCents(item.quantityMilli(), unitPrice);
-            total = Money.add(total, lineTotal);
-            lines.add(new SaleLine(productId, name, unitPrice, item.quantityMilli(), lineTotal));
+            saleDiscount = input.discount().of(afterLineDiscounts);
+            if (saleDiscount > afterLineDiscounts) {
+                violations.add("discount", "exceeds_subtotal");
+            }
         }
+        long total = afterLineDiscounts - saleDiscount;
+        if (input.receivedCents() != null && input.receivedCents() < total) {
+            violations.add("received", "less_than_total");
+        }
+        violations.throwIfAny();
         return new SaleData(
-                SaleKind.ITEMS,
+                number,
+                input.amountCents() != null ? SaleKind.FREE : SaleKind.ITEMS,
+                subtotal,
+                saleDiscount,
                 total,
                 lines,
                 input.concept(),
@@ -154,14 +211,19 @@ class LedgerService {
                 input.note(),
                 customerId,
                 customerName,
-                input.dueDate());
+                input.dueDate(),
+                input.receivedCents());
     }
 
     private static SaleResponse toResponse(UUID id, SaleData sale) {
+        Long received = sale.receivedCents();
         return new SaleResponse(
                 id,
+                sale.number(),
                 MovementType.SALE,
                 sale.kind(),
+                Money.format(sale.subtotalCents()),
+                Money.format(sale.discountTotalCents()),
                 Money.format(sale.totalCents()),
                 sale.lines().stream()
                         .map(line -> new SaleItemResponse(
@@ -169,7 +231,8 @@ class LedgerService {
                                 line.productName(),
                                 Money.format(line.unitPriceCents()),
                                 Quantity.format(line.quantityMilli()),
-                                Money.format(line.lineTotalCents())))
+                                Money.format(line.lineTotalCents()),
+                                Money.format(line.discountCents())))
                         .toList(),
                 sale.concept(),
                 sale.paymentMethod(),
@@ -178,7 +241,9 @@ class LedgerService {
                 sale.customerId(),
                 sale.customerName(),
                 sale.paymentMethod() == PaymentMethod.CREDIT ? PaymentStatus.CREDIT : PaymentStatus.PAID,
-                sale.dueDate());
+                sale.dueDate(),
+                received == null ? null : Money.format(received),
+                received == null ? null : Money.format(received - sale.totalCents()));
     }
 
     // --- expenses ----------------------------------------------------------------------------

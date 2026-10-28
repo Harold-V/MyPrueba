@@ -6,10 +6,24 @@ import java.util.List;
 import java.util.UUID;
 
 /** Validated, storage-shaped values (money in cents, quantities in thousandths). */
-record SaleLine(UUID productId, String productName, long unitPriceCents, long quantityMilli, long lineTotalCents) {}
+/** {@code lineTotalCents} is quantity × unit price; {@code discountCents} comes off it. */
+record SaleLine(
+        UUID productId,
+        String productName,
+        long unitPriceCents,
+        long quantityMilli,
+        long lineTotalCents,
+        long discountCents) {}
 
+/**
+ * A sale: {@code subtotalCents} is the sum of its lines, {@code discountCents} the discount on the
+ * whole sale (line discounts live on the lines) and {@code totalCents} what was charged.
+ */
 record SaleData(
+        Long number,
         SaleKind kind,
+        long subtotalCents,
+        long discountCents,
         long totalCents,
         List<SaleLine> lines,
         String concept,
@@ -18,7 +32,31 @@ record SaleData(
         String note,
         UUID customerId,
         String customerName,
-        LocalDate dueDate) {}
+        LocalDate dueDate,
+        Long receivedCents) {
+
+    long discountTotalCents() {
+        return subtotalCents - totalCents;
+    }
+
+    SaleData withLines(List<SaleLine> lines) {
+        return new SaleData(
+                number,
+                kind,
+                subtotalCents,
+                discountCents,
+                totalCents,
+                lines,
+                concept,
+                paymentMethod,
+                occurredAt,
+                note,
+                customerId,
+                customerName,
+                dueDate,
+                receivedCents);
+    }
+}
 
 record ExpenseLine(UUID productId, String productName, long unitCostCents, long quantityMilli, long lineTotalCents) {}
 

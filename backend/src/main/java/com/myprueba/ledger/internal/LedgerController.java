@@ -37,6 +37,11 @@ class LedgerController {
         return ledger.getSale(business.id(), Ids.parseOrNotFound(id));
     }
 
+    @GetMapping("/api/sales/{id}/receipt")
+    ReceiptResponse receipt(@PathVariable String id) {
+        return ledger.receipt(business.id(), Ids.parseOrNotFound(id));
+    }
+
     @PutMapping(path = "/api/sales/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     SaleResponse updateSale(@PathVariable String id, @RequestBody SaleRequest request) {
         return ledger.updateSale(business.id(), business.zone(), Ids.parseOrNotFound(id), request);

@@ -5,6 +5,8 @@ import com.myprueba.shared.Quantity;
 import com.myprueba.shared.Text;
 import com.myprueba.shared.ValidationException;
 import com.myprueba.shared.Violations;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -14,6 +16,7 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 /** Parses and validates ledger requests, reporting every invalid field at once. */
 final class LedgerInput {
@@ -22,7 +25,28 @@ final class LedgerInput {
     static final int MAX_NOTE = 500;
     private static final DateTimeFormatter AUTOMATIC_CONCEPT = DateTimeFormatter.ofPattern("ddMMyyHHmmss");
 
-    record ItemInput(UUID productId, String name, long quantityMilli, Long unitPriceCents) {}
+    record ItemInput(UUID productId, String name, long quantityMilli, Long unitPriceCents, Discount discount) {}
+
+    /** A discount as typed: a fixed amount or a percentage (in hundredths: 10 % = 1000). */
+    record Discount(Long amountCents, Long percentHundredths) {
+
+        static final Discount NONE = new Discount(null, null);
+
+        /** The cents taken off {@code base}; a percentage rounds half-up. */
+        long of(long base) {
+            if (amountCents != null) {
+                return amountCents;
+            }
+            if (percentHundredths == null) {
+                return 0;
+            }
+            return BigInteger.valueOf(base)
+                    .multiply(BigInteger.valueOf(percentHundredths))
+                    .add(BigInteger.valueOf(5000))
+                    .divide(BigInteger.valueOf(10000))
+                    .longValueExact();
+        }
+    }
 
     record SaleInput(
             Long amountCents,
@@ -32,7 +56,9 @@ final class LedgerInput {
             Instant occurredAt,
             String note,
             UUID customerId,
-            LocalDate dueDate) {}
+            LocalDate dueDate,
+            Discount discount,
+            Long receivedCents) {}
 
     record ExpenseItemInput(UUID productId, String name, long quantityMilli, Long unitCostCents) {}
 
@@ -78,8 +104,9 @@ final class LedgerInput {
                 Long unitPrice = hasPrice || !byProduct
                         ? violations.capture(() -> Money.parseCents(prefix + "unitPrice", item.unitPrice()))
                         : null;
+                Discount discount = discount(violations, prefix, item.discount(), item.discountPercent());
                 if ((productId != null || name != null) && quantity != null) {
-                    items.add(new ItemInput(productId, name, quantity, unitPrice));
+                    items.add(new ItemInput(productId, name, quantity, unitPrice, discount));
                 }
             }
         }
@@ -102,8 +129,23 @@ final class LedgerInput {
         if (dueDate != null && occurredAt != null && dueDate.isBefore(LocalDate.ofInstant(occurredAt, zone))) {
             violations.add("dueDate", "before_sale");
         }
+        // A free sale's amount is already final: discounts go on sales with products.
+        Discount discount = Discount.NONE;
+        if (hasAmount && !hasItems && (present(request.discount()) || present(request.discountPercent()))) {
+            violations.add("discount", "items_only");
+        } else {
+            discount = discount(violations, "", request.discount(), request.discountPercent());
+        }
+        Long received = null;
+        if (present(request.received())) {
+            if (method != PaymentMethod.CASH) {
+                violations.add("received", "cash_only");
+            } else {
+                received = violations.capture(() -> Money.parseCents("received", request.received()));
+            }
+        }
         violations.throwIfAny();
-        return new SaleInput(amount, items, concept, method, occurredAt, note, customerId, dueDate);
+        return new SaleInput(amount, items, concept, method, occurredAt, note, customerId, dueDate, discount, received);
     }
 
     static PaymentInput payment(PaymentRequest request, ZoneId zone, Instant now) {
@@ -147,6 +189,38 @@ final class LedgerInput {
         String note = violations.capture(() -> Text.optional("note", rawNote, MAX_NOTE));
         violations.throwIfAny();
         return new PaymentInput(partyId, amount, method, occurredAt, note);
+    }
+
+    private static boolean present(String raw) {
+        return raw != null && !raw.isBlank();
+    }
+
+    private static final Pattern PERCENT = Pattern.compile("\\d{1,3}(\\.\\d{1,2})?");
+
+    /** Either {@code discount} (an amount) or {@code discountPercent} (0–100, two decimals), not both. */
+    private static Discount discount(Violations violations, String prefix, String amount, String percent) {
+        if (present(amount) && present(percent)) {
+            violations.add(prefix + "discount", "one_discount");
+            return Discount.NONE;
+        }
+        if (present(amount)) {
+            Long cents = violations.capture(() -> Money.parseCents(prefix + "discount", amount));
+            return cents == null ? Discount.NONE : new Discount(cents, null);
+        }
+        if (!present(percent)) {
+            return Discount.NONE;
+        }
+        String value = percent.strip().replace(",", ".");
+        if (!PERCENT.matcher(value).matches()) {
+            violations.add(prefix + "discountPercent", "invalid_format");
+            return Discount.NONE;
+        }
+        long hundredths = new BigDecimal(value).movePointRight(2).longValueExact();
+        if (hundredths <= 0 || hundredths > 10000) {
+            violations.add(prefix + "discountPercent", "out_of_range");
+            return Discount.NONE;
+        }
+        return new Discount(null, hundredths);
     }
 
     /** A payment method that moves money now: anything but {@link PaymentMethod#CREDIT}. */

@@ -24,16 +24,25 @@ class LedgerRepository {
 
     // --- sales -------------------------------------------------------------------------------
 
-    void insertSale(UUID businessId, UUID id, SaleData sale, Instant now) {
+    /** Stores a new sale with the next number of its business, and returns it numbered. */
+    SaleData insertSale(UUID businessId, UUID id, SaleData sale, Instant now) {
+        long number = jdbc.sql("SELECT COALESCE(MAX(number), 0) + 1 FROM sales WHERE business_id = ?")
+                .param(businessId.toString())
+                .query(Long.class)
+                .single();
         jdbc.sql("""
-                        INSERT INTO sales (id, business_id, kind, total_cents, concept, payment_method, occurred_at, note,
-                                           customer_id, customer_name, due_date, created_at, updated_at)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        INSERT INTO sales (id, business_id, number, kind, subtotal_cents, discount_cents, total_cents,
+                                           concept, payment_method, occurred_at, note, customer_id, customer_name,
+                                           due_date, received_cents, created_at, updated_at)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                         """)
                 .params(
                         id.toString(),
                         businessId.toString(),
+                        number,
                         sale.kind().name(),
+                        sale.subtotalCents(),
+                        sale.discountCents(),
                         sale.totalCents(),
                         sale.concept(),
                         sale.paymentMethod().name(),
@@ -42,20 +51,40 @@ class LedgerRepository {
                         sale.customerId() == null ? null : sale.customerId().toString(),
                         sale.customerName(),
                         sqlDate(sale.dueDate()),
+                        sale.receivedCents(),
                         Timestamp.from(now),
                         Timestamp.from(now))
                 .update();
         insertLines(id, sale.lines());
+        return new SaleData(
+                number,
+                sale.kind(),
+                sale.subtotalCents(),
+                sale.discountCents(),
+                sale.totalCents(),
+                sale.lines(),
+                sale.concept(),
+                sale.paymentMethod(),
+                sale.occurredAt(),
+                sale.note(),
+                sale.customerId(),
+                sale.customerName(),
+                sale.dueDate(),
+                sale.receivedCents());
     }
 
+    /** Rewrites a sale and its lines; its number never changes. */
     int updateSale(UUID businessId, UUID id, SaleData sale, Instant now) {
         int updated = jdbc.sql("""
-                        UPDATE sales SET kind = ?, total_cents = ?, concept = ?, payment_method = ?, occurred_at = ?,
-                                         note = ?, customer_id = ?, customer_name = ?, due_date = ?, updated_at = ?
+                        UPDATE sales SET kind = ?, subtotal_cents = ?, discount_cents = ?, total_cents = ?, concept = ?,
+                                         payment_method = ?, occurred_at = ?, note = ?, customer_id = ?,
+                                         customer_name = ?, due_date = ?, received_cents = ?, updated_at = ?
                         WHERE business_id = ? AND id = ?
                         """)
                 .params(
                         sale.kind().name(),
+                        sale.subtotalCents(),
+                        sale.discountCents(),
                         sale.totalCents(),
                         sale.concept(),
                         sale.paymentMethod().name(),
@@ -64,6 +93,7 @@ class LedgerRepository {
                         sale.customerId() == null ? null : sale.customerId().toString(),
                         sale.customerName(),
                         sqlDate(sale.dueDate()),
+                        sale.receivedCents(),
                         Timestamp.from(now),
                         businessId.toString(),
                         id.toString())
@@ -82,8 +112,8 @@ class LedgerRepository {
             SaleLine line = lines.get(i);
             jdbc.sql("""
                             INSERT INTO sale_items (id, sale_id, product_id, product_name, unit_price_cents, quantity_milli,
-                                                    line_total_cents, position)
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                                                    line_total_cents, discount_cents, position)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                             """)
                     .params(
                             UUID.randomUUID().toString(),
@@ -93,6 +123,7 @@ class LedgerRepository {
                             line.unitPriceCents(),
                             line.quantityMilli(),
                             line.lineTotalCents(),
+                            line.discountCents(),
                             i)
                     .update();
         }
@@ -100,12 +131,16 @@ class LedgerRepository {
 
     Optional<SaleData> findSale(UUID businessId, UUID id) {
         return jdbc.sql("""
-                        SELECT kind, total_cents, concept, payment_method, occurred_at, note, customer_id, customer_name, due_date
+                        SELECT number, kind, subtotal_cents, discount_cents, total_cents, concept, payment_method,
+                               occurred_at, note, customer_id, customer_name, due_date, received_cents
                         FROM sales WHERE business_id = ? AND id = ?
                         """)
                 .params(businessId.toString(), id.toString())
                 .query((rs, n) -> new SaleData(
+                        rs.getLong("number"),
                         SaleKind.valueOf(rs.getString("kind")),
+                        rs.getLong("subtotal_cents"),
+                        rs.getLong("discount_cents"),
                         rs.getLong("total_cents"),
                         List.of(),
                         rs.getString("concept"),
@@ -114,33 +149,25 @@ class LedgerRepository {
                         rs.getString("note"),
                         uuidOrNull(rs.getString("customer_id")),
                         rs.getString("customer_name"),
-                        localDate(rs.getDate("due_date"))))
+                        localDate(rs.getDate("due_date")),
+                        rs.getObject("received_cents") == null ? null : rs.getLong("received_cents")))
                 .optional()
-                .map(sale -> new SaleData(
-                        sale.kind(),
-                        sale.totalCents(),
-                        findLines(id),
-                        sale.concept(),
-                        sale.paymentMethod(),
-                        sale.occurredAt(),
-                        sale.note(),
-                        sale.customerId(),
-                        sale.customerName(),
-                        sale.dueDate()));
+                .map(sale -> sale.withLines(findLines(id)));
     }
 
     private List<SaleLine> findLines(UUID saleId) {
         return jdbc.sql("""
-                        SELECT product_id, product_name, unit_price_cents, quantity_milli, line_total_cents
+                        SELECT product_id, product_name, unit_price_cents, quantity_milli, line_total_cents, discount_cents
                         FROM sale_items WHERE sale_id = ? ORDER BY position
                         """)
                 .param(saleId.toString())
                 .query((rs, n) -> new SaleLine(
-                        rs.getString("product_id") == null ? null : UUID.fromString(rs.getString("product_id")),
+                        uuidOrNull(rs.getString("product_id")),
                         rs.getString("product_name"),
                         rs.getLong("unit_price_cents"),
                         rs.getLong("quantity_milli"),
-                        rs.getLong("line_total_cents")))
+                        rs.getLong("line_total_cents"),
+                        rs.getLong("discount_cents")))
                 .list();
     }
 
