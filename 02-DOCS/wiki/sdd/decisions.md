@@ -27,3 +27,6 @@ topic: sdd
 | 2026-10-28 | TypeScript 6.0.3 en lugar de 7.0. | TypeScript 7. | typescript-eslint 8 aún no soporta TypeScript 7. |
 | 2026-10-28 | Siguiente módulo: Inventario, en autopiloto, en esta rama; antes, layout web de escritorio (FTD). | Deudas/fiados. | Elección del usuario; se apoya en productos y ventas. |
 | 2026-10-28 | Inventario escucha `SaleItemsChanged` del libro de forma síncrona en la misma transacción. | Listener asíncrono de Modulith; llamada directa del libro al inventario. | Consistencia fuerte sin acoplar el libro al inventario. |
+| 2026-10-28 | Siguiente módulo: Deudas y fiados, autopiloto, misma rama. | PR primero. | "continúa" del usuario. |
+| 2026-10-28 | "Fiado" como método de pago (CREDIT) y balance de caja (fiado no es ingreso hasta el abono). | Flag `paid`; balance por lo vendido. | Encaja en el flujo existente; responde "¿cuánto dinero me quedó?". |
+| 2026-10-28 | Deudas en `ledger`; `customers` es directorio y su borrado se veta con un evento síncrono. | Deudas en `customers`. | Evita ciclo entre módulos. |

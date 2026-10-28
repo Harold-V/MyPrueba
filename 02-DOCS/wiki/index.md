@@ -18,6 +18,8 @@ title: Knowledge map
 
 | Spec — Inventario | [sdd/specs/inventario.md](sdd/specs/inventario.md) |
 | Plan — Inventario | [sdd/plans/inventario.md](sdd/plans/inventario.md) |
+| Spec — Deudas y fiados | [sdd/specs/deudas-fiados.md](sdd/specs/deudas-fiados.md) |
+| Plan — Deudas y fiados | [sdd/plans/deudas-fiados.md](sdd/plans/deudas-fiados.md) |
 | Diseño web de escritorio (FTD) | [ftd/web-escritorio.md](ftd/web-escritorio.md) |
 | Verificación — núcleo | [sdd/verifications/2026-10-28-nucleo.md](sdd/verifications/2026-10-28-nucleo.md) |
 | Verificación — inventario | [sdd/verifications/2026-10-28-inventario.md](sdd/verifications/2026-10-28-inventario.md) |
