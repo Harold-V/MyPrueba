@@ -1,0 +1,2 @@
+ALTER TABLE customers ADD COLUMN document VARCHAR(30);
+ALTER TABLE customers ADD COLUMN address VARCHAR(200);
