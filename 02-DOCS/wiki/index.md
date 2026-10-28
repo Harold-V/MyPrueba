@@ -23,6 +23,7 @@ title: Knowledge map
 | Diseño web de escritorio (FTD) | [ftd/web-escritorio.md](ftd/web-escritorio.md) |
 | Verificación — núcleo | [sdd/verifications/2026-10-28-nucleo.md](sdd/verifications/2026-10-28-nucleo.md) |
 | Verificación — inventario | [sdd/verifications/2026-10-28-inventario.md](sdd/verifications/2026-10-28-inventario.md) |
+| Verificación — deudas y fiados | [sdd/verifications/2026-10-28-deudas-fiados.md](sdd/verifications/2026-10-28-deudas-fiados.md) |
 | Revisión — núcleo | [sdd/reviews/nucleo.md](sdd/reviews/nucleo.md) |
 
 ## product
