@@ -104,7 +104,7 @@ export function PaymentPage() {
         error={errors.note}
       />
       {!payment.customerId && (
-        <p className="text-sm text-slate-600">
+        <p className="text-sm text-muted">
           El cliente fue eliminado: este abono ya no se puede editar, solo eliminar.
         </p>
       )}

@@ -63,7 +63,7 @@ export function LoginPage() {
       </Button>
       <p className="text-center text-sm">
         ¿No tienes cuenta?{' '}
-        <Link to="/registro" className="font-semibold text-emerald-800 underline">
+        <Link to="/registro" className="font-medium text-accent underline underline-offset-2">
           Crea una gratis
         </Link>
       </p>
@@ -128,7 +128,7 @@ export function RegisterPage() {
       </Button>
       <p className="text-center text-sm">
         ¿Ya tienes cuenta?{' '}
-        <Link to="/entrar" className="font-semibold text-emerald-800 underline">
+        <Link to="/entrar" className="font-medium text-accent underline underline-offset-2">
           Entra
         </Link>
       </p>

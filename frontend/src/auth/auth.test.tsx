@@ -33,7 +33,8 @@ describe('authentication', () => {
     await user.selectOptions(screen.getByLabelText('Tipo de negocio (opcional)'), 'HARDWARE_STORE');
     await user.click(screen.getByRole('button', { name: 'Crear cuenta' }));
 
-    expect(await screen.findByText('Tienda Doña Rosa')).toBeInTheDocument();
+    // The business shows in the shell (sidebar on desktop, top bar on phones).
+    expect((await screen.findAllByText('Tienda Doña Rosa'))[0]).toBeInTheDocument();
     expect(calls.find((c) => c.path === '/api/auth/register')?.body).toEqual({
       email: 'rosa@example.com',
       password: 'secreto123',
@@ -104,7 +105,7 @@ describe('authentication', () => {
     await user.clear(screen.getByLabelText('Contraseña'));
     await user.type(screen.getByLabelText('Contraseña'), 'secreto123');
     await user.click(screen.getByRole('button', { name: 'Entrar' }));
-    expect(await screen.findByText('Tienda Doña Rosa')).toBeInTheDocument();
+    expect((await screen.findAllByText('Tienda Doña Rosa'))[0]).toBeInTheDocument();
   });
 
   it('edits the business and logs out', async () => {

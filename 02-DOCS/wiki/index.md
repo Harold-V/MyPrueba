@@ -56,3 +56,4 @@ title: Knowledge map
 |-----------|------|
 | Perfil de usuario | [harness/user-profile.md](harness/user-profile.md) |
 | Decisiones del arnés | [harness/decisions.md](harness/decisions.md) |
+| Rediseño visual «Mostrador» (FTD) | [ftd/rediseno-mostrador.md](ftd/rediseno-mostrador.md) · sistema en `DESIGN.md` |

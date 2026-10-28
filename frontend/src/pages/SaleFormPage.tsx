@@ -58,7 +58,7 @@ export function NewCustomer({ onCreated }: { onCreated: (customer: Customer) => 
     return (
       <button
         type="button"
-        className="text-sm font-semibold text-emerald-800 underline"
+        className="text-sm font-medium text-accent underline underline-offset-2"
         onClick={() => setOpen(true)}
       >
         Nuevo cliente
@@ -66,7 +66,7 @@ export function NewCustomer({ onCreated }: { onCreated: (customer: Customer) => 
     );
   }
   return (
-    <div className="space-y-3 rounded-lg border border-slate-200 bg-white p-3">
+    <div className="space-y-3 rounded-lg border border-line bg-surface p-3">
       <TextField
         label="Nombre del cliente"
         value={name}
@@ -273,7 +273,7 @@ export function SaleFormPage() {
         {id && (
           <Link
             to={`/ventas/${id}/comprobante`}
-            className="text-sm font-semibold text-emerald-800 underline"
+            className="text-sm font-medium text-accent underline underline-offset-2"
           >
             Ver comprobante
           </Link>
@@ -290,7 +290,7 @@ export function SaleFormPage() {
               value={value}
               checked={kind === value}
               onChange={() => setKind(value)}
-              className="h-5 w-5 accent-emerald-700"
+              className="h-5 w-5 accent-accent"
             />
             {value === 'FREE' ? 'Venta libre' : 'Con productos'}
           </label>
@@ -339,18 +339,21 @@ export function SaleFormPage() {
             error={errors.items ?? errors.amount}
           />
           {products.length === 0 && (
-            <Link to="/productos" className="text-sm font-semibold text-emerald-800 underline">
+            <Link
+              to="/productos"
+              className="text-sm font-medium text-accent underline underline-offset-2"
+            >
               Crear productos
             </Link>
           )}
           <ul className="space-y-3">
             {lines.map((line, index) => (
-              <li key={line.key} className="rounded-lg bg-white p-3 shadow-sm">
+              <li key={line.key} className="card p-3">
                 <div className="flex items-center justify-between">
                   <span className="font-medium">{line.name}</span>
                   <button
                     type="button"
-                    className="text-sm text-red-700 underline"
+                    className="text-sm text-negative underline"
                     onClick={() => setLines(lines.filter((_, i) => i !== index))}
                   >
                     Quitar {line.name}
@@ -380,7 +383,7 @@ export function SaleFormPage() {
                   />
                 </div>
                 {shortage(line) && (
-                  <p className="mt-2 text-sm text-amber-800">
+                  <p className="mt-2 text-sm text-warning">
                     Solo hay {shortage(line)} en inventario.{' '}
                     {allowNegativeStock
                       ? 'La venta se registrará igual.'
@@ -412,7 +415,7 @@ export function SaleFormPage() {
         error={errors.concept}
       />
       <fieldset className="flex gap-4">
-        <legend className="mb-1 text-sm font-medium text-slate-800">Estado del pago</legend>
+        <legend className="mb-1 text-sm font-medium text-ink">Estado del pago</legend>
         {(
           [
             ['PAID', 'Pagada'],
@@ -426,7 +429,7 @@ export function SaleFormPage() {
               value={value}
               checked={status === value}
               onChange={() => setStatus(value)}
-              className="h-5 w-5 accent-emerald-700"
+              className="h-5 w-5 accent-accent"
             />
             {text}
           </label>

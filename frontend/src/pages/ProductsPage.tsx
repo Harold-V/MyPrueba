@@ -151,7 +151,7 @@ function ProductRow({
         <span className="min-w-0">
           <span className="block font-medium">{label}</span>
           {details.length > 0 && (
-            <span className="block text-sm text-slate-600">{details.join(' · ')}</span>
+            <span className="block text-sm text-muted">{details.join(' · ')}</span>
           )}
         </span>
         <span className="shrink-0 font-semibold">{formatMoney(product.price)}</span>
@@ -160,12 +160,14 @@ function ProductRow({
       <div className="flex flex-wrap gap-2">
         <Button
           variant="secondary"
+          size="sm"
           aria-label={`Editar ${product.name}`}
           onClick={() => setEditing(true)}
         >
           Editar
         </Button>
         <ConfirmDelete
+          size="sm"
           label={`Eliminar ${product.name}`}
           question={`¿Eliminar ${product.name}? Las ventas ya hechas no cambian.`}
           onConfirm={onDelete}
@@ -228,11 +230,11 @@ function GroupBlock({
   };
 
   return (
-    <li role="group" aria-label={name} className="bg-slate-50">
+    <li role="group" aria-label={name} className="bg-raised">
       <div className="space-y-2 p-4 pb-2">
         <p className="font-semibold">
           {name}{' '}
-          <span className="text-sm font-normal text-slate-600">
+          <span className="text-sm font-normal text-muted">
             {[variants[0]!.categoryName, `${variants.length} variantes`]
               .filter(Boolean)
               .join(' · ')}
@@ -242,6 +244,7 @@ function GroupBlock({
         <div className="flex flex-wrap gap-2">
           <Button
             variant="secondary"
+            size="sm"
             aria-label={`Renombrar ${name}`}
             onClick={() => setPanel('rename')}
           >
@@ -249,12 +252,14 @@ function GroupBlock({
           </Button>
           <Button
             variant="secondary"
+            size="sm"
             aria-label={`Agregar variante a ${name}`}
             onClick={() => setPanel('variant')}
           >
             Agregar variante
           </Button>
           <ConfirmDelete
+            size="sm"
             label={`Eliminar ${name} y sus variantes`}
             question={`¿Eliminar ${name} y todas sus variantes?`}
             onConfirm={() => run(() => api.delete(`/api/product-groups/${groupId}`))}
@@ -302,7 +307,7 @@ function GroupBlock({
           </form>
         )}
       </div>
-      <ul className="divide-y divide-slate-200 border-t border-slate-200 bg-white pl-4">
+      <ul className="divide-y divide-line border-t border-line bg-surface pl-4">
         {variants.map((product) => (
           <ProductRow
             key={`${product.id}-${product.name}-${product.price}`}
@@ -401,7 +406,7 @@ function NewProductForm({
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-3 rounded-xl bg-white p-4 shadow-sm" noValidate>
+    <form onSubmit={onSubmit} className="space-y-3 card p-4" noValidate>
       <h2 className="font-semibold">Nuevo producto</h2>
       <fieldset className="flex flex-wrap gap-x-4 gap-y-2">
         <legend className="sr-only">Tipo de producto</legend>
@@ -418,7 +423,7 @@ function NewProductForm({
               value={value}
               checked={kind === value}
               onChange={() => setKind(value)}
-              className="h-5 w-5 accent-emerald-700"
+              className="h-5 w-5 accent-accent"
             />
             {text}
           </label>
@@ -484,9 +489,11 @@ function NewProductForm({
         </>
       ) : (
         <div className="space-y-3">
-          {errors.variants && <p className="text-sm text-red-700">Agrega al menos una variante.</p>}
+          {errors.variants && (
+            <p className="text-sm text-negative">Agrega al menos una variante.</p>
+          )}
           {variants.map((v, index) => (
-            <div key={v.key} className="space-y-2 rounded-lg border border-slate-200 p-3">
+            <div key={v.key} className="space-y-2 rounded-lg border border-line p-3">
               <TextField
                 label={`Variante ${index + 1}`}
                 placeholder="Talla, color o presentación"
@@ -514,7 +521,7 @@ function NewProductForm({
               {variants.length > 1 && (
                 <button
                   type="button"
-                  className="text-sm text-red-700 underline"
+                  className="text-sm text-negative underline"
                   onClick={() => setVariants(variants.filter((_, i) => i !== index))}
                 >
                   Quitar variante {index + 1}
@@ -593,12 +600,14 @@ function CategoryItem({ category, onChanged }: { category: Category; onChanged: 
           <span className="flex flex-wrap gap-2">
             <Button
               variant="secondary"
+              size="sm"
               aria-label={`Renombrar ${category.name}`}
               onClick={() => setEditing(true)}
             >
               Renombrar
             </Button>
             <ConfirmDelete
+              size="sm"
               label={`Eliminar ${category.name}`}
               question={`¿Eliminar ${category.name}? Sus productos quedan sin categoría.`}
               onConfirm={() => run(() => api.delete(`/api/product-categories/${category.id}`))}
@@ -634,7 +643,7 @@ function CategoriesPanel({
   }
 
   return (
-    <section aria-label="Categorías" className="space-y-3 rounded-xl bg-white p-4 shadow-sm">
+    <section aria-label="Categorías" className="space-y-3 card p-4">
       <h2 className="font-semibold">Categorías</h2>
       <form onSubmit={onCreate} className="flex items-end gap-2" noValidate>
         <div className="flex-1">
@@ -652,9 +661,9 @@ function CategoriesPanel({
       </form>
       <FormAlert message={alert} />
       {categories.length === 0 ? (
-        <p className="text-sm text-slate-600">Aún no tienes categorías.</p>
+        <p className="text-sm text-muted">Aún no tienes categorías.</p>
       ) : (
-        <ul className="divide-y divide-slate-100">
+        <ul className="divide-y divide-rule">
           {categories.map((category) => (
             <CategoryItem
               key={`${category.id}-${category.name}`}
@@ -703,24 +712,21 @@ function ImportPanel({ onImported }: { onImported: () => void }) {
   }
 
   return (
-    <section
-      aria-label="Cargar desde Excel"
-      className="space-y-3 rounded-xl bg-white p-4 shadow-sm"
-    >
+    <section aria-label="Cargar desde Excel" className="space-y-3 card p-4">
       <h2 className="font-semibold">Cargar desde Excel</h2>
-      <p className="text-sm text-slate-600">
+      <p className="text-sm text-muted">
         Sube tu lista con las columnas Nombre, Código de barras, Costo, Precio y Categoría (Stock y
         Stock mínimo son opcionales). Si una fila tiene un error, no se carga ninguna.
       </p>
       <a
         href={`data:text/csv;charset=utf-8,${encodeURIComponent(BOM + TEMPLATE)}`}
         download="plantilla-productos.csv"
-        className="inline-block text-sm font-semibold text-emerald-800 underline"
+        className="inline-block text-sm font-medium text-accent underline underline-offset-2"
       >
         Descargar plantilla
       </a>
       <form onSubmit={onSubmit} className="space-y-3" noValidate>
-        <label className="block text-sm font-medium text-slate-800">
+        <label className="block text-sm font-medium text-ink">
           Archivo .xlsx o .csv
           <input
             type="file"
@@ -736,14 +742,14 @@ function ImportPanel({ onImported }: { onImported: () => void }) {
       {errors.length > 0 && (
         <ul
           aria-label="Errores del archivo"
-          className="list-disc space-y-1 pl-5 text-sm text-red-700"
+          className="list-disc space-y-1 pl-5 text-sm text-negative"
         >
           {errors.map((message) => (
             <li key={message}>{message}</li>
           ))}
         </ul>
       )}
-      <p role="status" className="text-sm text-emerald-800">
+      <p role="status" className="text-sm text-positive">
         {done ?? ''}
       </p>
     </section>
@@ -830,17 +836,14 @@ export function ProductsPage() {
             />
           </div>
           {products?.length === 0 && (
-            <p className="text-center text-slate-600">
+            <p className="text-center text-muted">
               Aún no tienes productos. Agrégalos para vender más rápido.
             </p>
           )}
           {products !== null && products.length > 0 && shown.length === 0 && (
-            <p className="text-center text-slate-600">Ningún producto coincide con la búsqueda.</p>
+            <p className="text-center text-muted">Ningún producto coincide con la búsqueda.</p>
           )}
-          <ul
-            aria-label="Productos"
-            className="divide-y divide-slate-200 rounded-xl bg-white shadow-sm"
-          >
+          <ul aria-label="Productos" className="divide-y divide-line card">
             {entries(shown).map((entry) =>
               entry.kind === 'product' ? (
                 <ProductRow

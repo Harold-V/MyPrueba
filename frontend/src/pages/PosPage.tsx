@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { api, ApiError, compact } from '../api/client';
 import type {
   Category,
@@ -189,10 +189,56 @@ export function PosPage() {
     }
   }
 
+  // Payment in one control: the common methods, "Otro" for the rest, and fiado.
+  type Choice = 'CASH' | 'NEQUI' | 'CARD' | 'MORE' | 'CREDIT';
+  const main: Choice[] = ['CASH', 'NEQUI', 'CARD'];
+  const choice: Choice =
+    status === 'CREDIT'
+      ? 'CREDIT'
+      : (main as string[]).includes(method)
+        ? (method as Choice)
+        : 'MORE';
+  function choose(next: Choice) {
+    setAlert(null);
+    if (next === 'CREDIT') return setStatus('CREDIT');
+    setStatus('PAID');
+    if (next === 'MORE') {
+      if ((main as string[]).includes(method)) setMethod('TRANSFER');
+    } else {
+      setMethod(next);
+    }
+  }
+  const choiceLabels: Record<Choice, string> = {
+    CASH: 'Efectivo',
+    NEQUI: 'Nequi',
+    CARD: 'Tarjeta',
+    MORE: 'Otro',
+    CREDIT: 'Fiado',
+  };
+  const otherMethods = Object.fromEntries(
+    Object.entries(cashPaymentMethods).filter(([key]) => !(main as string[]).includes(key)),
+  );
+  // Bills the customer is likely to hand over: the next two at or above the total.
+  const bills = [200000n, 500000n, 1000000n, 2000000n, 5000000n, 10000000n]
+    .filter((b) => b >= totals.total)
+    .slice(0, 2);
+
   return (
-    <div className="space-y-4 lg:grid lg:grid-cols-[1fr_24rem] lg:items-start lg:gap-6 lg:space-y-0">
-      <section aria-label="Catálogo" className="space-y-3 pb-16 lg:pb-0">
-        <h1 className="text-xl font-bold">Vender</h1>
+    <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start lg:gap-5">
+      <section aria-label="Catálogo" className="flex flex-col gap-3 pb-20 lg:pb-0">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h1 className="text-[22px] leading-tight font-semibold">Vender</h1>
+            <p className="mt-1 text-sm text-muted">
+              {lines.length === 0
+                ? 'Toca un producto o escanea su código.'
+                : `${fromMilli(count)} ${count === 1000n ? 'producto' : 'productos'} en el carrito`}
+            </p>
+          </div>
+          <Link to="/ventas/nueva" className="flex-none pt-1 text-sm font-medium text-accent">
+            Venta libre
+          </Link>
+        </div>
         <TextField
           label="Buscar producto (nombre o código)"
           type="search"
@@ -210,17 +256,17 @@ export function PosPage() {
           }}
         />
         {categories.length > 0 && (
-          <div className="flex gap-2 overflow-x-auto pb-1">
+          <div className="flex flex-wrap gap-2">
             {[{ id: '', name: 'Todas' }, ...categories].map((c) => (
               <button
                 key={c.id || 'all'}
                 type="button"
                 aria-pressed={category === c.id}
                 onClick={() => setCategory(c.id)}
-                className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium ${
+                className={`h-9 rounded-full border px-3.5 text-sm ${
                   category === c.id
-                    ? 'bg-emerald-700 text-white'
-                    : 'bg-white text-slate-700 shadow-sm'
+                    ? 'border-ink bg-ink font-medium text-white'
+                    : 'border-control bg-surface text-ink hover:bg-raised'
                 }`}
               >
                 {c.name}
@@ -229,7 +275,7 @@ export function PosPage() {
           </div>
         )}
         {products.length === 0 && (
-          <p className="rounded-xl bg-white p-6 text-center text-slate-600">
+          <p className="rounded-control border border-dashed border-control p-6 text-center text-muted">
             Aún no tienes productos. Créalos en Productos para vender desde aquí.
           </p>
         )}
@@ -237,24 +283,41 @@ export function PosPage() {
           {shown.map((product) => {
             const item = stock[product.id];
             const inCart = lines.find((l) => l.productId === product.id);
+            const tint = ['bg-tint-a', 'bg-tint-b', 'bg-tint-c'][
+              Math.max(
+                0,
+                categories.findIndex((c) => c.id === product.categoryId),
+              ) % 3
+            ];
             return (
-              <li key={product.id}>
+              <li key={product.id} className="flex">
                 <button
                   type="button"
                   aria-label={`Agregar ${product.name}`}
                   onClick={() => add(product)}
-                  className={`flex h-full w-full flex-col items-start gap-1 rounded-xl bg-white p-3 text-left shadow-sm ${
-                    inCart ? 'ring-2 ring-emerald-600' : ''
+                  className={`relative flex w-full flex-col items-start gap-1 rounded-card border p-3.5 text-left ${
+                    inCart
+                      ? 'border-control bg-raised'
+                      : 'border-line bg-surface hover:border-control'
                   }`}
                 >
-                  <span className="font-medium leading-snug">{product.name}</span>
-                  <span className="font-semibold text-emerald-800">
-                    {formatMoney(product.price)}
+                  <span
+                    aria-hidden="true"
+                    className={`mb-1.5 grid h-9 w-9 place-items-center rounded-card text-xs font-semibold text-tint-ink ${tint}`}
+                  >
+                    {initials(product.name)}
                   </span>
-                  {item && <span className="text-xs text-slate-600">{item.stock} disponibles</span>}
+                  <span className="leading-snug font-medium">{product.name}</span>
+                  <span className="text-[15px] font-semibold">{formatMoney(product.price)}</span>
+                  {item && (
+                    <span className={`text-xs ${item.low ? 'text-negative' : 'text-muted'}`}>
+                      {item.low ? `Quedan ${item.stock}` : `${item.stock} disponibles`}
+                    </span>
+                  )}
                   {inCart && (
-                    <span className="text-xs font-semibold text-emerald-800">
-                      {inCart.quantity} en el carrito
+                    <span className="absolute top-2.5 right-2.5 grid h-6 min-w-6 place-items-center rounded-full bg-accent px-1.5 text-xs font-semibold text-white">
+                      {inCart.quantity}
+                      <span className="sr-only"> en el carrito</span>
                     </span>
                   )}
                 </button>
@@ -264,11 +327,11 @@ export function PosPage() {
         </ul>
       </section>
 
-      {/* Phones: a bar with the total opens the cart; desktop: the cart is always beside the catalog. */}
+      {/* Phones: a bar with the total opens the cart; desktop: the cart sits beside the catalog. */}
       <button
         type="button"
         onClick={() => setCartOpen(true)}
-        className="fixed inset-x-3 bottom-16 z-10 flex items-center justify-between rounded-xl bg-emerald-700 px-4 py-3 font-semibold text-white shadow-lg lg:hidden"
+        className="fixed inset-x-3 bottom-[70px] z-10 flex h-[52px] items-center justify-between rounded-xl bg-ink px-4 font-semibold text-white lg:hidden"
       >
         <span>Ver carrito ({fromMilli(count)})</span>
         <span>{formatMoney(fromCents(totals.total))}</span>
@@ -277,79 +340,96 @@ export function PosPage() {
       <section
         aria-label="Carrito"
         className={`${
-          cartOpen ? 'fixed inset-0 z-30 overflow-y-auto bg-slate-50 p-4' : 'hidden'
-        } lg:sticky lg:top-8 lg:block lg:p-0`}
+          cartOpen ? 'fixed inset-0 z-30 overflow-y-auto bg-ground p-3' : 'hidden'
+        } lg:sticky lg:top-4 lg:block lg:p-0`}
       >
-        <form onSubmit={charge} className="space-y-4 rounded-xl bg-white p-4 shadow-sm" noValidate>
+        <form onSubmit={charge} className="card flex flex-col gap-3.5 p-5" noValidate>
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Carrito</h2>
+            <h2 className="text-[15px] font-semibold">Carrito</h2>
             <button
               type="button"
-              className="text-sm font-semibold text-emerald-800 underline lg:hidden"
+              className="text-sm font-medium text-accent lg:hidden"
               onClick={() => setCartOpen(false)}
             >
               Seguir agregando
             </button>
           </div>
           {lines.length === 0 && (
-            <p className="text-sm text-slate-600">Toca un producto para agregarlo.</p>
+            <p className="rounded-control border border-dashed border-control px-4 py-3 text-sm text-muted">
+              Toca un producto para agregarlo.
+            </p>
           )}
-          <ul className="divide-y divide-slate-100">
+          <ul className="divide-y divide-rule">
             {lines.map((line) => {
               const short = shortage(line);
               return (
-                <li key={line.productId} className="space-y-2 py-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <span className="font-medium">{line.name}</span>
-                    <span className="shrink-0 font-semibold">
+                <li key={line.productId} className="space-y-2 py-3 first:pt-0">
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="min-w-0">
+                      <span className="block font-medium">{line.name}</span>
+                      <span className="block text-xs text-muted">
+                        {formatMoney(line.price)} c/u
+                      </span>
+                    </span>
+                    <span className="flex-none font-medium">
                       {formatMoney(lineTotal(normalizeQuantity(line.quantity), line.price) ?? '0')}
                     </span>
                   </div>
                   <div className="flex items-end gap-2">
-                    <Button
-                      variant="secondary"
-                      aria-label={`Uno menos de ${line.name}`}
-                      onClick={() => less(line)}
-                    >
-                      −
-                    </Button>
-                    <div className="w-20">
-                      <TextField
-                        label={`Cantidad de ${line.name}`}
+                    <div className="flex h-11 items-center rounded-control border border-control sm:h-10">
+                      <button
+                        type="button"
+                        aria-label={`Uno menos de ${line.name}`}
+                        onClick={() => less(line)}
+                        className="h-full w-9 text-lg"
+                      >
+                        −
+                      </button>
+                      <label className="sr-only" htmlFor={`qty-${line.productId}`}>
+                        Cantidad de {line.name}
+                      </label>
+                      <input
+                        id={`qty-${line.productId}`}
                         inputMode="decimal"
                         value={line.quantity}
                         onChange={(e) => change(line.productId, { quantity: e.target.value })}
+                        className="h-full w-12 border-x border-control text-center"
                       />
+                      <button
+                        type="button"
+                        aria-label={`Uno más de ${line.name}`}
+                        onClick={() =>
+                          change(line.productId, {
+                            quantity: fromMilli((toMilli(line.quantity) ?? 0n) + 1000n),
+                          })
+                        }
+                        className="h-full w-9 text-lg"
+                      >
+                        +
+                      </button>
                     </div>
-                    <Button
-                      variant="secondary"
-                      aria-label={`Uno más de ${line.name}`}
-                      onClick={() =>
-                        change(line.productId, {
-                          quantity: fromMilli((toMilli(line.quantity) ?? 0n) + 1000n),
-                        })
-                      }
-                    >
-                      +
-                    </Button>
-                    <div className="flex-1">
-                      <TextField
-                        label={`Descuento de ${line.name}`}
-                        placeholder="$ o %"
+                    <div className="min-w-0 flex-1">
+                      <label className="sr-only" htmlFor={`disc-${line.productId}`}>
+                        Descuento de {line.name}
+                      </label>
+                      <input
+                        id={`disc-${line.productId}`}
+                        placeholder="Descuento ($ o %)"
                         value={line.discount}
                         onChange={(e) => change(line.productId, { discount: e.target.value })}
+                        className="h-11 w-full rounded-control border border-control px-3 sm:h-10"
                       />
                     </div>
                   </div>
                   {totals.lineErrors[line.productId] && line.discount.trim() && (
-                    <p className="text-sm text-red-700">
+                    <p className="text-sm text-negative">
                       {parseDiscount(line.discount) === null
                         ? 'Escribe un valor (1.500) o un porcentaje (10%).'
                         : 'El descuento no puede superar el valor del producto.'}
                     </p>
                   )}
                   {short !== null && (
-                    <p className="text-sm text-amber-800">
+                    <p className="text-sm text-warning">
                       Solo hay {short} en inventario.
                       {allowNegativeStock
                         ? ' La venta se registrará igual.'
@@ -369,70 +449,86 @@ export function PosPage() {
                 onChange={(e) => setSaleDiscount(e.target.value)}
                 error={totals.saleError && saleDiscount.trim() ? 'exceeds_subtotal' : undefined}
               />
-              <ul aria-label="Totales" className="space-y-1 border-t border-slate-100 pt-3">
-                <li className="flex justify-between text-slate-700">
+              <ul aria-label="Totales" className="space-y-1 border-t border-line pt-3">
+                <li className="flex justify-between text-sm text-muted">
                   <span>Subtotal</span>
                   <span>{formatMoney(fromCents(totals.subtotal))}</span>
                 </li>
                 {totals.discounts > 0n && (
-                  <li className="flex justify-between text-slate-700">
+                  <li className="flex justify-between text-sm text-muted">
                     <span>Descuentos</span>
                     <span>−{formatMoney(fromCents(totals.discounts))}</span>
                   </li>
                 )}
-                <li className="flex justify-between text-xl font-bold">
+                <li className="flex justify-between pt-1 text-[22px] leading-8 font-semibold">
                   <span>Total</span>
                   <span>{formatMoney(fromCents(totals.total))}</span>
                 </li>
               </ul>
-              <fieldset className="flex gap-4">
-                <legend className="mb-1 text-sm font-medium text-slate-800">Pago</legend>
-                {(
-                  [
-                    ['PAID', 'Pagada'],
-                    ['CREDIT', 'Fiada'],
-                  ] as const
-                ).map(([value, text]) => (
-                  <label key={value} className="flex items-center gap-2 text-base">
-                    <input
-                      type="radio"
-                      name="pos-status"
-                      checked={status === value}
-                      onChange={() => setStatus(value)}
-                      className="h-5 w-5 accent-emerald-700"
-                    />
-                    {text}
-                  </label>
+              <div
+                role="group"
+                aria-label="Forma de pago"
+                className="grid grid-cols-5 gap-[3px] rounded-control bg-raised p-[3px]"
+              >
+                {(Object.keys(choiceLabels) as Choice[]).map((key) => (
+                  <button
+                    key={key}
+                    type="button"
+                    aria-pressed={choice === key}
+                    onClick={() => choose(key)}
+                    className={`h-9 rounded-[4px] text-[13px] ${
+                      choice === key
+                        ? 'bg-surface font-semibold text-ink outline outline-line'
+                        : 'text-muted'
+                    }`}
+                  >
+                    {choiceLabels[key]}
+                  </button>
                 ))}
-              </fieldset>
-              {status === 'PAID' ? (
+              </div>
+              {choice === 'MORE' && (
+                <SelectField
+                  label="Método de pago"
+                  options={otherMethods}
+                  value={method}
+                  onChange={(e) => setMethod(e.target.value as Exclude<PaymentMethod, 'CREDIT'>)}
+                />
+              )}
+              {cashPaid && (
                 <>
-                  <SelectField
-                    label="Método de pago"
-                    options={cashPaymentMethods}
-                    value={method}
-                    onChange={(e) => setMethod(e.target.value as Exclude<PaymentMethod, 'CREDIT'>)}
-                  />
-                  {method === 'CASH' && (
-                    <>
+                  <div className="flex items-end gap-2">
+                    <div className="min-w-0 flex-1">
                       <TextField
                         label="¿Con cuánto paga?"
                         inputMode="decimal"
-                        hint="Opcional: calcula el cambio."
                         value={received}
                         onChange={(e) => setReceived(e.target.value)}
                       />
-                      {receivedCents !== null && (
-                        <p className="text-lg font-semibold" aria-live="polite">
-                          {receivedCents >= totals.total
-                            ? `Cambio: ${formatMoney(fromCents(receivedCents - totals.total))}`
-                            : `Faltan ${formatMoney(fromCents(totals.total - receivedCents))}`}
-                        </p>
-                      )}
-                    </>
+                    </div>
+                    {bills.map((b) => (
+                      <button
+                        key={String(b)}
+                        type="button"
+                        onClick={() => setReceived(String(b / 100n))}
+                        className="h-11 flex-none rounded-control border border-control px-2.5 text-[13px] sm:h-10"
+                      >
+                        {formatMoney(fromCents(b))}
+                      </button>
+                    ))}
+                  </div>
+                  {receivedCents !== null && (
+                    <p
+                      className="flex items-baseline justify-between rounded-control bg-raised px-3 py-2.5"
+                      aria-live="polite"
+                    >
+                      {receivedCents >= totals.total
+                        ? `Cambio: ${formatMoney(fromCents(receivedCents - totals.total))}`
+                        : `Faltan ${formatMoney(fromCents(totals.total - receivedCents))}`}
+                    </p>
                   )}
                 </>
-              ) : (
+              )}
+              {status === 'CREDIT' && (
                 <TextField
                   label="Fecha de vencimiento (opcional)"
                   type="date"
@@ -458,7 +554,7 @@ export function PosPage() {
           <FormAlert message={alert} />
           <Button
             type="submit"
-            className="w-full py-3 text-lg"
+            className="h-12 w-full text-[17px] sm:h-12"
             disabled={busy || lines.length === 0}
           >
             {`Cobrar ${formatMoney(fromCents(totals.total))}`}
@@ -467,4 +563,15 @@ export function PosPage() {
       </section>
     </div>
   );
+}
+
+/** Two letters for a product's tile: "Gaseosa 400 ml" → GA, "Leche Alpina" → LA. */
+function initials(name: string): string {
+  const words = name
+    .replace(/[0-9×].*$/, '')
+    .split(/\s+/)
+    .filter(Boolean);
+  if (words.length === 0) return name.slice(0, 2).toUpperCase();
+  if (words.length === 1) return words[0]!.slice(0, 2).toUpperCase();
+  return (words[0]![0]! + words[1]![0]!).toUpperCase();
 }

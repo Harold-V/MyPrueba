@@ -177,7 +177,7 @@ describe('point of sale', () => {
     const user = userEvent.setup();
     await user.click(await screen.findByRole('button', { name: /Agregar Pan/ }));
     const cart = screen.getByRole('region', { name: 'Carrito' });
-    await user.click(within(cart).getByRole('radio', { name: 'Fiada' }));
+    await user.click(within(cart).getByRole('button', { name: 'Fiado' }));
     await user.click(within(cart).getByRole('button', { name: 'Cobrar $500' }));
     expect(await within(cart).findByText('Elige a quién le fías.')).toBeInTheDocument();
     await user.selectOptions(within(cart).getByLabelText('Cliente'), 'c1');
@@ -430,7 +430,10 @@ describe('sales elsewhere', () => {
     const nav = await screen.findByRole('navigation', { name: 'Principal' });
     expect(within(nav).getByRole('link', { name: 'Vender' })).toHaveAttribute('href', '/vender');
     const user = userEvent.setup();
-    await user.click(within(nav).getByRole('button', { name: 'Más' }));
+    // On phones the bottom tabs hold "Más"; the sidebar lists every section on desktop.
+    const tabs = screen.getByRole('navigation', { name: 'Pestañas' });
+    expect(within(tabs).getByRole('link', { name: 'Vender' })).toHaveAttribute('href', '/vender');
+    await user.click(within(tabs).getByRole('button', { name: 'Más' }));
     const more = screen.getByRole('dialog', { name: 'Más opciones' });
     expect(within(more).getByRole('link', { name: 'Caja' })).toHaveAttribute('href', '/caja');
     expect(within(more).getByRole('link', { name: 'Negocio' })).toHaveAttribute('href', '/negocio');

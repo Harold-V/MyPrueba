@@ -147,15 +147,15 @@ function History({ item }: { item: InventoryItem }) {
 
   if (error) return <FormAlert message={error} />;
   if (movements?.length === 0) {
-    return <p className="mt-3 text-sm text-slate-600">Sin movimientos todavía.</p>;
+    return <p className="mt-3 text-sm text-muted">Sin movimientos todavía.</p>;
   }
   return (
-    <ul aria-label={`Historial de ${item.name}`} className="mt-3 divide-y divide-slate-100 text-sm">
+    <ul aria-label={`Historial de ${item.name}`} className="mt-3 divide-y divide-rule text-sm">
       {movements?.map((m, index) => (
         <li key={index} className="flex justify-between gap-3 py-2">
           <span>
             <span className="block font-medium">{stockMovementTypes[m.type]}</span>
-            <span className="block text-slate-600">
+            <span className="block text-muted">
               {[formatDateTime(m.occurredAt, business.timeZone), m.note]
                 .filter(Boolean)
                 .join(' · ')}
@@ -183,17 +183,17 @@ function InventoryRow({
   };
 
   return (
-    <li aria-label={item.name} className="bg-white p-4">
+    <li aria-label={item.name} className="bg-surface p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span>
           <span className="block font-medium">{item.name}</span>
-          <span className="block text-sm text-slate-600">
+          <span className="block text-sm text-muted">
             <span>{item.stock} en stock</span>
             {item.minStock && <span> · mínimo {item.minStock}</span>}
           </span>
         </span>
         {item.low && (
-          <span className="rounded-full bg-red-100 px-3 py-1 text-sm font-semibold text-red-800">
+          <span className="rounded-full bg-pill-negative px-3 py-1 text-sm font-semibold text-pill-negative-ink">
             Stock bajo
           </span>
         )}
@@ -287,25 +287,22 @@ export function InventoryPage() {
     <div className="space-y-5">
       <h1 className="text-xl font-bold">Inventario</h1>
       <FormAlert message={error} />
-      <section
-        aria-label="Resumen de inventario"
-        className="rounded-xl bg-white p-4 shadow-sm lg:p-6"
-      >
+      <section aria-label="Resumen de inventario" className="card p-4 lg:p-6">
         <dl className="grid grid-cols-3 gap-2 text-center">
           <div>
-            <dt className="text-sm text-slate-600">Productos</dt>
+            <dt className="text-sm text-muted">Productos</dt>
             <dd className="text-lg font-semibold lg:text-2xl">
               {inventory?.summary.references ?? 0}
             </dd>
           </div>
           <div>
-            <dt className="text-sm text-slate-600">Stock bajo</dt>
-            <dd className="text-lg font-semibold text-red-700 lg:text-2xl">
+            <dt className="text-sm text-muted">Stock bajo</dt>
+            <dd className="text-lg font-semibold text-negative lg:text-2xl">
               {inventory?.summary.lowStock ?? 0}
             </dd>
           </div>
           <div>
-            <dt className="text-sm text-slate-600">Valor al costo</dt>
+            <dt className="text-sm text-muted">Valor al costo</dt>
             <dd className="text-lg font-semibold lg:text-2xl">
               {formatMoney(inventory?.summary.value ?? '0')}
             </dd>
@@ -332,18 +329,18 @@ export function InventoryPage() {
           type="checkbox"
           checked={lowOnly}
           onChange={(e) => setLowOnly(e.target.checked)}
-          className="h-5 w-5 accent-emerald-700"
+          className="h-5 w-5 accent-accent"
         />
         Solo stock bajo
       </label>
       {inventory?.items.length === 0 && (
-        <p className="rounded-xl bg-white p-6 text-center text-slate-600">
+        <p className="rounded-xl bg-surface p-6 text-center text-muted">
           {lowOnly || categoryId || query.trim()
             ? 'Ningún producto coincide con los filtros.'
             : 'Aún no tienes productos. Créalos en Productos.'}
         </p>
       )}
-      <ul className="divide-y divide-slate-200 rounded-xl bg-white shadow-sm lg:grid lg:grid-cols-2 lg:divide-y-0 lg:gap-px lg:bg-slate-200">
+      <ul className="divide-y divide-line card lg:grid lg:grid-cols-2 lg:divide-y-0 lg:gap-px lg:bg-raised">
         {inventory?.items.map((item) => (
           <InventoryRow key={item.productId} item={item} onChanged={replace} />
         ))}

@@ -105,25 +105,25 @@ export function BusinessPage() {
             error={errors.address}
           />
         </fieldset>
-        <p className="text-sm text-slate-600">Cuenta: {me.user.email}</p>
+        <p className="text-sm text-muted">Cuenta: {me.user.email}</p>
         <Button type="submit">Guardar</Button>
-        <p role="status" className="text-sm text-emerald-800">
+        <p role="status" className="text-sm text-positive">
           {saved ? 'Cambios guardados.' : ''}
         </p>
       </form>
-      <section className="space-y-2 rounded-xl bg-white p-4 shadow-sm">
+      <section className="space-y-2 card p-4">
         <h2 className="font-semibold">Inventario</h2>
         <label className="flex items-start gap-3 text-base">
           <input
             type="checkbox"
-            className="mt-1 h-5 w-5 accent-emerald-700"
+            className="mt-1 h-5 w-5 accent-accent"
             checked={allowNegativeStock ?? true}
             disabled={allowNegativeStock === null}
             onChange={(e) => void onToggleNegativeStock(e.target.checked)}
           />
           <span>
             Permitir vender sin stock
-            <span className="block text-sm text-slate-600">
+            <span className="block text-sm text-muted">
               Si lo desactivas, no podrás registrar ventas de productos sin unidades disponibles.
             </span>
           </span>

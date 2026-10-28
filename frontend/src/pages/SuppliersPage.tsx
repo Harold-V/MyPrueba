@@ -98,19 +98,12 @@ export function SuppliersPage() {
   return (
     <div className="space-y-5">
       <h1 className="text-xl font-bold">Proveedores y cuentas por pagar</h1>
-      <section
-        aria-label="Por pagar"
-        className="rounded-xl bg-white p-4 text-center shadow-sm lg:p-6"
-      >
-        <p className="text-sm text-slate-600">Total por pagar</p>
+      <section aria-label="Por pagar" className="card p-4 text-center lg:p-6">
+        <p className="text-sm text-muted">Total por pagar</p>
         <p className="text-2xl font-bold lg:text-3xl">{formatMoney(payables?.total ?? '0')}</p>
       </section>
       <div className="space-y-5 lg:grid lg:grid-cols-[22rem_1fr] lg:items-start lg:gap-6 lg:space-y-0">
-        <form
-          onSubmit={onCreate}
-          className="space-y-3 rounded-xl bg-white p-4 shadow-sm lg:sticky lg:top-8"
-          noValidate
-        >
+        <form onSubmit={onCreate} className="space-y-3 card p-4 lg:sticky lg:top-8" noValidate>
           <FormAlert message={alert} />
           <TextField
             label="Nombre"
@@ -137,11 +130,11 @@ export function SuppliersPage() {
         </form>
         <div className="space-y-3">
           {suppliers?.length === 0 && (
-            <p className="rounded-xl bg-white p-6 text-center text-slate-600">
+            <p className="rounded-xl bg-surface p-6 text-center text-muted">
               Aún no tienes proveedores. Agrégalos para registrar compras y lo que les debes.
             </p>
           )}
-          <ul className="divide-y divide-slate-200 rounded-xl bg-white shadow-sm">
+          <ul className="divide-y divide-line card">
             {sorted.map((supplier) => {
               const debt = debts[supplier.id];
               return (
@@ -153,7 +146,7 @@ export function SuppliersPage() {
                   >
                     <span className="min-w-0">
                       <span className="block truncate font-medium">{supplier.name}</span>
-                      <span className="block text-sm text-slate-600">
+                      <span className="block text-sm text-muted">
                         {[
                           supplier.phone,
                           debt?.oldestDebtAt &&
@@ -165,12 +158,12 @@ export function SuppliersPage() {
                     </span>
                     <span className="flex shrink-0 flex-col items-end gap-1">
                       <span
-                        className={`text-sm font-semibold ${debt ? 'text-red-700' : 'text-emerald-800'}`}
+                        className={`text-sm font-semibold ${debt ? 'text-negative' : 'text-positive'}`}
                       >
                         {debtLabel(debt?.debt)}
                       </span>
                       {debt?.overdue && (
-                        <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-800">
+                        <span className="rounded-full bg-pill-negative px-2 py-0.5 text-xs font-semibold text-pill-negative-ink">
                           Vencida
                         </span>
                       )}
@@ -218,7 +211,7 @@ function SupplierPaymentForm({ supplierId, onSaved }: { supplierId: string; onSa
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-3 rounded-xl bg-white p-4 shadow-sm" noValidate>
+    <form onSubmit={onSubmit} className="space-y-3 card p-4" noValidate>
       <h2 className="font-semibold">Registrar pago</h2>
       <FormAlert message={alert} />
       <TextField
@@ -327,7 +320,7 @@ export function SupplierPage() {
       <div>
         <h1 className="text-xl font-bold">{account.supplier.name}</h1>
         <p
-          className={`text-lg font-semibold ${account.debt === '0.00' ? 'text-emerald-800' : 'text-red-700'}`}
+          className={`text-lg font-semibold ${account.debt === '0.00' ? 'text-positive' : 'text-negative'}`}
         >
           {debtLabel(account.debt)}
         </p>
@@ -336,11 +329,7 @@ export function SupplierPage() {
       <div className="space-y-5 lg:grid lg:grid-cols-2 lg:items-start lg:gap-6 lg:space-y-0">
         <div className="space-y-5">
           <SupplierPaymentForm supplierId={id} onSaved={() => setVersion((v) => v + 1)} />
-          <form
-            onSubmit={onSave}
-            className="space-y-3 rounded-xl bg-white p-4 shadow-sm"
-            noValidate
-          >
+          <form onSubmit={onSave} className="space-y-3 card p-4" noValidate>
             <h2 className="font-semibold">Datos del proveedor</h2>
             <TextField
               label="Nombre"
@@ -369,7 +358,7 @@ export function SupplierPage() {
               error={errors.note}
             />
             <Button type="submit">Guardar proveedor</Button>
-            <p role="status" className="text-sm text-emerald-800">
+            <p role="status" className="text-sm text-positive">
               {saved && supplier ? 'Cambios guardados.' : ''}
             </p>
             <ConfirmDelete
@@ -381,14 +370,14 @@ export function SupplierPage() {
           </form>
         </div>
         <div className="space-y-5">
-          <section className="rounded-xl bg-white shadow-sm">
+          <section className="card">
             <h2 className="px-4 pt-4 font-semibold">Historial de compras</h2>
             {purchases && (
-              <p className="px-4 text-sm text-slate-600">
+              <p className="px-4 text-sm text-muted">
                 {`Total comprado: ${formatMoney(purchases.total)} · ${purchases.count} ${purchases.count === 1 ? 'compra' : 'compras'}`}
               </p>
             )}
-            <ul aria-label="Historial de compras" className="divide-y divide-slate-100">
+            <ul aria-label="Historial de compras" className="divide-y divide-rule">
               {purchases?.items.map((p) => (
                 <li key={p.id}>
                   <Link
@@ -397,13 +386,13 @@ export function SupplierPage() {
                   >
                     <span>
                       <span className="block font-medium">{p.description ?? 'Compra'}</span>
-                      <span className="block text-sm text-slate-600">
+                      <span className="block text-sm text-muted">
                         {formatDateTime(p.occurredAt, business.timeZone)}
                       </span>
                     </span>
                     <span className="flex shrink-0 flex-col items-end">
                       <span className="font-semibold">{formatMoney(p.total)}</span>
-                      <span className="text-xs text-slate-600">
+                      <span className="text-xs text-muted">
                         {p.status === 'CREDIT' ? 'A crédito' : 'Pagada'}
                       </span>
                     </span>
@@ -412,15 +401,15 @@ export function SupplierPage() {
               ))}
             </ul>
             {purchases?.items.length === 0 && (
-              <p className="p-4 text-slate-600">Aún no le has comprado a este proveedor.</p>
+              <p className="p-4 text-muted">Aún no le has comprado a este proveedor.</p>
             )}
           </section>
-          <section className="rounded-xl bg-white shadow-sm">
+          <section className="card">
             <h2 className="px-4 pt-4 font-semibold">Compras a crédito y pagos</h2>
             {account.entries.length === 0 && (
-              <p className="p-4 text-slate-600">Sin compras a crédito ni pagos todavía.</p>
+              <p className="p-4 text-muted">Sin compras a crédito ni pagos todavía.</p>
             )}
-            <ul aria-label="Compras a crédito y pagos" className="divide-y divide-slate-100">
+            <ul aria-label="Compras a crédito y pagos" className="divide-y divide-rule">
               {account.entries.map((entry) => {
                 const isPurchase = entry.type === 'EXPENSE';
                 const title = isPurchase
@@ -436,7 +425,7 @@ export function SupplierPage() {
                     >
                       <span>
                         <span className="block font-medium">{title}</span>
-                        <span className="block text-sm text-slate-600">
+                        <span className="block text-sm text-muted">
                           {[
                             formatDateTime(entry.occurredAt, business.timeZone),
                             isPurchase ? null : entry.description,
@@ -446,7 +435,7 @@ export function SupplierPage() {
                         </span>
                       </span>
                       <span
-                        className={`shrink-0 font-semibold ${isPurchase ? 'text-red-700' : 'text-emerald-800'}`}
+                        className={`shrink-0 font-semibold ${isPurchase ? 'text-negative' : 'text-positive'}`}
                       >
                         {isPurchase ? '+' : '−'}
                         {formatMoney(entry.amount)}
@@ -550,7 +539,7 @@ export function SupplierPaymentPage() {
         error={errors.note}
       />
       {!payment.supplierId && (
-        <p className="text-sm text-slate-600">
+        <p className="text-sm text-muted">
           El proveedor fue eliminado: este pago ya no se puede editar, solo eliminar.
         </p>
       )}

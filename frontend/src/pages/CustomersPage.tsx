@@ -128,19 +128,12 @@ export function CustomersPage() {
   return (
     <div className="space-y-5">
       <h1 className="text-xl font-bold">Clientes y deudas</h1>
-      <section
-        aria-label="Por cobrar"
-        className="rounded-xl bg-white p-4 text-center shadow-sm lg:p-6"
-      >
-        <p className="text-sm text-slate-600">Total por cobrar</p>
+      <section aria-label="Por cobrar" className="card p-4 text-center lg:p-6">
+        <p className="text-sm text-muted">Total por cobrar</p>
         <p className="text-2xl font-bold lg:text-3xl">{formatMoney(receivables?.total ?? '0')}</p>
       </section>
       <div className="space-y-5 lg:grid lg:grid-cols-[22rem_1fr] lg:items-start lg:gap-6 lg:space-y-0">
-        <form
-          onSubmit={onCreate}
-          className="space-y-3 rounded-xl bg-white p-4 shadow-sm lg:sticky lg:top-8"
-          noValidate
-        >
+        <form onSubmit={onCreate} className="space-y-3 card p-4 lg:sticky lg:top-8" noValidate>
           <FormAlert message={alert} />
           <CustomerFields
             name={name}
@@ -155,11 +148,11 @@ export function CustomersPage() {
         </form>
         <div className="space-y-3">
           {customers?.length === 0 && (
-            <p className="rounded-xl bg-white p-6 text-center text-slate-600">
+            <p className="rounded-xl bg-surface p-6 text-center text-muted">
               Aún no tienes clientes. Agrégalos para fiarles y llevar sus cuentas.
             </p>
           )}
-          <ul className="divide-y divide-slate-200 rounded-xl bg-white shadow-sm">
+          <ul className="divide-y divide-line card">
             {sorted.map((customer) => (
               <li key={customer.id} aria-label={customer.name}>
                 <Link
@@ -169,7 +162,7 @@ export function CustomersPage() {
                 >
                   <span className="min-w-0">
                     <span className="block truncate font-medium">{customer.name}</span>
-                    <span className="block text-sm text-slate-600">
+                    <span className="block text-sm text-muted">
                       {[
                         customer.phone,
                         debtInfo[customer.id]?.oldestDebtAt &&
@@ -181,12 +174,12 @@ export function CustomersPage() {
                   </span>
                   <span className="flex shrink-0 flex-col items-end gap-1">
                     <span
-                      className={`text-sm font-semibold ${debts[customer.id] ? 'text-red-700' : 'text-emerald-800'}`}
+                      className={`text-sm font-semibold ${debts[customer.id] ? 'text-negative' : 'text-positive'}`}
                     >
                       {debtLabel(debts[customer.id])}
                     </span>
                     {debtInfo[customer.id]?.overdue && (
-                      <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-800">
+                      <span className="rounded-full bg-pill-negative px-2 py-0.5 text-xs font-semibold text-pill-negative-ink">
                         Vencida
                       </span>
                     )}
@@ -233,7 +226,7 @@ function PaymentForm({ customerId, onSaved }: { customerId: string; onSaved: () 
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-3 rounded-xl bg-white p-4 shadow-sm" noValidate>
+    <form onSubmit={onSubmit} className="space-y-3 card p-4" noValidate>
       <h2 className="font-semibold">Registrar abono</h2>
       <FormAlert message={alert} />
       <TextField
@@ -342,7 +335,7 @@ export function CustomerPage() {
       <div>
         <h1 className="text-xl font-bold">{account.customer.name}</h1>
         <p
-          className={`text-lg font-semibold ${account.debt === '0.00' ? 'text-emerald-800' : 'text-red-700'}`}
+          className={`text-lg font-semibold ${account.debt === '0.00' ? 'text-positive' : 'text-negative'}`}
         >
           {debtLabel(account.debt)}
         </p>
@@ -351,11 +344,7 @@ export function CustomerPage() {
       <div className="space-y-5 lg:grid lg:grid-cols-2 lg:items-start lg:gap-6 lg:space-y-0">
         <div className="space-y-5">
           <PaymentForm customerId={id} onSaved={() => setVersion((v) => v + 1)} />
-          <form
-            onSubmit={onSave}
-            className="space-y-3 rounded-xl bg-white p-4 shadow-sm"
-            noValidate
-          >
+          <form onSubmit={onSave} className="space-y-3 card p-4" noValidate>
             <h2 className="font-semibold">Datos del cliente</h2>
             <CustomerFields
               name={name}
@@ -378,7 +367,7 @@ export function CustomerPage() {
               error={errors.address}
             />
             <Button type="submit">Guardar cliente</Button>
-            <p role="status" className="text-sm text-emerald-800">
+            <p role="status" className="text-sm text-positive">
               {saved ? 'Cambios guardados.' : ''}
             </p>
             <ConfirmDelete
@@ -390,14 +379,14 @@ export function CustomerPage() {
           </form>
         </div>
         <div className="space-y-5">
-          <section className="rounded-xl bg-white shadow-sm">
+          <section className="card">
             <h2 className="px-4 pt-4 font-semibold">Historial de compras</h2>
             {purchases && (
-              <p className="px-4 text-sm text-slate-600">
+              <p className="px-4 text-sm text-muted">
                 {`Total comprado: ${formatMoney(purchases.total)} · ${purchases.count} ${purchases.count === 1 ? 'compra' : 'compras'}`}
               </p>
             )}
-            <ul aria-label="Historial de compras" className="divide-y divide-slate-100">
+            <ul aria-label="Historial de compras" className="divide-y divide-rule">
               {purchases?.items.map((p) => (
                 <li key={p.id}>
                   <Link
@@ -406,13 +395,13 @@ export function CustomerPage() {
                   >
                     <span>
                       <span className="block font-medium">{p.description ?? 'Venta'}</span>
-                      <span className="block text-sm text-slate-600">
+                      <span className="block text-sm text-muted">
                         {formatDateTime(p.occurredAt, business.timeZone)}
                       </span>
                     </span>
                     <span className="flex shrink-0 flex-col items-end">
                       <span className="font-semibold">{formatMoney(p.total)}</span>
-                      <span className="text-xs text-slate-600">
+                      <span className="text-xs text-muted">
                         {p.status === 'CREDIT' ? 'Fiada' : 'Pagada'}
                       </span>
                     </span>
@@ -421,15 +410,15 @@ export function CustomerPage() {
               ))}
             </ul>
             {purchases?.items.length === 0 && (
-              <p className="p-4 text-slate-600">Este cliente aún no tiene compras.</p>
+              <p className="p-4 text-muted">Este cliente aún no tiene compras.</p>
             )}
           </section>
-          <section className="rounded-xl bg-white shadow-sm">
+          <section className="card">
             <h2 className="px-4 pt-4 font-semibold">Fiados y abonos</h2>
             {account.entries.length === 0 && (
-              <p className="p-4 text-slate-600">Sin fiados ni abonos todavía.</p>
+              <p className="p-4 text-muted">Sin fiados ni abonos todavía.</p>
             )}
-            <ul aria-label="Fiados y abonos" className="divide-y divide-slate-100">
+            <ul aria-label="Fiados y abonos" className="divide-y divide-rule">
               {account.entries.map((entry) => {
                 const isSale = entry.type === 'SALE';
                 const title = isSale
@@ -445,7 +434,7 @@ export function CustomerPage() {
                     >
                       <span>
                         <span className="block font-medium">{title}</span>
-                        <span className="block text-sm text-slate-600">
+                        <span className="block text-sm text-muted">
                           {[
                             formatDateTime(entry.occurredAt, business.timeZone),
                             isSale ? null : entry.description,
@@ -455,7 +444,7 @@ export function CustomerPage() {
                         </span>
                       </span>
                       <span
-                        className={`shrink-0 font-semibold ${isSale ? 'text-red-700' : 'text-emerald-800'}`}
+                        className={`shrink-0 font-semibold ${isSale ? 'text-negative' : 'text-positive'}`}
                       >
                         {isSale ? '+' : '−'}
                         {formatMoney(entry.amount)}

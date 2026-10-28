@@ -65,20 +65,17 @@ export function ReceiptPage() {
   return (
     <div className="mx-auto max-w-md space-y-4">
       <h1 className="text-xl font-bold print:hidden">Comprobante de venta #{receipt.number}</h1>
-      <article
-        aria-label="Comprobante"
-        className="space-y-4 rounded-xl bg-white p-5 shadow-sm print:shadow-none"
-      >
+      <article aria-label="Comprobante" className="space-y-4 card p-5 print:shadow-none">
         <header className="space-y-0.5 text-center">
           <p className="text-lg font-bold">{shop.name}</p>
           {shop.document && <p className="text-sm">NIT {shop.document}</p>}
           {(shop.phone || shop.address) && (
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-muted">
               {[shop.address, shop.phone].filter(Boolean).join(' · ')}
             </p>
           )}
         </header>
-        <div className="border-y border-dashed border-slate-300 py-2 text-sm">
+        <div className="border-y border-dashed border-control py-2 text-sm">
           <p>
             Venta #{receipt.number} · {formatDateTime(receipt.occurredAt, business.timeZone)}
           </p>
@@ -100,14 +97,14 @@ export function ReceiptPage() {
                 </span>
                 <span>{formatMoney(item.lineTotal)}</span>
               </div>
-              <p className="text-xs text-slate-600">{formatMoney(item.unitPrice)} c/u</p>
+              <p className="text-xs text-muted">{formatMoney(item.unitPrice)} c/u</p>
               {hasDiscount(item.discount) && (
-                <p className="text-xs text-emerald-800">Descuento −{formatMoney(item.discount!)}</p>
+                <p className="text-xs text-positive">Descuento −{formatMoney(item.discount!)}</p>
               )}
             </li>
           ))}
         </ul>
-        <dl className="space-y-1 border-t border-dashed border-slate-300 pt-2 text-sm">
+        <dl className="space-y-1 border-t border-dashed border-control pt-2 text-sm">
           <div className="flex justify-between">
             <dt>Subtotal</dt>
             <dd>{formatMoney(receipt.subtotal)}</dd>
@@ -142,7 +139,7 @@ export function ReceiptPage() {
           )}
           {receipt.note && <p>Nota: {receipt.note}</p>}
         </div>
-        <p className="text-center text-sm text-slate-600">¡Gracias por tu compra!</p>
+        <p className="text-center text-sm text-muted">¡Gracias por tu compra!</p>
       </article>
       <div className="grid gap-2 print:hidden sm:grid-cols-2">
         <Button variant="secondary" onClick={() => window.print()}>
@@ -152,19 +149,19 @@ export function ReceiptPage() {
           href={whatsapp}
           target="_blank"
           rel="noreferrer"
-          className="rounded-lg bg-emerald-50 px-4 py-2.5 text-center font-semibold text-emerald-900"
+          className="rounded-control border border-control bg-surface px-4 py-2.5 text-center font-medium text-ink"
         >
           Enviar por WhatsApp
         </a>
         <Link
           to="/vender"
-          className="rounded-lg bg-emerald-700 px-4 py-2.5 text-center font-semibold text-white"
+          className="rounded-lg bg-ink px-4 py-2.5 text-center font-semibold text-white"
         >
           Nueva venta
         </Link>
         <Link
           to={`/ventas/${receipt.id}`}
-          className="rounded-lg px-4 py-2.5 text-center font-semibold text-emerald-800 underline"
+          className="rounded-lg px-4 py-2.5 text-center font-medium text-accent underline underline-offset-2"
         >
           Editar venta
         </Link>

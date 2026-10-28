@@ -6,15 +6,17 @@ export function ConfirmDelete({
   label,
   question,
   onConfirm,
+  size = 'md',
 }: {
   label: string;
   question: string;
   onConfirm: () => Promise<void> | void;
+  size?: 'md' | 'sm';
 }) {
   const [asking, setAsking] = useState(false);
   if (!asking) {
     return (
-      <Button variant="secondary" aria-label={label} onClick={() => setAsking(true)}>
+      <Button variant="secondary" size={size} aria-label={label} onClick={() => setAsking(true)}>
         Eliminar
       </Button>
     );
@@ -22,10 +24,10 @@ export function ConfirmDelete({
   return (
     <div role="group" aria-label={question} className="flex flex-wrap items-center gap-2">
       <span className="text-sm font-medium">{question}</span>
-      <Button variant="danger" onClick={() => void onConfirm()}>
+      <Button variant="danger" size={size} onClick={() => void onConfirm()}>
         Sí, eliminar
       </Button>
-      <Button variant="secondary" onClick={() => setAsking(false)}>
+      <Button variant="secondary" size={size} onClick={() => setAsking(false)}>
         Cancelar
       </Button>
     </div>

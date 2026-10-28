@@ -44,7 +44,7 @@ function OpenForm({ onDone }: { onDone: () => void }) {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-3 rounded-xl bg-white p-4 shadow-sm" noValidate>
+    <form onSubmit={onSubmit} className="space-y-3 card p-4" noValidate>
       <h2 className="font-semibold">La caja está cerrada</h2>
       <TextField
         label="Base en efectivo"
@@ -90,7 +90,7 @@ function OpenRegister({ session, onDone }: { session: CashSession; onDone: () =>
 
   return (
     <div className="space-y-4 lg:grid lg:grid-cols-2 lg:items-start lg:gap-6 lg:space-y-0">
-      <section aria-label="Caja abierta" className="space-y-3 rounded-xl bg-white p-4 shadow-sm">
+      <section aria-label="Caja abierta" className="space-y-3 card p-4">
         <h2 className="font-semibold">
           Caja abierta desde {formatDateTime(session.openedAt, business.timeZone)}
         </h2>
@@ -102,23 +102,27 @@ function OpenRegister({ session, onDone }: { session: CashSession; onDone: () =>
           {flows.map(([label, amount, sign]) => (
             <li key={label} className="flex justify-between">
               <span>{label}</span>
-              <span className={sign === '+' ? 'text-emerald-800' : 'text-red-700'}>
-                {sign}
-                {formatMoney(amount)}
-              </span>
+              {amount === '0.00' ? (
+                <span className="text-muted">{formatMoney(amount)}</span>
+              ) : (
+                <span className={sign === '+' ? 'text-positive' : 'text-ink'}>
+                  {sign}
+                  {formatMoney(amount)}
+                </span>
+              )}
             </li>
           ))}
         </ul>
-        <dl className="flex items-baseline justify-between border-t border-slate-100 pt-3">
+        <dl className="flex items-baseline justify-between border-t border-rule pt-3">
           <dt className="font-semibold">Efectivo esperado</dt>
           <dd className="text-2xl font-bold">{formatMoney(session.expected)}</dd>
         </dl>
-        <p className="text-xs text-slate-600">
+        <p className="text-xs text-muted">
           Cuenta lo registrado desde que abriste la caja. Las tarjetas, transferencias y fiados no
           entran al cajón.
         </p>
       </section>
-      <form onSubmit={onSubmit} className="space-y-3 rounded-xl bg-white p-4 shadow-sm" noValidate>
+      <form onSubmit={onSubmit} className="space-y-3 card p-4" noValidate>
         <h2 className="font-semibold">Cerrar caja</h2>
         <TextField
           label="Efectivo contado"
@@ -170,20 +174,17 @@ export function CashRegisterPage() {
       ) : (
         <div className="space-y-4 lg:max-w-md">
           {state.last && (
-            <section
-              aria-label="Último cierre"
-              className="space-y-1 rounded-xl bg-white p-4 shadow-sm"
-            >
+            <section aria-label="Último cierre" className="space-y-1 card p-4">
               <h2 className="font-semibold">
                 Último cierre: {formatDateTime(state.last.closedAt!, business.timeZone)}
               </h2>
-              <p className="text-sm text-slate-600">
+              <p className="text-sm text-muted">
                 Esperado {formatMoney(state.last.expected)} · Contado{' '}
                 {formatMoney(state.last.counted ?? '0')}
               </p>
               <p
                 className={`text-lg font-semibold ${
-                  state.last.difference?.startsWith('-') ? 'text-red-700' : 'text-emerald-800'
+                  state.last.difference?.startsWith('-') ? 'text-negative' : 'text-positive'
                 }`}
               >
                 {differenceLabel(state.last.difference)}
@@ -194,9 +195,9 @@ export function CashRegisterPage() {
         </div>
       )}
       {history.length > 0 && (
-        <section className="rounded-xl bg-white shadow-sm">
+        <section className="card">
           <h2 className="px-4 pt-4 font-semibold">Cierres anteriores</h2>
-          <ul aria-label="Cierres anteriores" className="divide-y divide-slate-100">
+          <ul aria-label="Cierres anteriores" className="divide-y divide-rule">
             {history.map((session) => (
               <li
                 key={session.id}
@@ -206,7 +207,7 @@ export function CashRegisterPage() {
                   <span className="block font-medium">
                     {formatDateTime(session.closedAt!, business.timeZone)}
                   </span>
-                  <span className="block text-slate-600">
+                  <span className="block text-muted">
                     Esperado {formatMoney(session.expected)} · Contado{' '}
                     {formatMoney(session.counted ?? '0')}
                   </span>

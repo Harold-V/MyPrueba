@@ -1,8 +1,96 @@
 @import 'tailwindcss';
+@import '@fontsource/ibm-plex-sans/400.css';
+@import '@fontsource/ibm-plex-sans/500.css';
+@import '@fontsource/ibm-plex-sans/600.css';
+
+/*
+ * "Mostrador" (design: framed-sheet). A green-grey L-frame holds the navigation; the work sits on a
+ * white sheet with a hairline edge and 16px corners. No shadows at rest. Colour goes on data and on
+ * one action: the teal accent marks the main data element and the selected state; status colours
+ * mean status. Full system: DESIGN.md at the repository root.
+ */
+@theme {
+  --font-sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --color-ground: #eef3ef; /* the frame: sidebar, top bar, page behind the sheet */
+  --color-surface: #ffffff; /* the sheet and cards */
+  --color-raised: #f4f7f5; /* inner wells, hover rows, segmented track */
+  --color-active: #dfe8e1; /* the active nav pill */
+  --color-line: #e3e8e4; /* card and sheet edges */
+  --color-rule: #eff2f0; /* row rules inside lists */
+  --color-control: #c9d1cb; /* inputs and outlined buttons: one step stronger */
+  --color-ink: #131416; /* primary text and the primary button */
+  --color-muted: #55605a; /* secondary text: 6.4:1 on white, 5.7:1 on the frame */
+  --color-accent: #1b6c80; /* the one hue: main data, selection, links */
+  --color-accent-soft: #e3eef2; /* selected fills */
+  --color-positive: #1e7b4f; /* income, healthy states: 5.4:1 on white */
+  --color-negative: #c4242a; /* debts overdue, shortages: 5.6:1 on white */
+  --color-warning: #92400e;
+  --color-pill-positive: #dcfae5;
+  --color-pill-positive-ink: #04250e;
+  --color-pill-negative: #ffedea;
+  --color-pill-negative-ink: #831c1e;
+  --color-pill-warning: #fffbeb;
+  --color-pill-warning-line: #fde68a;
+  /* identity tints for people and product initials (pale, never data) */
+  --color-tint-a: #e3eef5;
+  --color-tint-b: #f6ead9;
+  --color-tint-c: #e6f1e4;
+  --color-tint-ink: #24343a;
+
+  --radius-card: 8px;
+  --radius-control: 6px;
+  --radius-sheet: 16px;
+}
 
 @layer base {
+  html {
+    background: var(--color-ground);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  /* Money and counts line up digit for digit everywhere. */
+  body {
+    font-variant-numeric: tabular-nums;
+  }
   :focus-visible {
-    outline: 3px solid var(--color-emerald-600);
+    outline: 2px solid var(--color-accent);
     outline-offset: 2px;
+  }
+  input::placeholder {
+    color: #6b6b6b;
+  }
+}
+
+@layer components {
+  /* A card on the sheet: a hairline edge, no shadow. */
+  .card {
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+  }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    height: 22px;
+    padding: 0 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    flex: none;
+  }
+  .pill-positive {
+    background: var(--color-pill-positive);
+    color: var(--color-pill-positive-ink);
+  }
+  .pill-negative {
+    background: var(--color-pill-negative);
+    color: var(--color-pill-negative-ink);
+  }
+  .pill-neutral {
+    background: var(--color-raised);
+    color: var(--color-muted);
   }
 }
