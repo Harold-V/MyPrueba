@@ -20,21 +20,16 @@ enum AdjustmentType {
     COUNT
 }
 
-record TrackingRequest(Boolean tracked, String initialStock, String minStock) {}
+/** Only the minimum stock is configurable; every product always has stock. */
+record StockSettingsRequest(String minStock) {}
 
 record AdjustmentRequest(String type, String quantity, String note) {}
 
 record InventoryItem(
-        UUID productId,
-        String name,
-        String price,
-        String cost,
-        boolean tracked,
-        String stock,
-        String minStock,
-        boolean low) {}
+        UUID productId, String name, String price, String cost, String stock, String minStock, boolean low) {}
 
-record InventorySummary(int tracked, int lowStock, String value) {}
+/** {@code references}: products in the inventory; {@code value}: Σ stock × cost of products with cost. */
+record InventorySummary(int references, int lowStock, String value) {}
 
 record InventoryResponse(InventorySummary summary, List<InventoryItem> items) {}
 

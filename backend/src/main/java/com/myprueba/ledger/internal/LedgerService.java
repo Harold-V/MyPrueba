@@ -114,7 +114,8 @@ class LedgerService {
                     input.occurredAt(),
                     input.note(),
                     customerId,
-                    customerName);
+                    customerName,
+                    input.dueDate());
         }
         List<SaleLine> lines = new ArrayList<>();
         long total = 0;
@@ -142,7 +143,8 @@ class LedgerService {
                 input.occurredAt(),
                 input.note(),
                 customerId,
-                customerName);
+                customerName,
+                input.dueDate());
     }
 
     private static SaleResponse toResponse(UUID id, SaleData sale) {
@@ -164,7 +166,9 @@ class LedgerService {
                 sale.occurredAt(),
                 sale.note(),
                 sale.customerId(),
-                sale.customerName());
+                sale.customerName(),
+                sale.paymentMethod() == PaymentMethod.CREDIT ? SaleStatus.CREDIT : SaleStatus.PAID,
+                sale.dueDate());
     }
 
     // --- expenses ----------------------------------------------------------------------------

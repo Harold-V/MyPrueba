@@ -33,7 +33,7 @@ class InventoryController {
     }
 
     @PutMapping(path = "/{productId}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    InventoryItem configure(@PathVariable String productId, @RequestBody TrackingRequest request) {
+    InventoryItem configure(@PathVariable String productId, @RequestBody StockSettingsRequest request) {
         return inventory.configure(business.id(), Ids.parseOrNotFound(productId), request);
     }
 

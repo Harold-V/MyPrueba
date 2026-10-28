@@ -30,14 +30,14 @@ class AuthApiTest extends ApiTest {
     void registerCreatesOwnerBusinessAndSession() throws Exception {
         String email = uniqueEmail();
         mvc.perform(json(post("/api/auth/register"), """
-                        {"email":"  %s ","password":"secreto123","businessName":"  Tienda Doña Rosa ","businessCategory":"GROCERY"}
+                        {"email":"  %s ","password":"secreto123","businessName":"  Tienda Doña Rosa ","businessCategory":"LOCAL_MARKET"}
                         """.formatted(email.toUpperCase())))
                 .andExpect(status().isCreated())
                 .andExpect(cookie().exists("sid"))
                 .andExpect(cookie().httpOnly("sid", true))
                 .andExpect(jsonPath("$.user.email").value(email))
                 .andExpect(jsonPath("$.business.name").value("Tienda Doña Rosa"))
-                .andExpect(jsonPath("$.business.category").value("GROCERY"))
+                .andExpect(jsonPath("$.business.category").value("LOCAL_MARKET"))
                 .andExpect(jsonPath("$.business.currency").value("COP"))
                 .andExpect(jsonPath("$.business.timeZone").value("America/Bogota"));
     }

@@ -6,8 +6,10 @@ import com.myprueba.shared.Text;
 import com.myprueba.shared.ValidationException;
 import com.myprueba.shared.Violations;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +20,7 @@ final class LedgerInput {
 
     static final int MAX_CONCEPT = 140;
     static final int MAX_NOTE = 500;
+    private static final DateTimeFormatter AUTOMATIC_CONCEPT = DateTimeFormatter.ofPattern("ddMMyyHHmmss");
 
     record ItemInput(UUID productId, String name, long quantityMilli, Long unitPriceCents) {}
 
@@ -28,7 +31,8 @@ final class LedgerInput {
             PaymentMethod paymentMethod,
             Instant occurredAt,
             String note,
-            UUID customerId) {}
+            UUID customerId,
+            LocalDate dueDate) {}
 
     record PaymentInput(
             UUID customerId, long amountCents, PaymentMethod paymentMethod, Instant occurredAt, String note) {}
@@ -67,18 +71,25 @@ final class LedgerInput {
             }
         }
         String concept = violations.capture(() -> Text.optional("concept", request.concept(), MAX_CONCEPT));
-        PaymentMethod method = violations.capture(
-                () -> Text.requiredEnum("paymentMethod", request.paymentMethod(), PaymentMethod.class));
+        SaleStatus status = violations.capture(() -> Text.optionalEnum("status", request.status(), SaleStatus.class));
+        // "Fiado" is a status; paymentMethod CREDIT is still accepted as a synonym.
+        boolean credit = status == SaleStatus.CREDIT || "CREDIT".equals(request.paymentMethod());
+        PaymentMethod method =
+                credit ? PaymentMethod.CREDIT : violations.capture(() -> cashMethod(request.paymentMethod()));
         Instant occurredAt = violations.capture(() -> occurredAt(request.occurredAt(), zone, now));
         String note = violations.capture(() -> Text.optional("note", request.note(), MAX_NOTE));
         boolean hasCustomer =
                 request.customerId() != null && !request.customerId().isBlank();
         UUID customerId = hasCustomer ? violations.capture(() -> uuid("customerId", request.customerId())) : null;
-        if (method == PaymentMethod.CREDIT && !hasCustomer) {
+        if (credit && !hasCustomer) {
             violations.add("customerId", "required");
         }
+        LocalDate dueDate = credit ? violations.capture(() -> date("dueDate", request.dueDate())) : null;
+        if (dueDate != null && occurredAt != null && dueDate.isBefore(LocalDate.ofInstant(occurredAt, zone))) {
+            violations.add("dueDate", "before_sale");
+        }
         violations.throwIfAny();
-        return new SaleInput(amount, items, concept, method, occurredAt, note, customerId);
+        return new SaleInput(amount, items, concept, method, occurredAt, note, customerId, dueDate);
     }
 
     static PaymentInput payment(PaymentRequest request, ZoneId zone, Instant now) {
@@ -111,7 +122,24 @@ final class LedgerInput {
         Instant occurredAt = violations.capture(() -> occurredAt(request.occurredAt(), zone, now));
         String note = violations.capture(() -> Text.optional("note", request.note(), MAX_NOTE));
         violations.throwIfAny();
-        return new ExpenseData(amount, category, concept, method, occurredAt, note);
+        String description = concept != null ? concept : automaticExpenseConcept(occurredAt, zone);
+        return new ExpenseData(amount, category, description, method, occurredAt, note);
+    }
+
+    /** An expense without concept is named after its moment, e.g. "Gasto 281026031423" (ddMMyyHHmmss). */
+    static String automaticExpenseConcept(Instant occurredAt, ZoneId zone) {
+        return "Gasto " + AUTOMATIC_CONCEPT.format(occurredAt.atZone(zone));
+    }
+
+    private static LocalDate date(String field, String raw) {
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        try {
+            return LocalDate.parse(raw.strip());
+        } catch (DateTimeParseException e) {
+            throw ValidationException.of(field, "invalid_format");
+        }
     }
 
     private static Instant occurredAt(String raw, ZoneId zone, Instant now) {

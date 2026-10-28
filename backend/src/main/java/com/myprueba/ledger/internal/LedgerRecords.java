@@ -1,6 +1,7 @@
 package com.myprueba.ledger.internal;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -16,7 +17,8 @@ record SaleData(
         Instant occurredAt,
         String note,
         UUID customerId,
-        String customerName) {}
+        String customerName,
+        LocalDate dueDate) {}
 
 record ExpenseData(
         long amountCents,

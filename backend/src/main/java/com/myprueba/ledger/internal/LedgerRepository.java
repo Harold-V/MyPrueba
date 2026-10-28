@@ -26,8 +26,8 @@ class LedgerRepository {
     void insertSale(UUID businessId, UUID id, SaleData sale, Instant now) {
         jdbc.sql("""
                         INSERT INTO sales (id, business_id, kind, total_cents, concept, payment_method, occurred_at, note,
-                                           customer_id, customer_name, created_at, updated_at)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                           customer_id, customer_name, due_date, created_at, updated_at)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                         """)
                 .params(
                         id.toString(),
@@ -40,6 +40,7 @@ class LedgerRepository {
                         sale.note(),
                         sale.customerId() == null ? null : sale.customerId().toString(),
                         sale.customerName(),
+                        sqlDate(sale.dueDate()),
                         Timestamp.from(now),
                         Timestamp.from(now))
                 .update();
@@ -49,7 +50,7 @@ class LedgerRepository {
     int updateSale(UUID businessId, UUID id, SaleData sale, Instant now) {
         int updated = jdbc.sql("""
                         UPDATE sales SET kind = ?, total_cents = ?, concept = ?, payment_method = ?, occurred_at = ?,
-                                         note = ?, customer_id = ?, customer_name = ?, updated_at = ?
+                                         note = ?, customer_id = ?, customer_name = ?, due_date = ?, updated_at = ?
                         WHERE business_id = ? AND id = ?
                         """)
                 .params(
@@ -61,6 +62,7 @@ class LedgerRepository {
                         sale.note(),
                         sale.customerId() == null ? null : sale.customerId().toString(),
                         sale.customerName(),
+                        sqlDate(sale.dueDate()),
                         Timestamp.from(now),
                         businessId.toString(),
                         id.toString())
@@ -97,7 +99,7 @@ class LedgerRepository {
 
     Optional<SaleData> findSale(UUID businessId, UUID id) {
         return jdbc.sql("""
-                        SELECT kind, total_cents, concept, payment_method, occurred_at, note, customer_id, customer_name
+                        SELECT kind, total_cents, concept, payment_method, occurred_at, note, customer_id, customer_name, due_date
                         FROM sales WHERE business_id = ? AND id = ?
                         """)
                 .params(businessId.toString(), id.toString())
@@ -110,7 +112,8 @@ class LedgerRepository {
                         instant(rs, "occurred_at"),
                         rs.getString("note"),
                         uuidOrNull(rs.getString("customer_id")),
-                        rs.getString("customer_name")))
+                        rs.getString("customer_name"),
+                        localDate(rs.getDate("due_date"))))
                 .optional()
                 .map(sale -> new SaleData(
                         sale.kind(),
@@ -121,7 +124,8 @@ class LedgerRepository {
                         sale.occurredAt(),
                         sale.note(),
                         sale.customerId(),
-                        sale.customerName()));
+                        sale.customerName(),
+                        sale.dueDate()));
     }
 
     private List<SaleLine> findLines(UUID saleId) {
@@ -294,6 +298,14 @@ class LedgerRepository {
                 .params(businessId.toString(), Timestamp.from(period.start()), Timestamp.from(period.end()))
                 .query(Long.class)
                 .single();
+    }
+
+    static java.sql.Date sqlDate(java.time.LocalDate date) {
+        return date == null ? null : java.sql.Date.valueOf(date);
+    }
+
+    static java.time.LocalDate localDate(java.sql.Date date) {
+        return date == null ? null : date.toLocalDate();
     }
 
     static UUID uuidOrNull(String value) {

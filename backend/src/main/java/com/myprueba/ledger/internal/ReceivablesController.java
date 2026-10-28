@@ -26,7 +26,7 @@ class ReceivablesController {
 
     @GetMapping("/api/receivables")
     ReceivablesResponse overview() {
-        return receivables.overview(business.id());
+        return receivables.overview(business.id(), business.zone());
     }
 
     @GetMapping("/api/customers/{id}/account")

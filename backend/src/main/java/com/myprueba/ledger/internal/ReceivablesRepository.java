@@ -117,6 +117,23 @@ class ReceivablesRepository {
                 .update();
     }
 
+    record CreditSale(long totalCents, Instant occurredAt, java.time.LocalDate dueDate) {}
+
+    /** Credit sales of one customer, oldest first. */
+    List<CreditSale> creditSales(UUID businessId, UUID customerId) {
+        return jdbc.sql("""
+                        SELECT total_cents, occurred_at, due_date FROM sales
+                        WHERE business_id = ? AND customer_id = ? AND payment_method = 'CREDIT'
+                        ORDER BY occurred_at, created_at, id
+                        """)
+                .params(businessId.toString(), customerId.toString())
+                .query((rs, n) -> new CreditSale(
+                        rs.getLong("total_cents"),
+                        rs.getTimestamp("occurred_at").toInstant(),
+                        LedgerRepository.localDate(rs.getDate("due_date"))))
+                .list();
+    }
+
     /** Credit sales and payments of one customer, newest first. */
     List<MovementRow> account(UUID businessId, UUID customerId) {
         return jdbc.sql("""

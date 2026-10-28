@@ -9,6 +9,7 @@ import com.myprueba.shared.NotFoundException;
 import com.myprueba.shared.ValidationException;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
@@ -29,16 +30,52 @@ class ReceivablesService {
         this.clock = clock;
     }
 
-    ReceivablesResponse overview(UUID businessId) {
+    ReceivablesResponse overview(UUID businessId, ZoneId zone) {
+        LocalDate today = LocalDate.ofInstant(clock.instant(), zone);
         List<CustomerDebt> debts = receivables.debts(businessId).entrySet().stream()
                 .map(entry -> {
                     CustomerView customer =
                             customers.find(businessId, entry.getKey()).orElseThrow();
+                    Unpaid unpaid = unpaid(businessId, customer.id(), entry.getValue(), today);
                     return new CustomerDebt(
-                            customer.id(), customer.name(), customer.phone(), Money.format(entry.getValue()));
+                            customer.id(),
+                            customer.name(),
+                            customer.phone(),
+                            Money.format(entry.getValue()),
+                            unpaid.oldest(),
+                            unpaid.overdue());
                 })
                 .toList();
         return new ReceivablesResponse(Money.format(receivables.totalDebt(businessId)), debts);
+    }
+
+    private record Unpaid(Instant oldest, boolean overdue) {}
+
+    /**
+     * Payments settle the oldest credit sales first. The first sale with a balance left tells "since
+     * when" the customer owes; any unsettled sale past its due date makes the debt overdue.
+     */
+    private Unpaid unpaid(UUID businessId, UUID customerId, long debt, LocalDate today) {
+        if (debt <= 0) {
+            return new Unpaid(null, false);
+        }
+        List<ReceivablesRepository.CreditSale> sales = receivables.creditSales(businessId, customerId);
+        long paid = sales.stream()
+                        .mapToLong(ReceivablesRepository.CreditSale::totalCents)
+                        .sum()
+                - debt;
+        Instant oldest = null;
+        boolean overdue = false;
+        for (ReceivablesRepository.CreditSale sale : sales) {
+            if (paid >= sale.totalCents()) {
+                paid -= sale.totalCents();
+                continue;
+            }
+            paid = 0;
+            oldest = oldest == null ? sale.occurredAt() : oldest;
+            overdue = overdue || (sale.dueDate() != null && sale.dueDate().isBefore(today));
+        }
+        return new Unpaid(oldest, overdue);
     }
 
     AccountResponse account(UUID businessId, UUID customerId) {

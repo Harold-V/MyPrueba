@@ -1,4 +1,4 @@
-Picked up JAVA_TOOL_OPTIONS: -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts -Djavax.net.ssl.trustStoreType=JKS -Dhttps.proxyHost=127.0.0.1 -Dhttps.proxyPort=37913 -Dhttp.nonProxyHosts=localhost|127.0.0.1|::1|127.*|0.*|::|169.254.*|api.anthropic.com|api-staging.anthropic.com|api-pr-preview.anthropic.com|mcp-proxy.anthropic.com|mcp-proxy-staging.anthropic.com|registry.npmjs.org|jsr.io|npm.jsr.io|pypi.org|files.pythonhosted.org|index.crates.io|proxy.golang.org|host.docker.internal|10.*|172.16.*|172.17.*|172.18.*|172.19.*|172.20.*|172.21.*|172.22.*|172.23.*|172.24.*|172.25.*|172.26.*|172.27.*|172.28.*|172.29.*|172.30.*|172.31.*|192.168.*|100.64.0.0/10|*.svc.cluster.local|*.svc.cluster.local -Djdk.http.auth.tunneling.disabledSchemes= -Djdk.http.auth.proxying.disabledSchemes=
+Picked up JAVA_TOOL_OPTIONS: -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts -Djavax.net.ssl.trustStoreType=JKS -Dhttps.proxyHost=127.0.0.1 -Dhttps.proxyPort=42595 -Dhttp.nonProxyHosts=localhost|127.0.0.1|::1|127.*|0.*|::|169.254.*|api.anthropic.com|api-staging.anthropic.com|api-pr-preview.anthropic.com|mcp-proxy.anthropic.com|mcp-proxy-staging.anthropic.com|registry.npmjs.org|jsr.io|npm.jsr.io|pypi.org|files.pythonhosted.org|index.crates.io|proxy.golang.org|host.docker.internal|10.*|172.16.*|172.17.*|172.18.*|172.19.*|172.20.*|172.21.*|172.22.*|172.23.*|172.24.*|172.25.*|172.26.*|172.27.*|172.28.*|172.29.*|172.30.*|172.31.*|192.168.*|100.64.0.0/10|*.svc.cluster.local|*.svc.cluster.local -Djdk.http.auth.tunneling.disabledSchemes= -Djdk.http.auth.proxying.disabledSchemes=
 WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
 WARNING: sun.misc.Unsafe::staticFieldBase has been called by com.google.inject.internal.aop.HiddenClassDefiner (file:/root/.m2/wrapper/dists/apache-maven-3.9.11/a2d47e15/lib/guice-5.1.0-classes.jar)
 WARNING: Please consider reporting this to the maintainers of class com.google.inject.internal.aop.HiddenClassDefiner
@@ -15,18 +15,18 @@ WARNING: sun.misc.Unsafe::staticFieldBase will be removed in a future release
 [INFO] 
 [INFO] --- resources:3.5.0:resources (default-resources) @ myprueba-backend ---
 [INFO] Copying 1 resource from src/main/resources to target/classes
-[INFO] Copying 4 resources from src/main/resources to target/classes
+[INFO] Copying 5 resources from src/main/resources to target/classes
 [INFO] 
 [INFO] --- compiler:3.15.0:compile (default-compile) @ myprueba-backend ---
 [INFO] Recompiling the module because of changed source code.
-[INFO] Compiling 63 source files with javac [debug parameters release 25] to target/classes
+[INFO] Compiling 66 source files with javac [debug parameters release 25] to target/classes
 [INFO] 
 [INFO] --- resources:3.5.0:testResources (default-testResources) @ myprueba-backend ---
 [INFO] Copying 1 resource from src/test/resources to target/test-classes
 [INFO] 
 [INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ myprueba-backend ---
 [INFO] Recompiling the module because of changed dependency.
-[INFO] Compiling 15 source files with javac [debug parameters release 25] to target/test-classes
+[INFO] Compiling 17 source files with javac [debug parameters release 25] to target/test-classes
 [INFO] 
 [INFO] --- surefire:3.5.6:test (default-test) @ myprueba-backend ---
 [INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
@@ -34,171 +34,37 @@ WARNING: sun.misc.Unsafe::staticFieldBase will be removed in a future release
 [INFO] -------------------------------------------------------
 [INFO]  T E S T S
 [INFO] -------------------------------------------------------
-Picked up JAVA_TOOL_OPTIONS: -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts -Djavax.net.ssl.trustStoreType=JKS -Dhttps.proxyHost=127.0.0.1 -Dhttps.proxyPort=37913 -Dhttp.nonProxyHosts=localhost|127.0.0.1|::1|127.*|0.*|::|169.254.*|api.anthropic.com|api-staging.anthropic.com|api-pr-preview.anthropic.com|mcp-proxy.anthropic.com|mcp-proxy-staging.anthropic.com|registry.npmjs.org|jsr.io|npm.jsr.io|pypi.org|files.pythonhosted.org|index.crates.io|proxy.golang.org|host.docker.internal|10.*|172.16.*|172.17.*|172.18.*|172.19.*|172.20.*|172.21.*|172.22.*|172.23.*|172.24.*|172.25.*|172.26.*|172.27.*|172.28.*|172.29.*|172.30.*|172.31.*|192.168.*|100.64.0.0/10|*.svc.cluster.local|*.svc.cluster.local -Djdk.http.auth.tunneling.disabledSchemes= -Djdk.http.auth.proxying.disabledSchemes=
-[INFO] Running com.myprueba.catalog.ProductApiTest
-06:44:57.819 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.myprueba.catalog.ProductApiTest]: ProductApiTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-06:44:57.949 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.myprueba.MyPruebaApplication for test class com.myprueba.catalog.ProductApiTest
-06:44:58.079 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.myprueba.catalog.ProductApiTest]: ProductApiTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-06:44:58.080 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.myprueba.support.ApiTest]: ApiTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-06:44:58.083 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.myprueba.MyPruebaApplication for test class com.myprueba.catalog.ProductApiTest
-
-  .   ____          _            __ _ _
- /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
-( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
- \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
-  '  |____| .__|_| |_|_| |_\__, | / / / /
- =========|_|==============|___/=/_/_/_/
-
- :: Spring Boot ::                (v4.1.2)
-
-2026-10-28T06:44:58.609Z  INFO 3013 --- [myprueba] [           main] com.myprueba.catalog.ProductApiTest      : Starting ProductApiTest using Java 25.0.4.1 with PID 3013 (started by root in /home/user/MyPrueba/backend)
-2026-10-28T06:44:58.617Z  INFO 3013 --- [myprueba] [           main] com.myprueba.catalog.ProductApiTest      : No active profile set, falling back to 1 default profile: "default"
-2026-10-28T06:45:00.736Z  INFO 3013 --- [myprueba] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+Picked up JAVA_TOOL_OPTIONS: -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts -Djavax.net.ssl.trustStoreType=JKS -Dhttps.proxyHost=127.0.0.1 -Dhttps.proxyPort=42595 -Dhttp.nonProxyHosts=localhost|127.0.0.1|::1|127.*|0.*|::|169.254.*|api.anthropic.com|api-staging.anthropic.com|api-pr-preview.anthropic.com|mcp-proxy.anthropic.com|mcp-proxy-staging.anthropic.com|registry.npmjs.org|jsr.io|npm.jsr.io|pypi.org|files.pythonhosted.org|index.crates.io|proxy.golang.org|host.docker.internal|10.*|172.16.*|172.17.*|172.18.*|172.19.*|172.20.*|172.21.*|172.22.*|172.23.*|172.24.*|172.25.*|172.26.*|172.27.*|172.28.*|172.29.*|172.30.*|172.31.*|192.168.*|100.64.0.0/10|*.svc.cluster.local|*.svc.cluster.local -Djdk.http.auth.tunneling.disabledSchemes= -Djdk.http.auth.proxying.disabledSchemes=
+[INFO] Running com.myprueba.migration.V5MigrationTest
 WARNING: A restricted method in java.lang.System has been called
 WARNING: java.lang.System::load has been called by org.sqlite.SQLiteJDBCLoader in an unnamed module (file:/root/.m2/repository/org/xerial/sqlite-jdbc/3.53.4.0/sqlite-jdbc-3.53.4.0.jar)
 WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
 WARNING: Restricted methods will be blocked in a future release unless native access is enabled
 
-2026-10-28T06:45:00.905Z  INFO 3013 --- [myprueba] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.sqlite.jdbc4.JDBC4Connection@3abe1c9e
-2026-10-28T06:45:00.908Z  INFO 3013 --- [myprueba] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
-2026-10-28T06:45:00.923Z  INFO 3013 --- [myprueba] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:sqlite:target/test-f539b8a3-a072-4f79-ac6a-ff8087141dbe.db?journal_mode=WAL&busy_timeout=5000&foreign_keys=true (SQLite 3.53)
-2026-10-28T06:45:00.999Z  INFO 3013 --- [myprueba] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "main"."flyway_schema_history" does not exist yet
-2026-10-28T06:45:01.002Z  INFO 3013 --- [myprueba] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 4 migrations (execution time 00:00.017s)
-2026-10-28T06:45:01.006Z  INFO 3013 --- [myprueba] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "main"."flyway_schema_history" ...
-2026-10-28T06:45:01.037Z  INFO 3013 --- [myprueba] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "main": << Empty Schema >>
-2026-10-28T06:45:01.044Z  INFO 3013 --- [myprueba] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "main" to version "1 - accounts"
-2026-10-28T06:45:01.058Z  INFO 3013 --- [myprueba] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "main" to version "2 - ledger"
-2026-10-28T06:45:01.065Z  INFO 3013 --- [myprueba] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "main" to version "3 - inventory"
-2026-10-28T06:45:01.073Z  INFO 3013 --- [myprueba] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "main" to version "4 - customers"
-2026-10-28T06:45:01.083Z  INFO 3013 --- [myprueba] [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 4 migrations to schema "main", now at version v4 (execution time 00:00.006s)
-2026-10-28T06:45:02.875Z  INFO 3013 --- [myprueba] [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
-2026-10-28T06:45:02.876Z  INFO 3013 --- [myprueba] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
-2026-10-28T06:45:02.890Z  INFO 3013 --- [myprueba] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
-2026-10-28T06:45:02.899Z  INFO 3013 --- [myprueba] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 23 ms
-2026-10-28T06:45:03.102Z  INFO 3013 --- [myprueba] [           main] o.s.s.config.TaskSchedulerRouter         : No TaskScheduler/ScheduledExecutorService bean found for scheduled processing
-2026-10-28T06:45:03.109Z  INFO 3013 --- [myprueba] [           main] com.myprueba.catalog.ProductApiTest      : Started ProductApiTest in 4.914 seconds (process running for 6.738)
-2026-10-28T06:45:03.177Z  WARN 3013 --- [myprueba] [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
-Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
-OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
-WARNING: A Java agent has been loaded dynamically (/root/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
-WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
-WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
-WARNING: Dynamic loading of agents will be disallowed by default in a future release
-[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 7.513 s -- in com.myprueba.catalog.ProductApiTest
-[INFO] Running com.myprueba.shared.QuantityTest
-[INFO] Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.147 s -- in com.myprueba.shared.QuantityTest
-[INFO] Running com.myprueba.shared.MoneyTest
-[INFO] Tests run: 16, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.029 s -- in com.myprueba.shared.MoneyTest
-[INFO] Running com.myprueba.customers.CustomerApiTest
-2026-10-28T06:45:05.250Z  INFO 3013 --- [myprueba] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.myprueba.customers.CustomerApiTest]: CustomerApiTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-2026-10-28T06:45:05.258Z  INFO 3013 --- [myprueba] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.myprueba.MyPruebaApplication for test class com.myprueba.customers.CustomerApiTest
-2026-10-28T06:45:05.259Z  INFO 3013 --- [myprueba] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.myprueba.customers.CustomerApiTest]: CustomerApiTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-2026-10-28T06:45:05.260Z  INFO 3013 --- [myprueba] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.myprueba.support.ApiTest]: ApiTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-2026-10-28T06:45:05.262Z  INFO 3013 --- [myprueba] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.myprueba.MyPruebaApplication for test class com.myprueba.customers.CustomerApiTest
-[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.390 s -- in com.myprueba.customers.CustomerApiTest
-[INFO] Running com.myprueba.ModularityTest
-2026-10-28T06:45:05.718Z  INFO 3013 --- [myprueba] [           main] com.tngtech.archunit.core.PluginLoader   : Detected Java version 25.0.4.1
-[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.043 s -- in com.myprueba.ModularityTest
-[INFO] Running com.myprueba.ledger.ReceivablesApiTest
-2026-10-28T06:45:07.687Z  INFO 3013 --- [myprueba] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.myprueba.ledger.ReceivablesApiTest]: ReceivablesApiTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-2026-10-28T06:45:07.696Z  INFO 3013 --- [myprueba] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.myprueba.MyPruebaApplication for test class com.myprueba.ledger.ReceivablesApiTest
-2026-10-28T06:45:07.696Z  INFO 3013 --- [myprueba] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.myprueba.ledger.ReceivablesApiTest]: ReceivablesApiTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-2026-10-28T06:45:07.697Z  INFO 3013 --- [myprueba] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.myprueba.support.ApiTest]: ApiTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-2026-10-28T06:45:07.698Z  INFO 3013 --- [myprueba] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.myprueba.MyPruebaApplication for test class com.myprueba.ledger.ReceivablesApiTest
-[INFO] Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.326 s -- in com.myprueba.ledger.ReceivablesApiTest
-[INFO] Running com.myprueba.ledger.LedgerApiTest
-2026-10-28T06:45:09.013Z  INFO 3013 --- [myprueba] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.myprueba.ledger.LedgerApiTest]: LedgerApiTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-2026-10-28T06:45:09.015Z  INFO 3013 --- [myprueba] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.myprueba.MyPruebaApplication for test class com.myprueba.ledger.LedgerApiTest
-2026-10-28T06:45:09.016Z  INFO 3013 --- [myprueba] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.myprueba.ledger.LedgerApiTest]: LedgerApiTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-2026-10-28T06:45:09.016Z  INFO 3013 --- [myprueba] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.myprueba.support.ApiTest]: ApiTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-2026-10-28T06:45:09.017Z  INFO 3013 --- [myprueba] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.myprueba.MyPruebaApplication for test class com.myprueba.ledger.LedgerApiTest
-[INFO] Tests run: 21, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 7.132 s -- in com.myprueba.ledger.LedgerApiTest
-[INFO] Running com.myprueba.ledger.internal.PeriodsTest
-[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.010 s -- in com.myprueba.ledger.internal.PeriodsTest
-[INFO] Running com.myprueba.inventory.InventoryApiTest
-2026-10-28T06:45:16.157Z  INFO 3013 --- [myprueba] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.myprueba.inventory.InventoryApiTest]: InventoryApiTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-2026-10-28T06:45:16.166Z  INFO 3013 --- [myprueba] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.myprueba.MyPruebaApplication for test class com.myprueba.inventory.InventoryApiTest
-2026-10-28T06:45:16.167Z  INFO 3013 --- [myprueba] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.myprueba.inventory.InventoryApiTest]: InventoryApiTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-2026-10-28T06:45:16.167Z  INFO 3013 --- [myprueba] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.myprueba.support.ApiTest]: ApiTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-2026-10-28T06:45:16.169Z  INFO 3013 --- [myprueba] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.myprueba.MyPruebaApplication for test class com.myprueba.inventory.InventoryApiTest
-[INFO] Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.109 s -- in com.myprueba.inventory.InventoryApiTest
-[INFO] Running com.myprueba.ApplicationContextTest
-2026-10-28T06:45:17.268Z  INFO 3013 --- [myprueba] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.myprueba.ApplicationContextTest]: ApplicationContextTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-2026-10-28T06:45:17.271Z  INFO 3013 --- [myprueba] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.myprueba.MyPruebaApplication for test class com.myprueba.ApplicationContextTest
-2026-10-28T06:45:17.272Z  INFO 3013 --- [myprueba] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.myprueba.ApplicationContextTest]: ApplicationContextTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-2026-10-28T06:45:17.273Z  INFO 3013 --- [myprueba] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.myprueba.MyPruebaApplication for test class com.myprueba.ApplicationContextTest
-
-  .   ____          _            __ _ _
- /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
-( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
- \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
-  '  |____| .__|_| |_|_| |_\__, | / / / /
- =========|_|==============|___/=/_/_/_/
-
- :: Spring Boot ::                (v4.1.2)
-
-2026-10-28T06:45:17.298Z  INFO 3013 --- [myprueba] [           main] com.myprueba.ApplicationContextTest      : Starting ApplicationContextTest using Java 25.0.4.1 with PID 3013 (started by root in /home/user/MyPrueba/backend)
-2026-10-28T06:45:17.298Z  INFO 3013 --- [myprueba] [           main] com.myprueba.ApplicationContextTest      : No active profile set, falling back to 1 default profile: "default"
-2026-10-28T06:45:17.632Z  INFO 3013 --- [myprueba] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
-2026-10-28T06:45:17.636Z  INFO 3013 --- [myprueba] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection org.sqlite.jdbc4.JDBC4Connection@78f135b2
-2026-10-28T06:45:17.636Z  INFO 3013 --- [myprueba] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
-2026-10-28T06:45:17.637Z  INFO 3013 --- [myprueba] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:sqlite:target/test-f25494f9-b386-44c6-8267-9faa51bdeb91.db?journal_mode=WAL&busy_timeout=5000&foreign_keys=true (SQLite 3.53)
-2026-10-28T06:45:17.642Z  INFO 3013 --- [myprueba] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "main"."flyway_schema_history" does not exist yet
-2026-10-28T06:45:17.642Z  INFO 3013 --- [myprueba] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 4 migrations (execution time 00:00.002s)
-2026-10-28T06:45:17.643Z  INFO 3013 --- [myprueba] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "main"."flyway_schema_history" ...
-2026-10-28T06:45:17.646Z  INFO 3013 --- [myprueba] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "main": << Empty Schema >>
-2026-10-28T06:45:17.648Z  INFO 3013 --- [myprueba] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "main" to version "1 - accounts"
-2026-10-28T06:45:17.651Z  INFO 3013 --- [myprueba] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "main" to version "2 - ledger"
-2026-10-28T06:45:17.655Z  INFO 3013 --- [myprueba] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "main" to version "3 - inventory"
-2026-10-28T06:45:17.659Z  INFO 3013 --- [myprueba] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "main" to version "4 - customers"
-2026-10-28T06:45:17.661Z  INFO 3013 --- [myprueba] [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 4 migrations to schema "main", now at version v4 (execution time 00:00.000s)
-2026-10-28T06:45:17.977Z  INFO 3013 --- [myprueba] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
-2026-10-28T06:45:17.992Z  INFO 3013 --- [myprueba] [           main] o.s.s.config.TaskSchedulerRouter         : No TaskScheduler/ScheduledExecutorService bean found for scheduled processing
-2026-10-28T06:45:17.996Z  INFO 3013 --- [myprueba] [           main] com.myprueba.ApplicationContextTest      : Started ApplicationContextTest in 0.717 seconds (process running for 21.625)
-2026-10-28T06:45:17.997Z  WARN 3013 --- [myprueba] [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
-[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.738 s -- in com.myprueba.ApplicationContextTest
-[INFO] Running com.myprueba.OpenApiTest
-2026-10-28T06:45:18.008Z  INFO 3013 --- [myprueba] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.myprueba.OpenApiTest]: OpenApiTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-2026-10-28T06:45:18.010Z  INFO 3013 --- [myprueba] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.myprueba.MyPruebaApplication for test class com.myprueba.OpenApiTest
-2026-10-28T06:45:18.011Z  INFO 3013 --- [myprueba] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.myprueba.OpenApiTest]: OpenApiTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-2026-10-28T06:45:18.012Z  INFO 3013 --- [myprueba] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.myprueba.support.ApiTest]: ApiTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-2026-10-28T06:45:18.013Z  INFO 3013 --- [myprueba] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.myprueba.MyPruebaApplication for test class com.myprueba.OpenApiTest
-2026-10-28T06:45:18.617Z  INFO 3013 --- [myprueba] [           main] o.springdoc.api.AbstractOpenApiResource  : Init duration for springdoc-openapi is: 587 ms
-[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.673 s -- in com.myprueba.OpenApiTest
-[INFO] Running com.myprueba.accounts.AuthApiTest
-2026-10-28T06:45:18.682Z  INFO 3013 --- [myprueba] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.myprueba.accounts.AuthApiTest]: AuthApiTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-2026-10-28T06:45:18.686Z  INFO 3013 --- [myprueba] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.myprueba.MyPruebaApplication for test class com.myprueba.accounts.AuthApiTest
-2026-10-28T06:45:18.687Z  INFO 3013 --- [myprueba] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.myprueba.accounts.AuthApiTest]: AuthApiTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-2026-10-28T06:45:18.688Z  INFO 3013 --- [myprueba] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.myprueba.support.ApiTest]: ApiTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-2026-10-28T06:45:18.689Z  INFO 3013 --- [myprueba] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.myprueba.MyPruebaApplication for test class com.myprueba.accounts.AuthApiTest
-[INFO] Tests run: 14, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.243 s -- in com.myprueba.accounts.AuthApiTest
+19:00:59.986 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: jdbc:sqlite:/tmp/v5-migration1165276812621142773.db?foreign_keys=true (SQLite 3.53)
+19:01:00.080 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Schema history table "main"."flyway_schema_history" does not exist yet
+19:01:00.086 [main] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 5 migrations (execution time 00:00.035s)
+19:01:00.104 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Creating Schema History table "main"."flyway_schema_history" ...
+19:01:00.161 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema "main": << Empty Schema >>
+19:01:00.179 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "main" to version "1 - accounts"
+19:01:00.197 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "main" to version "2 - ledger"
+19:01:00.205 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "main" to version "3 - inventory"
+19:01:00.213 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "main" to version "4 - customers"
+19:01:00.221 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Successfully applied 4 migrations to schema "main", now at version v4 (execution time 00:00.009s)
+19:01:00.357 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: jdbc:sqlite:/tmp/v5-migration1165276812621142773.db?foreign_keys=true (SQLite 3.53)
+19:01:00.366 [main] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 5 migrations (execution time 00:00.004s)
+19:01:00.367 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema "main": 4
+19:01:00.369 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "main" to version "5 - treinta alignment"
+19:01:00.373 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Successfully applied 1 migration to schema "main", now at version v5 (execution time 00:00.001s)
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.513 s -- in com.myprueba.migration.V5MigrationTest
 [INFO] 
 [INFO] Results:
 [INFO] 
-[INFO] Tests run: 104, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
 [INFO] 
-[INFO] 
-[INFO] --- jar:3.5.1:jar (default-jar) @ myprueba-backend ---
-[INFO] Building jar: /home/user/MyPrueba/backend/target/myprueba-backend-0.1.0-SNAPSHOT.jar
-[INFO] 
-[INFO] --- spring-boot:4.1.2:repackage (repackage) @ myprueba-backend ---
-[INFO] Replacing main artifact /home/user/MyPrueba/backend/target/myprueba-backend-0.1.0-SNAPSHOT.jar with repackaged archive, adding nested dependencies in BOOT-INF/.
-[INFO] The original artifact has been renamed to /home/user/MyPrueba/backend/target/myprueba-backend-0.1.0-SNAPSHOT.jar.original
-[INFO] 
-[INFO] --- spotless:3.10.4:check (default) @ myprueba-backend ---
-[INFO] Spotless.Java is keeping 78 files clean - 0 needs changes to be clean, 0 were already clean, 78 were skipped because caching determined they were already clean
-[INFO] 
-[INFO] --- jacoco:0.8.16:report (report) @ myprueba-backend ---
-[INFO] Loading execution data file /home/user/MyPrueba/backend/target/jacoco.exec
-[INFO] Analyzed bundle 'myprueba-backend' with 100 classes
-[INFO] 
-[INFO] --- jacoco:0.8.16:check (check) @ myprueba-backend ---
-[INFO] Loading execution data file /home/user/MyPrueba/backend/target/jacoco.exec
-[INFO] Analyzed bundle 'myprueba-backend' with 100 classes
-[INFO] All coverage checks have been met.
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  29.319 s
-[INFO] Finished at: 2026-10-28T06:45:22Z
+[INFO] Total time:  5.902 s
+[INFO] Finished at: 2026-10-28T19:01:00Z
 [INFO] ------------------------------------------------------------------------

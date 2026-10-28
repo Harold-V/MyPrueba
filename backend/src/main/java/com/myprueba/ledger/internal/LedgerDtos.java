@@ -18,7 +18,9 @@ record SaleRequest(
         String paymentMethod,
         String occurredAt,
         String note,
-        String customerId) {}
+        String customerId,
+        String status,
+        String dueDate) {}
 
 record SaleItemResponse(UUID productId, String name, String unitPrice, String quantity, String lineTotal) {}
 
@@ -33,7 +35,9 @@ record SaleResponse(
         Instant occurredAt,
         String note,
         UUID customerId,
-        String customerName) {}
+        String customerName,
+        SaleStatus status,
+        LocalDate dueDate) {}
 
 record ExpenseRequest(
         String amount, String category, String concept, String paymentMethod, String occurredAt, String note) {}
@@ -83,7 +87,7 @@ record PaymentResponse(
         Instant occurredAt,
         String note) {}
 
-record CustomerDebt(UUID customerId, String name, String phone, String debt) {}
+record CustomerDebt(UUID customerId, String name, String phone, String debt, Instant oldestDebtAt, boolean overdue) {}
 
 record ReceivablesResponse(String total, List<CustomerDebt> customers) {}
 
