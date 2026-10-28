@@ -16,6 +16,7 @@
     "dashboard",
     "debug",
     "decision-challenge",
+    "deployment",
     "deprecation",
     "design",
     "fable-operator",
@@ -1129,8 +1130,8 @@
       "opencode.json": "12b29cdc3740ace4cd04dd4d42b1e97691d77d156412dee25a86b7d17ba13fda"
     },
     "maintenanceDrift": {
-      "action": "add dashboard",
-      "recordedAt": "2026-10-28T21:17:42.783Z",
+      "action": "add deployment",
+      "recordedAt": "2026-10-28T21:50:52.947Z",
       "requiresReassessment": true
     }
   }
