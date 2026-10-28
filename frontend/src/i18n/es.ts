@@ -115,6 +115,8 @@ export const stockMovementTypes: Record<StockMovementType, string> = {
   SALE: 'Venta',
   SALE_EDIT: 'Venta editada',
   SALE_DELETE: 'Venta eliminada',
+  PURCHASE_EDIT: 'Compra editada',
+  PURCHASE_DELETE: 'Compra eliminada',
 };
 
 export const adjustmentTypes = {
@@ -141,6 +143,9 @@ const fieldMessages: Record<string, string> = {
   range_too_long: 'El rango no puede superar un año.',
   exceeds_debt: 'El abono no puede superar la deuda.',
   before_sale: 'No puede ser anterior a la fecha de la venta.',
+  before_expense: 'No puede ser anterior a la fecha del gasto.',
+  expense_kind: 'Indica un valor o agrega al menos un producto.',
+  purchase_category: 'Una compra con productos va en la categoría Compra de productos e insumos.',
 };
 
 const formMessages: Record<string, string> = {
@@ -154,6 +159,8 @@ const formMessages: Record<string, string> = {
   not_tracked: 'Este producto no tiene control de inventario.',
   customer_has_debt: 'No puedes eliminar un cliente con saldo pendiente.',
   customer_not_found: 'El cliente ya no existe.',
+  supplier_has_debt: 'No puedes eliminar un proveedor al que le debes dinero.',
+  supplier_not_found: 'El proveedor ya no existe.',
   insufficient_stock: 'No hay suficiente stock para esta venta.',
 };
 

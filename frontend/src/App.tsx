@@ -10,6 +10,7 @@ import { PaymentPage } from './pages/PaymentPage';
 import { InventoryPage } from './pages/InventoryPage';
 import { ProductsPage } from './pages/ProductsPage';
 import { SaleFormPage } from './pages/SaleFormPage';
+import { SupplierPage, SupplierPaymentPage, SuppliersPage } from './pages/SuppliersPage';
 
 export const routes: RouteObject[] = [
   {
@@ -39,6 +40,9 @@ export const routes: RouteObject[] = [
           { path: '/clientes', element: <CustomersPage /> },
           { path: '/clientes/:id', element: <CustomerPage /> },
           { path: '/abonos/:id', element: <PaymentPage /> },
+          { path: '/proveedores', element: <SuppliersPage /> },
+          { path: '/proveedores/:id', element: <SupplierPage /> },
+          { path: '/pagos-proveedor/:id', element: <SupplierPaymentPage /> },
           { path: '/negocio', element: <BusinessPage /> },
         ],
       },

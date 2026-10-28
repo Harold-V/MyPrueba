@@ -50,7 +50,15 @@ export interface Inventory {
 }
 
 export type StockMovementType =
-  'INITIAL' | 'PURCHASE' | 'LOSS' | 'COUNT' | 'SALE' | 'SALE_EDIT' | 'SALE_DELETE';
+  | 'INITIAL'
+  | 'PURCHASE'
+  | 'LOSS'
+  | 'COUNT'
+  | 'SALE'
+  | 'SALE_EDIT'
+  | 'SALE_DELETE'
+  | 'PURCHASE_EDIT'
+  | 'PURCHASE_DELETE';
 
 export interface StockMovement {
   type: StockMovementType;
@@ -83,14 +91,27 @@ export interface Sale {
   dueDate?: string | null;
 }
 
+export interface ExpenseItem {
+  productId: string | null;
+  name: string;
+  unitCost: string;
+  quantity: string;
+  lineTotal: string;
+}
+
 export interface Expense {
   id: string;
   amount: string;
+  items?: ExpenseItem[];
   category: ExpenseCategory;
   concept: string | null;
   paymentMethod: PaymentMethod;
   occurredAt: string;
   note: string | null;
+  supplierId?: string | null;
+  supplierName?: string | null;
+  status?: 'PAID' | 'CREDIT';
+  dueDate?: string | null;
 }
 
 export interface PeriodRange {
@@ -100,13 +121,14 @@ export interface PeriodRange {
 
 export interface Movement {
   id: string;
-  type: 'SALE' | 'EXPENSE' | 'PAYMENT';
+  type: 'SALE' | 'EXPENSE' | 'PAYMENT' | 'SUPPLIER_PAYMENT';
   amount: string;
   description: string | null;
   paymentMethod: PaymentMethod;
   occurredAt: string;
   category: ExpenseCategory | null;
   customerName?: string | null;
+  supplierName?: string | null;
 }
 
 export interface Balance {
@@ -116,6 +138,7 @@ export interface Balance {
   balance: string;
   payments?: string;
   receivable?: string;
+  payables?: string;
 }
 
 export interface Customer {
@@ -153,7 +176,7 @@ export interface Receivables {
 
 export interface AccountEntry {
   id: string;
-  type: 'SALE' | 'PAYMENT';
+  type: 'SALE' | 'PAYMENT' | 'EXPENSE' | 'SUPPLIER_PAYMENT';
   amount: string;
   description: string | null;
   occurredAt: string;
@@ -169,6 +192,45 @@ export interface CustomerPayment {
   id: string;
   customerId: string | null;
   customerName: string;
+  amount: string;
+  paymentMethod: PaymentMethod;
+  occurredAt: string;
+  note: string | null;
+}
+
+export interface Supplier {
+  id: string;
+  name: string;
+  phone: string | null;
+  document: string | null;
+  note: string | null;
+}
+
+export interface Payables {
+  total: string;
+  suppliers: {
+    supplierId: string;
+    name: string;
+    phone: string | null;
+    debt: string;
+    oldestDebtAt: string | null;
+    overdue: boolean;
+  }[];
+}
+
+export interface SupplierAccount {
+  supplier: { id: string; name: string; phone: string | null };
+  debt: string;
+  entries: AccountEntry[];
+}
+
+/** Every expense with one supplier (paid or on credit), newest first. */
+export type SupplierPurchases = CustomerPurchases;
+
+export interface SupplierPayment {
+  id: string;
+  supplierId: string | null;
+  supplierName: string;
   amount: string;
   paymentMethod: PaymentMethod;
   occurredAt: string;

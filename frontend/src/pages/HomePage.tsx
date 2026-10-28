@@ -49,9 +49,25 @@ function Toggle<T extends string>({
   );
 }
 
-/** Payments received or money owed: only then is the credit line worth showing. */
+/** Payments received or money owed either way: only then is the credit line worth showing. */
 function hasCredit(balance: Balance | null): balance is Balance {
-  return [balance?.payments, balance?.receivable].some((v) => v !== undefined && v !== '0.00');
+  return [balance?.payments, balance?.receivable, balance?.payables].some(
+    (v) => v !== undefined && v !== '0.00',
+  );
+}
+
+/** "Abonos: $5.000 · Por cobrar: $15.000 · Por pagar: $60.000", skipping what is zero. */
+function creditLine(balance: Balance): string {
+  return (
+    [
+      ['Abonos', balance.payments],
+      ['Por cobrar', balance.receivable],
+      ['Por pagar', balance.payables],
+    ] as const
+  )
+    .filter(([, value]) => value !== undefined && value !== '0.00')
+    .map(([label, value]) => `${label}: ${formatMoney(value!)}`)
+    .join(' · ');
 }
 
 interface MovementView {
@@ -75,17 +91,29 @@ function describeMovement(m: Movement, timeZone: string): MovementView {
       tone: 'text-emerald-800',
     };
   }
+  if (m.type === 'SUPPLIER_PAYMENT') {
+    return {
+      title: `Pago a ${m.supplierName}`,
+      subtitle: join([m.description, paymentMethods[m.paymentMethod], when]),
+      to: `/pagos-proveedor/${m.id}`,
+      sign: '−',
+      tone: 'text-red-700',
+    };
+  }
   if (m.type === 'EXPENSE') {
+    // A purchase on credit is not money out yet: it is paid later to the supplier.
+    const credit = m.paymentMethod === 'CREDIT';
     return {
       title: m.description ?? expenseCategories[m.category ?? 'OTHER'],
       subtitle: join([
         m.description && m.category ? expenseCategories[m.category] : null,
-        paymentMethods[m.paymentMethod],
+        credit ? `A crédito con ${m.supplierName}` : paymentMethods[m.paymentMethod],
+        credit ? null : m.supplierName,
         when,
       ]),
       to: `/gastos/${m.id}`,
-      sign: '−',
-      tone: 'text-red-700',
+      sign: credit ? '' : '−',
+      tone: credit ? 'text-slate-700' : 'text-red-700',
     };
   }
   const credit = m.paymentMethod === 'CREDIT';
@@ -217,7 +245,7 @@ export function HomePage() {
           </dl>
           {hasCredit(balance) && (
             <p className="mt-3 border-t border-slate-100 pt-3 text-center text-sm text-slate-600">
-              {`Abonos: ${formatMoney(balance.payments ?? '0')} · Por cobrar: ${formatMoney(balance.receivable ?? '0')}`}
+              {creditLine(balance)}
             </p>
           )}
         </section>
