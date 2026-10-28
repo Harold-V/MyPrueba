@@ -49,6 +49,59 @@ function Toggle<T extends string>({
   );
 }
 
+/** Payments received or money owed: only then is the credit line worth showing. */
+function hasCredit(balance: Balance | null): balance is Balance {
+  return [balance?.payments, balance?.receivable].some((v) => v !== undefined && v !== '0.00');
+}
+
+interface MovementView {
+  title: string;
+  subtitle: string;
+  to: string;
+  sign: string;
+  tone: string;
+}
+
+/** How a movement reads in the list: income in green, expenses in red, credit sales neutral. */
+function describeMovement(m: Movement, timeZone: string): MovementView {
+  const when = formatDateTime(m.occurredAt, timeZone);
+  const join = (parts: (string | null | undefined)[]) => parts.filter(Boolean).join(' · ');
+  if (m.type === 'PAYMENT') {
+    return {
+      title: `Abono de ${m.customerName}`,
+      subtitle: join([m.description, paymentMethods[m.paymentMethod], when]),
+      to: `/abonos/${m.id}`,
+      sign: '+',
+      tone: 'text-emerald-800',
+    };
+  }
+  if (m.type === 'EXPENSE') {
+    return {
+      title: m.description ?? expenseCategories[m.category ?? 'OTHER'],
+      subtitle: join([
+        m.description && m.category ? expenseCategories[m.category] : null,
+        paymentMethods[m.paymentMethod],
+        when,
+      ]),
+      to: `/gastos/${m.id}`,
+      sign: '−',
+      tone: 'text-red-700',
+    };
+  }
+  const credit = m.paymentMethod === 'CREDIT';
+  return {
+    title: m.description ?? (credit ? `Venta fiada a ${m.customerName}` : 'Venta'),
+    subtitle: join([
+      credit && m.description ? `Fiado a ${m.customerName}` : paymentMethods[m.paymentMethod],
+      !credit ? m.customerName : null,
+      when,
+    ]),
+    to: `/ventas/${m.id}`,
+    sign: credit ? '' : '+',
+    tone: credit ? 'text-slate-700' : 'text-emerald-800',
+  };
+}
+
 /** Points to the inventory when products are running out; silent if inventory is unavailable. */
 function LowStockBanner() {
   const [lowStock, setLowStock] = useState(0);
@@ -162,6 +215,11 @@ export function HomePage() {
               </dd>
             </div>
           </dl>
+          {hasCredit(balance) && (
+            <p className="mt-3 border-t border-slate-100 pt-3 text-center text-sm text-slate-600">
+              {`Abonos: ${formatMoney(balance.payments ?? '0')} · Por cobrar: ${formatMoney(balance.receivable ?? '0')}`}
+            </p>
+          )}
         </section>
 
         <div className="grid grid-cols-2 gap-3">
@@ -196,30 +254,16 @@ export function HomePage() {
         )}
         <ul className="divide-y divide-slate-200 rounded-xl bg-white shadow-sm">
           {movements?.map((m) => {
-            const isSale = m.type === 'SALE';
-            const title =
-              m.description ?? (isSale ? 'Venta' : expenseCategories[m.category ?? 'OTHER']);
-            const subtitle = [
-              !isSale && m.description && m.category ? expenseCategories[m.category] : null,
-              paymentMethods[m.paymentMethod],
-              formatDateTime(m.occurredAt, business.timeZone),
-            ]
-              .filter(Boolean)
-              .join(' · ');
+            const view = describeMovement(m, business.timeZone);
             return (
               <li key={m.id}>
-                <Link
-                  to={isSale ? `/ventas/${m.id}` : `/gastos/${m.id}`}
-                  className="flex items-center justify-between gap-3 px-4 py-3"
-                >
+                <Link to={view.to} className="flex items-center justify-between gap-3 px-4 py-3">
                   <span className="min-w-0">
-                    <span className="block truncate font-medium">{title}</span>
-                    <span className="block text-sm text-slate-600">{subtitle}</span>
+                    <span className="block truncate font-medium">{view.title}</span>
+                    <span className="block text-sm text-slate-600">{view.subtitle}</span>
                   </span>
-                  <span
-                    className={`shrink-0 font-semibold ${isSale ? 'text-emerald-800' : 'text-red-700'}`}
-                  >
-                    {isSale ? '+' : '−'}
+                  <span className={`shrink-0 font-semibold ${view.tone}`}>
+                    {view.sign}
                     {formatMoney(m.amount)}
                   </span>
                 </Link>

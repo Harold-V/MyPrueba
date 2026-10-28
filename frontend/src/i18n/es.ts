@@ -18,11 +18,18 @@ export const businessCategories: Record<BusinessCategory, string> = {
   OTHER: 'Otro',
 };
 
-export const paymentMethods: Record<PaymentMethod, string> = {
+/** Methods that move money now: expenses and customer payments. */
+export const cashPaymentMethods: Record<Exclude<PaymentMethod, 'CREDIT'>, string> = {
   CASH: 'Efectivo',
   CARD: 'Tarjeta',
   TRANSFER: 'Transferencia',
   OTHER: 'Otro',
+};
+
+/** Sales also accept "Fiado": the customer pays later. */
+export const paymentMethods: Record<PaymentMethod, string> = {
+  ...cashPaymentMethods,
+  CREDIT: 'Fiado',
 };
 
 export const expenseCategories: Record<ExpenseCategory, string> = {
@@ -68,6 +75,7 @@ const fieldMessages: Record<string, string> = {
   sale_kind: 'Indica un valor o agrega al menos un producto.',
   before_from: 'Debe ser igual o posterior a la fecha inicial.',
   range_too_long: 'El rango no puede superar un año.',
+  exceeds_debt: 'El abono no puede superar la deuda.',
 };
 
 const formMessages: Record<string, string> = {
@@ -79,6 +87,8 @@ const formMessages: Record<string, string> = {
   network_error: 'No hay conexión. Revisa tu internet e intenta de nuevo.',
   validation_failed: 'Revisa los campos marcados.',
   not_tracked: 'Este producto no tiene control de inventario.',
+  customer_has_debt: 'No puedes eliminar un cliente con saldo pendiente.',
+  customer_not_found: 'El cliente ya no existe.',
 };
 
 export function fieldMessage(code: string): string {

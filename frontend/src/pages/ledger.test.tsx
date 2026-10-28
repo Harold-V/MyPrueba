@@ -232,7 +232,7 @@ describe('sales', () => {
 
     await router.navigate('/ventas/s1');
     await user.click(await screen.findByRole('button', { name: 'Eliminar' }));
-    await user.click(screen.getByRole('button', { name: 'Sí, eliminar' }));
+    await user.click(await screen.findByRole('button', { name: 'Sí, eliminar' }));
     await waitFor(() => expect(calls.some((c) => c.method === 'DELETE')).toBe(true));
   });
 });

@@ -7,6 +7,7 @@ const navItems: [to: string, label: string][] = [
   ['/', 'Inicio'],
   ['/productos', 'Productos'],
   ['/inventario', 'Inventario'],
+  ['/clientes', 'Clientes'],
   ['/negocio', 'Negocio'],
 ];
 
@@ -17,7 +18,7 @@ export function ProtectedLayout() {
 
   // Phones: bottom tab bar. Desktop (lg, ≥ 1024 px): the same nav becomes a sidebar.
   const link = ({ isActive }: { isActive: boolean }) =>
-    `flex-1 py-3 text-center text-sm font-medium lg:flex-none lg:rounded-lg lg:px-4 lg:py-2.5 lg:text-left lg:text-base ${
+    `flex-1 px-0.5 py-3 text-center text-xs font-medium sm:text-sm lg:flex-none lg:rounded-lg lg:px-4 lg:py-2.5 lg:text-left lg:text-base ${
       isActive
         ? 'text-emerald-800 lg:bg-emerald-900 lg:text-white'
         : 'text-slate-600 lg:text-emerald-50 lg:hover:bg-emerald-800'

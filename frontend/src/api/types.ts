@@ -1,6 +1,6 @@
 export type BusinessCategory =
   'GROCERY' | 'FOOD' | 'CLOTHING' | 'BEAUTY' | 'CATALOG_SALES' | 'SERVICES' | 'OTHER';
-export type PaymentMethod = 'CASH' | 'CARD' | 'TRANSFER' | 'OTHER';
+export type PaymentMethod = 'CASH' | 'CARD' | 'TRANSFER' | 'OTHER' | 'CREDIT';
 export type ExpenseCategory =
   'PURCHASES' | 'RENT' | 'UTILITIES' | 'PAYROLL' | 'TRANSPORT' | 'MAINTENANCE' | 'TAXES' | 'OTHER';
 
@@ -68,6 +68,8 @@ export interface Sale {
   paymentMethod: PaymentMethod;
   occurredAt: string;
   note: string | null;
+  customerId?: string | null;
+  customerName?: string | null;
 }
 
 export interface Expense {
@@ -87,12 +89,13 @@ export interface PeriodRange {
 
 export interface Movement {
   id: string;
-  type: 'SALE' | 'EXPENSE';
+  type: 'SALE' | 'EXPENSE' | 'PAYMENT';
   amount: string;
   description: string | null;
   paymentMethod: PaymentMethod;
   occurredAt: string;
   category: ExpenseCategory | null;
+  customerName?: string | null;
 }
 
 export interface Balance {
@@ -100,4 +103,42 @@ export interface Balance {
   sales: string;
   expenses: string;
   balance: string;
+  payments?: string;
+  receivable?: string;
+}
+
+export interface Customer {
+  id: string;
+  name: string;
+  phone: string | null;
+  note: string | null;
+}
+
+export interface Receivables {
+  total: string;
+  customers: { customerId: string; name: string; phone: string | null; debt: string }[];
+}
+
+export interface AccountEntry {
+  id: string;
+  type: 'SALE' | 'PAYMENT';
+  amount: string;
+  description: string | null;
+  occurredAt: string;
+}
+
+export interface CustomerAccount {
+  customer: { id: string; name: string; phone: string | null };
+  debt: string;
+  entries: AccountEntry[];
+}
+
+export interface CustomerPayment {
+  id: string;
+  customerId: string | null;
+  customerName: string;
+  amount: string;
+  paymentMethod: PaymentMethod;
+  occurredAt: string;
+  note: string | null;
 }

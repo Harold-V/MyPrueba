@@ -1,7 +1,14 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useParams } from 'react-router';
 import { api, compact } from '../api/client';
-import type { Inventory, InventoryItem, PaymentMethod, Product, Sale } from '../api/types';
+import type {
+  Customer,
+  Inventory,
+  InventoryItem,
+  PaymentMethod,
+  Product,
+  Sale,
+} from '../api/types';
 import { useMe } from '../auth/session-context';
 import { ConfirmDelete } from '../components/ConfirmDelete';
 import { Button, FormAlert, Loading, SelectField, TextField } from '../components/ui';
@@ -39,12 +46,15 @@ export function SaleFormPage() {
   const [lines, setLines] = useState<Line[]>([]);
   const [concept, setConcept] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('CASH');
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [customerId, setCustomerId] = useState('');
   const [date, setDate] = useState('');
   const [original, setOriginal] = useState<string | null>(null);
   const [note, setNote] = useState('');
 
   useEffect(() => {
     api.get<Product[]>('/api/products').then(setProducts, fail);
+    api.get<Customer[]>('/api/customers').then(setCustomers, () => undefined);
     api.get<Inventory>('/api/inventory').then(
       (data) => setStock(Object.fromEntries(data.items.map((item) => [item.productId, item]))),
       () => undefined,
@@ -69,6 +79,7 @@ export function SaleFormPage() {
       );
       setConcept(sale.concept ?? '');
       setPaymentMethod(sale.paymentMethod);
+      setCustomerId(sale.customerId ?? '');
       setOriginal(sale.occurredAt);
       setDate(localDateOf(sale.occurredAt, business.timeZone));
       setNote(sale.note ?? '');
@@ -112,11 +123,13 @@ export function SaleFormPage() {
     const clientErrors: Record<string, string> = {};
     if (kind === 'FREE' && !amount.trim()) clientErrors.amount = 'required';
     if (kind === 'ITEMS' && lines.length === 0) clientErrors.items = 'sale_kind';
+    if (paymentMethod === 'CREDIT' && !customerId) clientErrors.customerId = 'required';
     const common = compact({
       concept: concept.trim(),
       paymentMethod,
       occurredAt: occurredAtFor(date, original, business.timeZone),
       note: note.trim(),
+      customerId,
     });
     const body =
       kind === 'FREE'
@@ -239,6 +252,24 @@ export function SaleFormPage() {
         onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
         error={errors.paymentMethod}
       />
+      <SelectField
+        label="Cliente"
+        placeholder={paymentMethod === 'CREDIT' ? 'Elige a quién le fías' : 'Sin cliente'}
+        hint={
+          paymentMethod === 'CREDIT'
+            ? 'Obligatorio en ventas fiadas: la deuda queda a su nombre.'
+            : 'Opcional.'
+        }
+        options={Object.fromEntries(customers.map((c) => [c.id, c.name]))}
+        value={customerId}
+        onChange={(e) => setCustomerId(e.target.value)}
+        error={errors.customerId}
+      />
+      {paymentMethod === 'CREDIT' && customers.length === 0 && (
+        <Link to="/clientes" className="text-sm font-semibold text-emerald-800 underline">
+          Crear un cliente
+        </Link>
+      )}
       <TextField
         label="Fecha"
         type="date"

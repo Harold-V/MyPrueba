@@ -4,7 +4,9 @@ import { ProtectedLayout, PublicLayout } from './components/Layouts';
 import { LoginPage, RegisterPage } from './pages/AuthPages';
 import { BusinessPage } from './pages/BusinessPage';
 import { ExpenseFormPage } from './pages/ExpenseFormPage';
+import { CustomerPage, CustomersPage } from './pages/CustomersPage';
 import { HomePage } from './pages/HomePage';
+import { PaymentPage } from './pages/PaymentPage';
 import { InventoryPage } from './pages/InventoryPage';
 import { ProductsPage } from './pages/ProductsPage';
 import { SaleFormPage } from './pages/SaleFormPage';
@@ -34,6 +36,9 @@ export const routes: RouteObject[] = [
           { path: '/gastos/:id', element: <ExpenseFormPage /> },
           { path: '/productos', element: <ProductsPage /> },
           { path: '/inventario', element: <InventoryPage /> },
+          { path: '/clientes', element: <CustomersPage /> },
+          { path: '/clientes/:id', element: <CustomerPage /> },
+          { path: '/abonos/:id', element: <PaymentPage /> },
           { path: '/negocio', element: <BusinessPage /> },
         ],
       },

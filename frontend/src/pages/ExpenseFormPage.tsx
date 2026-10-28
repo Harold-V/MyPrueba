@@ -5,7 +5,7 @@ import type { Expense, ExpenseCategory, PaymentMethod } from '../api/types';
 import { useMe } from '../auth/session-context';
 import { ConfirmDelete } from '../components/ConfirmDelete';
 import { Button, FormAlert, Loading, SelectField, TextField } from '../components/ui';
-import { expenseCategories, paymentMethods } from '../i18n/es';
+import { cashPaymentMethods, expenseCategories } from '../i18n/es';
 import { localDateOf, todayIn } from '../lib/dates';
 import { normalizeAmount } from '../lib/money';
 import { occurredAtFor, useMovementForm } from './useMovementForm';
@@ -85,7 +85,7 @@ export function ExpenseFormPage() {
       />
       <SelectField
         label="Método de pago"
-        options={paymentMethods}
+        options={cashPaymentMethods}
         value={paymentMethod}
         onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
         error={errors.paymentMethod}
