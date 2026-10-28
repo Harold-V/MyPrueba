@@ -135,3 +135,17 @@
 
 # Local build logs
 scr.log
+
+# rsc local state (hooks, seals, logs) and managed skill links — machine-local
+.claude/skills/brand-identity
+.codex/rsc/brand-identity
+.opencode/rsc/brand-identity
+.claude/skills/variant-explorer
+.codex/rsc/variant-explorer
+.opencode/rsc/variant-explorer
+.claude/skills/accessibility
+.codex/rsc/accessibility
+.opencode/rsc/accessibility
+.claude/skills/dashboard
+.codex/rsc/dashboard
+.opencode/rsc/dashboard

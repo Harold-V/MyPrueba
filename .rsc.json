@@ -6,11 +6,14 @@
     "opencode"
   ],
   "skills": [
+    "accessibility",
     "analyze",
     "automation-strategy",
+    "brand-identity",
     "clarify",
     "connect-tool",
     "constitution",
+    "dashboard",
     "debug",
     "decision-challenge",
     "deprecation",
@@ -35,6 +38,7 @@
     "tasks",
     "unslop",
     "ux",
+    "variant-explorer",
     "verify",
     "worktrees"
   ],
@@ -1123,6 +1127,11 @@
       "02-DOCS/wiki/harness/user-profile.md": "16590032bd342a146e190ff337b3c07b3429e26c0b754fe09d9b4f612e461936",
       "AGENTS.md": "a2ed05ed124cf4056bb5a3cada25a569e5acff4a29484ac9df81ef0fe0a3bc78",
       "opencode.json": "12b29cdc3740ace4cd04dd4d42b1e97691d77d156412dee25a86b7d17ba13fda"
+    },
+    "maintenanceDrift": {
+      "action": "add dashboard",
+      "recordedAt": "2026-10-28T21:17:42.783Z",
+      "requiresReassessment": true
     }
   }
 }
