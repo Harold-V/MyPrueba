@@ -12,6 +12,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
@@ -76,6 +77,25 @@ class ReceivablesService {
             overdue = overdue || (sale.dueDate() != null && sale.dueDate().isBefore(today));
         }
         return new Unpaid(oldest, overdue);
+    }
+
+    PurchasesResponse purchases(UUID businessId, UUID customerId) {
+        customers.find(businessId, customerId).orElseThrow(NotFoundException::new);
+        Map<UUID, String> summaries = receivables.itemSummaries(businessId, customerId);
+        List<ReceivablesRepository.Purchase> purchases = receivables.purchases(businessId, customerId);
+        long total = 0;
+        for (ReceivablesRepository.Purchase purchase : purchases) {
+            total = Money.add(total, purchase.totalCents());
+        }
+        List<PurchaseEntry> items = purchases.stream()
+                .map(p -> new PurchaseEntry(
+                        p.id(),
+                        p.credit() ? SaleStatus.CREDIT : SaleStatus.PAID,
+                        Money.format(p.totalCents()),
+                        p.concept() != null ? p.concept() : summaries.get(p.id()),
+                        p.occurredAt()))
+                .toList();
+        return new PurchasesResponse(Money.format(total), items.size(), items);
     }
 
     AccountResponse account(UUID businessId, UUID customerId) {

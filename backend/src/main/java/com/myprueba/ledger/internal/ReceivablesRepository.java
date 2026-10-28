@@ -134,6 +134,41 @@ class ReceivablesRepository {
                 .list();
     }
 
+    record Purchase(UUID id, boolean credit, long totalCents, String concept, Instant occurredAt) {}
+
+    /** Every sale of one customer, newest first. */
+    List<Purchase> purchases(UUID businessId, UUID customerId) {
+        return jdbc.sql("""
+                        SELECT id, payment_method, total_cents, concept, occurred_at FROM sales
+                        WHERE business_id = ? AND customer_id = ?
+                        ORDER BY occurred_at DESC, created_at DESC, id
+                        """)
+                .params(businessId.toString(), customerId.toString())
+                .query((rs, n) -> new Purchase(
+                        UUID.fromString(rs.getString("id")),
+                        "CREDIT".equals(rs.getString("payment_method")),
+                        rs.getLong("total_cents"),
+                        rs.getString("concept"),
+                        rs.getTimestamp("occurred_at").toInstant()))
+                .list();
+    }
+
+    /** "2 × Pan, 1 × Leche" for each sale of the customer that has product lines. */
+    java.util.Map<UUID, String> itemSummaries(UUID businessId, UUID customerId) {
+        java.util.Map<UUID, String> summaries = new java.util.HashMap<>();
+        jdbc.sql("""
+                        SELECT i.sale_id, i.product_name, i.quantity_milli FROM sale_items i
+                        JOIN sales s ON s.id = i.sale_id
+                        WHERE s.business_id = ? AND s.customer_id = ?
+                        ORDER BY i.sale_id, i.position
+                        """).params(businessId.toString(), customerId.toString()).query(rs -> {
+            String line = com.myprueba.shared.Quantity.format(rs.getLong("quantity_milli")) + " × "
+                    + rs.getString("product_name");
+            summaries.merge(UUID.fromString(rs.getString("sale_id")), line, (a, b) -> a + ", " + b);
+        });
+        return summaries;
+    }
+
     /** Credit sales and payments of one customer, newest first. */
     List<MovementRow> account(UUID businessId, UUID customerId) {
         return jdbc.sql("""

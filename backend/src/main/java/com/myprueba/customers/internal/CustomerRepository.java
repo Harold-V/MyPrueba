@@ -13,7 +13,12 @@ import org.springframework.stereotype.Repository;
 class CustomerRepository {
 
     private static final RowMapper<CustomerResponse> MAPPER = (rs, n) -> new CustomerResponse(
-            UUID.fromString(rs.getString("id")), rs.getString("name"), rs.getString("phone"), rs.getString("note"));
+            UUID.fromString(rs.getString("id")),
+            rs.getString("name"),
+            rs.getString("phone"),
+            rs.getString("note"),
+            rs.getString("document"),
+            rs.getString("address"));
 
     private final JdbcClient jdbc;
 
@@ -22,14 +27,16 @@ class CustomerRepository {
     }
 
     List<CustomerResponse> findAll(UUID businessId) {
-        return jdbc.sql("SELECT id, name, phone, note FROM customers WHERE business_id = ? ORDER BY name_key, id")
+        return jdbc.sql(
+                        "SELECT id, name, phone, note, document, address FROM customers WHERE business_id = ? ORDER BY name_key, id")
                 .param(businessId.toString())
                 .query(MAPPER)
                 .list();
     }
 
     Optional<CustomerResponse> find(UUID businessId, UUID id) {
-        return jdbc.sql("SELECT id, name, phone, note FROM customers WHERE business_id = ? AND id = ?")
+        return jdbc.sql(
+                        "SELECT id, name, phone, note, document, address FROM customers WHERE business_id = ? AND id = ?")
                 .params(businessId.toString(), id.toString())
                 .query(MAPPER)
                 .optional();
@@ -37,8 +44,9 @@ class CustomerRepository {
 
     void insert(UUID businessId, CustomerResponse customer, Instant now) {
         jdbc.sql("""
-                        INSERT INTO customers (id, business_id, name, name_key, phone, note, created_at, updated_at)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                        INSERT INTO customers (id, business_id, name, name_key, phone, note, document, address,
+                                               created_at, updated_at)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                         """)
                 .params(
                         customer.id().toString(),
@@ -47,6 +55,8 @@ class CustomerRepository {
                         CustomerService.key(customer.name()),
                         customer.phone(),
                         customer.note(),
+                        customer.document(),
+                        customer.address(),
                         Timestamp.from(now),
                         Timestamp.from(now))
                 .update();
@@ -54,7 +64,7 @@ class CustomerRepository {
 
     void update(UUID businessId, CustomerResponse customer, Instant now) {
         jdbc.sql("""
-                        UPDATE customers SET name = ?, name_key = ?, phone = ?, note = ?, updated_at = ?
+                        UPDATE customers SET name = ?, name_key = ?, phone = ?, note = ?, document = ?, address = ?, updated_at = ?
                         WHERE business_id = ? AND id = ?
                         """)
                 .params(
@@ -62,6 +72,8 @@ class CustomerRepository {
                         CustomerService.key(customer.name()),
                         customer.phone(),
                         customer.note(),
+                        customer.document(),
+                        customer.address(),
                         Timestamp.from(now),
                         businessId.toString(),
                         customer.id().toString())

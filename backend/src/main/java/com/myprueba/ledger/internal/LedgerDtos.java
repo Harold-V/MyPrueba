@@ -96,3 +96,8 @@ record AccountCustomer(UUID id, String name, String phone) {}
 record AccountEntry(UUID id, MovementType type, String amount, String description, Instant occurredAt) {}
 
 record AccountResponse(AccountCustomer customer, String debt, List<AccountEntry> entries) {}
+
+record PurchaseEntry(UUID id, SaleStatus status, String total, String description, Instant occurredAt) {}
+
+/** Every sale of one customer, paid or on credit, newest first. */
+record PurchasesResponse(String total, int count, List<PurchaseEntry> items) {}

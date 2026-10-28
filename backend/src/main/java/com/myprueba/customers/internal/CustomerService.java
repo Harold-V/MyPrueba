@@ -68,7 +68,9 @@ class CustomerService implements CustomerDirectory {
         String name = violations.capture(() -> Text.required("name", request.name(), 80));
         String phone = violations.capture(() -> Text.optional("phone", request.phone(), 40));
         String note = violations.capture(() -> Text.optional("note", request.note(), 500));
+        String document = violations.capture(() -> Text.optional("document", request.document(), 30));
+        String address = violations.capture(() -> Text.optional("address", request.address(), 200));
         violations.throwIfAny();
-        return new CustomerResponse(id, name, phone, note);
+        return new CustomerResponse(id, name, phone, note, document, address);
     }
 }

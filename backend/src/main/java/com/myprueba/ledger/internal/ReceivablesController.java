@@ -34,6 +34,11 @@ class ReceivablesController {
         return receivables.account(business.id(), Ids.parseOrNotFound(id));
     }
 
+    @GetMapping("/api/customers/{id}/purchases")
+    PurchasesResponse purchases(@PathVariable String id) {
+        return receivables.purchases(business.id(), Ids.parseOrNotFound(id));
+    }
+
     @PostMapping(path = "/api/customer-payments", consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     PaymentResponse create(@RequestBody PaymentRequest request) {
