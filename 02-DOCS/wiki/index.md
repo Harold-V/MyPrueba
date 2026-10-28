@@ -32,6 +32,12 @@ title: Knowledge map
 |-----------|------|
 | Plataforma: la app es web | [product/plataforma.md](product/plataforma.md) |
 
+## research
+
+| Artefacto | Ruta |
+|-----------|------|
+| Treinta — evidencia REA (HAR 2026-10-28) | [research/treinta-har-2026-10-28.md](research/treinta-har-2026-10-28.md) |
+
 ## harness
 
 | Artefacto | Ruta |
