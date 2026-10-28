@@ -15,18 +15,18 @@ WARNING: sun.misc.Unsafe::staticFieldBase will be removed in a future release
 [INFO] 
 [INFO] --- resources:3.5.0:resources (default-resources) @ myprueba-backend ---
 [INFO] Copying 1 resource from src/main/resources to target/classes
-[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] Copying 2 resources from src/main/resources to target/classes
 [INFO] 
 [INFO] --- compiler:3.15.0:compile (default-compile) @ myprueba-backend ---
 [INFO] Recompiling the module because of changed source code.
-[INFO] Compiling 28 source files with javac [debug parameters release 25] to target/classes
+[INFO] Compiling 46 source files with javac [debug parameters release 25] to target/classes
 [INFO] 
 [INFO] --- resources:3.5.0:testResources (default-testResources) @ myprueba-backend ---
 [INFO] Copying 1 resource from src/test/resources to target/test-classes
 [INFO] 
 [INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ myprueba-backend ---
 [INFO] Recompiling the module because of changed dependency.
-[INFO] Compiling 8 source files with javac [debug parameters release 25] to target/test-classes
+[INFO] Compiling 12 source files with javac [debug parameters release 25] to target/test-classes
 [INFO] 
 [INFO] --- surefire:3.5.6:test (default-test) @ myprueba-backend ---
 [INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
@@ -35,18 +35,12 @@ WARNING: sun.misc.Unsafe::staticFieldBase will be removed in a future release
 [INFO]  T E S T S
 [INFO] -------------------------------------------------------
 Picked up JAVA_TOOL_OPTIONS: -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts -Djavax.net.ssl.trustStoreType=JKS -Dhttps.proxyHost=127.0.0.1 -Dhttps.proxyPort=38497 -Dhttp.nonProxyHosts=localhost|127.0.0.1|::1|127.*|0.*|::|169.254.*|api.anthropic.com|api-staging.anthropic.com|api-pr-preview.anthropic.com|mcp-proxy.anthropic.com|mcp-proxy-staging.anthropic.com|registry.npmjs.org|jsr.io|npm.jsr.io|pypi.org|files.pythonhosted.org|index.crates.io|proxy.golang.org|host.docker.internal|10.*|172.16.*|172.17.*|172.18.*|172.19.*|172.20.*|172.21.*|172.22.*|172.23.*|172.24.*|172.25.*|172.26.*|172.27.*|172.28.*|172.29.*|172.30.*|172.31.*|192.168.*|100.64.0.0/10|*.svc.cluster.local|*.svc.cluster.local -Djdk.http.auth.tunneling.disabledSchemes= -Djdk.http.auth.proxying.disabledSchemes=
-[INFO] Running com.myprueba.shared.QuantityTest
-[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.371 s -- in com.myprueba.shared.QuantityTest
-[INFO] Running com.myprueba.shared.MoneyTest
-[INFO] Tests run: 16, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.047 s -- in com.myprueba.shared.MoneyTest
-[INFO] Running com.myprueba.ModularityTest
-05:13:52.979 [main] INFO com.tngtech.archunit.core.PluginLoader -- Detected Java version 25.0.4.1
-[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.364 s -- in com.myprueba.ModularityTest
-[INFO] Running com.myprueba.ApplicationContextTest
-05:13:54.755 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.myprueba.ApplicationContextTest]: ApplicationContextTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-05:13:54.842 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.myprueba.MyPruebaApplication for test class com.myprueba.ApplicationContextTest
-05:13:54.856 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.myprueba.ApplicationContextTest]: ApplicationContextTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-05:13:54.858 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.myprueba.MyPruebaApplication for test class com.myprueba.ApplicationContextTest
+[INFO] Running com.myprueba.catalog.ProductApiTest
+05:19:56.293 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.myprueba.catalog.ProductApiTest]: ProductApiTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+05:19:56.440 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.myprueba.MyPruebaApplication for test class com.myprueba.catalog.ProductApiTest
+05:19:56.613 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.myprueba.catalog.ProductApiTest]: ProductApiTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+05:19:56.614 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.myprueba.support.ApiTest]: ApiTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+05:19:56.620 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.myprueba.MyPruebaApplication for test class com.myprueba.catalog.ProductApiTest
 
   .   ____          _            __ _ _
  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
@@ -57,40 +51,59 @@ Picked up JAVA_TOOL_OPTIONS: -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cace
 
  :: Spring Boot ::                (v4.1.2)
 
-2026-10-28T05:13:55.204Z  INFO 9304 --- [myprueba] [           main] com.myprueba.ApplicationContextTest      : Starting ApplicationContextTest using Java 25.0.4.1 with PID 9304 (started by root in /home/user/MyPrueba/backend)
-2026-10-28T05:13:55.207Z  INFO 9304 --- [myprueba] [           main] com.myprueba.ApplicationContextTest      : No active profile set, falling back to 1 default profile: "default"
-2026-10-28T05:13:57.485Z  INFO 9304 --- [myprueba] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-10-28T05:19:57.092Z  INFO 12250 --- [myprueba] [           main] com.myprueba.catalog.ProductApiTest      : Starting ProductApiTest using Java 25.0.4.1 with PID 12250 (started by root in /home/user/MyPrueba/backend)
+2026-10-28T05:19:57.094Z  INFO 12250 --- [myprueba] [           main] com.myprueba.catalog.ProductApiTest      : No active profile set, falling back to 1 default profile: "default"
+2026-10-28T05:19:59.047Z  INFO 12250 --- [myprueba] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
 WARNING: A restricted method in java.lang.System has been called
 WARNING: java.lang.System::load has been called by org.sqlite.SQLiteJDBCLoader in an unnamed module (file:/root/.m2/repository/org/xerial/sqlite-jdbc/3.53.4.0/sqlite-jdbc-3.53.4.0.jar)
 WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
 WARNING: Restricted methods will be blocked in a future release unless native access is enabled
 
-2026-10-28T05:13:57.635Z  INFO 9304 --- [myprueba] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.sqlite.jdbc4.JDBC4Connection@52e3b39b
-2026-10-28T05:13:57.637Z  INFO 9304 --- [myprueba] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
-2026-10-28T05:13:57.649Z  INFO 9304 --- [myprueba] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:sqlite:target/test-843c383c-1ae9-45a9-ba34-43ddfaf4d60e.db?journal_mode=WAL&busy_timeout=5000&foreign_keys=true (SQLite 3.53)
-2026-10-28T05:13:57.709Z  INFO 9304 --- [myprueba] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "main"."flyway_schema_history" does not exist yet
-2026-10-28T05:13:57.712Z  INFO 9304 --- [myprueba] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 1 migration (execution time 00:00.015s)
-2026-10-28T05:13:57.717Z  INFO 9304 --- [myprueba] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "main"."flyway_schema_history" ...
-2026-10-28T05:13:57.746Z  INFO 9304 --- [myprueba] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "main": << Empty Schema >>
-2026-10-28T05:13:57.753Z  INFO 9304 --- [myprueba] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "main" to version "1 - accounts"
-2026-10-28T05:13:57.768Z  INFO 9304 --- [myprueba] [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 1 migration to schema "main", now at version v1 (execution time 00:00.003s)
-2026-10-28T05:13:59.575Z  INFO 9304 --- [myprueba] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
-2026-10-28T05:13:59.671Z  INFO 9304 --- [myprueba] [           main] o.s.s.config.TaskSchedulerRouter         : No TaskScheduler/ScheduledExecutorService bean found for scheduled processing
-2026-10-28T05:13:59.680Z  INFO 9304 --- [myprueba] [           main] com.myprueba.ApplicationContextTest      : Started ApplicationContextTest in 4.748 seconds (process running for 8.927)
-2026-10-28T05:13:59.753Z  WARN 9304 --- [myprueba] [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+2026-10-28T05:19:59.152Z  INFO 12250 --- [myprueba] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.sqlite.jdbc4.JDBC4Connection@77cf9b08
+2026-10-28T05:19:59.154Z  INFO 12250 --- [myprueba] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-10-28T05:19:59.165Z  INFO 12250 --- [myprueba] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:sqlite:target/test-ca7c9253-c9d7-46f1-b2a9-533d401d56a6.db?journal_mode=WAL&busy_timeout=5000&foreign_keys=true (SQLite 3.53)
+2026-10-28T05:19:59.232Z  INFO 12250 --- [myprueba] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "main"."flyway_schema_history" does not exist yet
+2026-10-28T05:19:59.235Z  INFO 12250 --- [myprueba] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 2 migrations (execution time 00:00.014s)
+2026-10-28T05:19:59.239Z  INFO 12250 --- [myprueba] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "main"."flyway_schema_history" ...
+2026-10-28T05:19:59.260Z  INFO 12250 --- [myprueba] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "main": << Empty Schema >>
+2026-10-28T05:19:59.265Z  INFO 12250 --- [myprueba] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "main" to version "1 - accounts"
+2026-10-28T05:19:59.278Z  INFO 12250 --- [myprueba] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "main" to version "2 - ledger"
+2026-10-28T05:19:59.283Z  INFO 12250 --- [myprueba] [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 2 migrations to schema "main", now at version v2 (execution time 00:00.003s)
+2026-10-28T05:20:00.918Z  INFO 12250 --- [myprueba] [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-10-28T05:20:00.919Z  INFO 12250 --- [myprueba] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-28T05:20:00.937Z  INFO 12250 --- [myprueba] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-10-28T05:20:00.943Z  INFO 12250 --- [myprueba] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 24 ms
+2026-10-28T05:20:01.126Z  INFO 12250 --- [myprueba] [           main] o.s.s.config.TaskSchedulerRouter         : No TaskScheduler/ScheduledExecutorService bean found for scheduled processing
+2026-10-28T05:20:01.132Z  INFO 12250 --- [myprueba] [           main] com.myprueba.catalog.ProductApiTest      : Started ProductApiTest in 4.401 seconds (process running for 6.133)
+2026-10-28T05:20:01.196Z  WARN 12250 --- [myprueba] [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/root/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
-[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 5.938 s -- in com.myprueba.ApplicationContextTest
-[INFO] Running com.myprueba.accounts.AuthApiTest
-2026-10-28T05:14:00.638Z  INFO 9304 --- [myprueba] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.myprueba.accounts.AuthApiTest]: AuthApiTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-2026-10-28T05:14:00.655Z  INFO 9304 --- [myprueba] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.myprueba.MyPruebaApplication for test class com.myprueba.accounts.AuthApiTest
-2026-10-28T05:14:00.656Z  INFO 9304 --- [myprueba] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.myprueba.accounts.AuthApiTest]: AuthApiTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-2026-10-28T05:14:00.658Z  INFO 9304 --- [myprueba] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.myprueba.support.ApiTest]: ApiTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-2026-10-28T05:14:00.660Z  INFO 9304 --- [myprueba] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.myprueba.MyPruebaApplication for test class com.myprueba.accounts.AuthApiTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 7.272 s -- in com.myprueba.catalog.ProductApiTest
+[INFO] Running com.myprueba.shared.QuantityTest
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.160 s -- in com.myprueba.shared.QuantityTest
+[INFO] Running com.myprueba.shared.MoneyTest
+[INFO] Tests run: 16, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.039 s -- in com.myprueba.shared.MoneyTest
+[INFO] Running com.myprueba.ModularityTest
+2026-10-28T05:20:03.571Z  INFO 12250 --- [myprueba] [           main] com.tngtech.archunit.core.PluginLoader   : Detected Java version 25.0.4.1
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.216 s -- in com.myprueba.ModularityTest
+[INFO] Running com.myprueba.ledger.LedgerApiTest
+2026-10-28T05:20:05.715Z  INFO 12250 --- [myprueba] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.myprueba.ledger.LedgerApiTest]: LedgerApiTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-28T05:20:05.722Z  INFO 12250 --- [myprueba] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.myprueba.MyPruebaApplication for test class com.myprueba.ledger.LedgerApiTest
+2026-10-28T05:20:05.723Z  INFO 12250 --- [myprueba] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.myprueba.ledger.LedgerApiTest]: LedgerApiTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-28T05:20:05.723Z  INFO 12250 --- [myprueba] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.myprueba.support.ApiTest]: ApiTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-28T05:20:05.725Z  INFO 12250 --- [myprueba] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.myprueba.MyPruebaApplication for test class com.myprueba.ledger.LedgerApiTest
+[INFO] Tests run: 19, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 6.245 s -- in com.myprueba.ledger.LedgerApiTest
+[INFO] Running com.myprueba.ledger.internal.PeriodsTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.018 s -- in com.myprueba.ledger.internal.PeriodsTest
+[INFO] Running com.myprueba.ApplicationContextTest
+2026-10-28T05:20:11.984Z  INFO 12250 --- [myprueba] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.myprueba.ApplicationContextTest]: ApplicationContextTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-28T05:20:11.988Z  INFO 12250 --- [myprueba] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.myprueba.MyPruebaApplication for test class com.myprueba.ApplicationContextTest
+2026-10-28T05:20:11.989Z  INFO 12250 --- [myprueba] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.myprueba.ApplicationContextTest]: ApplicationContextTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-28T05:20:11.990Z  INFO 12250 --- [myprueba] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.myprueba.MyPruebaApplication for test class com.myprueba.ApplicationContextTest
 
   .   ____          _            __ _ _
  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
@@ -101,202 +114,66 @@ OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader clas
 
  :: Spring Boot ::                (v4.1.2)
 
-2026-10-28T05:14:00.705Z  INFO 9304 --- [myprueba] [           main] com.myprueba.accounts.AuthApiTest        : Starting AuthApiTest using Java 25.0.4.1 with PID 9304 (started by root in /home/user/MyPrueba/backend)
-2026-10-28T05:14:00.705Z  INFO 9304 --- [myprueba] [           main] com.myprueba.accounts.AuthApiTest        : No active profile set, falling back to 1 default profile: "default"
-2026-10-28T05:14:01.068Z  INFO 9304 --- [myprueba] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
-2026-10-28T05:14:01.074Z  INFO 9304 --- [myprueba] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection org.sqlite.jdbc4.JDBC4Connection@42f68f52
-2026-10-28T05:14:01.075Z  INFO 9304 --- [myprueba] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
-2026-10-28T05:14:01.075Z  INFO 9304 --- [myprueba] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:sqlite:target/test-50714e20-a07c-4d3f-8ad7-bd713e20aa38.db?journal_mode=WAL&busy_timeout=5000&foreign_keys=true (SQLite 3.53)
-2026-10-28T05:14:01.081Z  INFO 9304 --- [myprueba] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "main"."flyway_schema_history" does not exist yet
-2026-10-28T05:14:01.082Z  INFO 9304 --- [myprueba] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 1 migration (execution time 00:00.002s)
-2026-10-28T05:14:01.083Z  INFO 9304 --- [myprueba] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "main"."flyway_schema_history" ...
-2026-10-28T05:14:01.089Z  INFO 9304 --- [myprueba] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "main": << Empty Schema >>
-2026-10-28T05:14:01.093Z  INFO 9304 --- [myprueba] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "main" to version "1 - accounts"
-2026-10-28T05:14:01.097Z  INFO 9304 --- [myprueba] [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 1 migration to schema "main", now at version v1 (execution time 00:00.001s)
-2026-10-28T05:14:01.552Z  INFO 9304 --- [myprueba] [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
-2026-10-28T05:14:01.552Z  INFO 9304 --- [myprueba] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
-2026-10-28T05:14:01.555Z  INFO 9304 --- [myprueba] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
-2026-10-28T05:14:01.557Z  INFO 9304 --- [myprueba] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 5 ms
-2026-10-28T05:14:01.588Z  INFO 9304 --- [myprueba] [           main] o.s.s.config.TaskSchedulerRouter         : No TaskScheduler/ScheduledExecutorService bean found for scheduled processing
-2026-10-28T05:14:01.590Z  INFO 9304 --- [myprueba] [           main] com.myprueba.accounts.AuthApiTest        : Started AuthApiTest in 0.923 seconds (process running for 10.836)
-2026-10-28T05:14:01.591Z  WARN 9304 --- [myprueba] [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
-[INFO] Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.510 s -- in com.myprueba.accounts.AuthApiTest
+2026-10-28T05:20:12.016Z  INFO 12250 --- [myprueba] [           main] com.myprueba.ApplicationContextTest      : Starting ApplicationContextTest using Java 25.0.4.1 with PID 12250 (started by root in /home/user/MyPrueba/backend)
+2026-10-28T05:20:12.017Z  INFO 12250 --- [myprueba] [           main] com.myprueba.ApplicationContextTest      : No active profile set, falling back to 1 default profile: "default"
+2026-10-28T05:20:12.292Z  INFO 12250 --- [myprueba] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
+2026-10-28T05:20:12.295Z  INFO 12250 --- [myprueba] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection org.sqlite.jdbc4.JDBC4Connection@569b962e
+2026-10-28T05:20:12.296Z  INFO 12250 --- [myprueba] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
+2026-10-28T05:20:12.296Z  INFO 12250 --- [myprueba] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:sqlite:target/test-d9ede3da-3ffe-41a1-ba80-0acf32060f60.db?journal_mode=WAL&busy_timeout=5000&foreign_keys=true (SQLite 3.53)
+2026-10-28T05:20:12.301Z  INFO 12250 --- [myprueba] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "main"."flyway_schema_history" does not exist yet
+2026-10-28T05:20:12.301Z  INFO 12250 --- [myprueba] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 2 migrations (execution time 00:00.001s)
+2026-10-28T05:20:12.302Z  INFO 12250 --- [myprueba] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "main"."flyway_schema_history" ...
+2026-10-28T05:20:12.304Z  INFO 12250 --- [myprueba] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "main": << Empty Schema >>
+2026-10-28T05:20:12.306Z  INFO 12250 --- [myprueba] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "main" to version "1 - accounts"
+2026-10-28T05:20:12.310Z  INFO 12250 --- [myprueba] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "main" to version "2 - ledger"
+2026-10-28T05:20:12.313Z  INFO 12250 --- [myprueba] [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 2 migrations to schema "main", now at version v2 (execution time 00:00.000s)
+2026-10-28T05:20:12.584Z  INFO 12250 --- [myprueba] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-10-28T05:20:12.594Z  INFO 12250 --- [myprueba] [           main] o.s.s.config.TaskSchedulerRouter         : No TaskScheduler/ScheduledExecutorService bean found for scheduled processing
+2026-10-28T05:20:12.596Z  INFO 12250 --- [myprueba] [           main] com.myprueba.ApplicationContextTest      : Started ApplicationContextTest in 0.599 seconds (process running for 17.596)
+2026-10-28T05:20:12.597Z  WARN 12250 --- [myprueba] [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.619 s -- in com.myprueba.ApplicationContextTest
+[INFO] Running com.myprueba.OpenApiTest
+2026-10-28T05:20:12.604Z  INFO 12250 --- [myprueba] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.myprueba.OpenApiTest]: OpenApiTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-28T05:20:12.605Z  INFO 12250 --- [myprueba] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.myprueba.MyPruebaApplication for test class com.myprueba.OpenApiTest
+2026-10-28T05:20:12.606Z  INFO 12250 --- [myprueba] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.myprueba.OpenApiTest]: OpenApiTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-28T05:20:12.606Z  INFO 12250 --- [myprueba] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.myprueba.support.ApiTest]: ApiTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-28T05:20:12.607Z  INFO 12250 --- [myprueba] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.myprueba.MyPruebaApplication for test class com.myprueba.OpenApiTest
+2026-10-28T05:20:13.018Z  INFO 12250 --- [myprueba] [           main] o.springdoc.api.AbstractOpenApiResource  : Init duration for springdoc-openapi is: 400 ms
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.480 s -- in com.myprueba.OpenApiTest
+[INFO] Running com.myprueba.accounts.AuthApiTest
+2026-10-28T05:20:13.086Z  INFO 12250 --- [myprueba] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.myprueba.accounts.AuthApiTest]: AuthApiTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-28T05:20:13.093Z  INFO 12250 --- [myprueba] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.myprueba.MyPruebaApplication for test class com.myprueba.accounts.AuthApiTest
+2026-10-28T05:20:13.094Z  INFO 12250 --- [myprueba] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.myprueba.accounts.AuthApiTest]: AuthApiTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-28T05:20:13.094Z  INFO 12250 --- [myprueba] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.myprueba.support.ApiTest]: ApiTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-28T05:20:13.096Z  INFO 12250 --- [myprueba] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.myprueba.MyPruebaApplication for test class com.myprueba.accounts.AuthApiTest
+[INFO] Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.001 s -- in com.myprueba.accounts.AuthApiTest
 [INFO] 
 [INFO] Results:
 [INFO] 
-[INFO] Tests run: 40, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 74, Failures: 0, Errors: 0, Skipped: 0
 [INFO] 
 [INFO] 
 [INFO] --- jar:3.5.1:jar (default-jar) @ myprueba-backend ---
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/codehaus/plexus/plexus-utils/4.0.3/plexus-utils-4.0.3.pom
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/codehaus/plexus/plexus-utils/4.0.3/plexus-utils-4.0.3.pom (6.8 kB at 30 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/maven-archiver/3.6.6/maven-archiver-3.6.6.pom
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/maven-archiver/3.6.6/maven-archiver-3.6.6.pom (5.2 kB at 118 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/shared/maven-shared-components/45/maven-shared-components-45.pom
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/shared/maven-shared-components/45/maven-shared-components-45.pom (3.8 kB at 81 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/codehaus/plexus/plexus-archiver/4.10.4/plexus-archiver-4.10.4.pom
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/codehaus/plexus/plexus-archiver/4.10.4/plexus-archiver-4.10.4.pom (5.6 kB at 152 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/codehaus/plexus/plexus-archiver/4.12.0/plexus-archiver-4.12.0.pom
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/codehaus/plexus/plexus-archiver/4.12.0/plexus-archiver-4.12.0.pom (5.6 kB at 182 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/commons-io/commons-io/2.22.0/commons-io-2.22.0.pom
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/commons-io/commons-io/2.22.0/commons-io-2.22.0.pom (20 kB at 634 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/commons/commons-parent/98/commons-parent-98.pom
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/commons/commons-parent/98/commons-parent-98.pom (80 kB at 2.0 MB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/tukaani/xz/1.12/xz-1.12.pom
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/tukaani/xz/1.12/xz-1.12.pom (1.9 kB at 55 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/com/github/luben/zstd-jni/1.5.7-9/zstd-jni-1.5.7-9.pom
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/com/github/luben/zstd-jni/1.5.7-9/zstd-jni-1.5.7-9.pom (2.0 kB at 48 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/codehaus/plexus/plexus-utils/4.0.3/plexus-utils-4.0.3.jar
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/codehaus/plexus/plexus-utils/4.0.3/plexus-utils-4.0.3.jar (193 kB at 3.3 MB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/maven-archiver/3.6.6/maven-archiver-3.6.6.jar
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/codehaus/plexus/plexus-archiver/4.12.0/plexus-archiver-4.12.0.jar
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/tukaani/xz/1.12/xz-1.12.jar
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/com/github/luben/zstd-jni/1.5.7-9/zstd-jni-1.5.7-9.jar
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/commons-io/commons-io/2.22.0/commons-io-2.22.0.jar
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/maven-archiver/3.6.6/maven-archiver-3.6.6.jar (28 kB at 834 kB/s)
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/commons-io/commons-io/2.22.0/commons-io-2.22.0.jar (609 kB at 9.1 MB/s)
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/codehaus/plexus/plexus-archiver/4.12.0/plexus-archiver-4.12.0.jar (227 kB at 2.1 MB/s)
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/tukaani/xz/1.12/xz-1.12.jar (169 kB at 1.5 MB/s)
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/com/github/luben/zstd-jni/1.5.7-9/zstd-jni-1.5.7-9.jar (7.6 MB at 30 MB/s)
 [INFO] Building jar: /home/user/MyPrueba/backend/target/myprueba-backend-0.1.0-SNAPSHOT.jar
 [INFO] 
 [INFO] --- spring-boot:4.1.2:repackage (repackage) @ myprueba-backend ---
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/springframework/boot/spring-boot-buildpack-platform/4.1.2/spring-boot-buildpack-platform-4.1.2.pom
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/springframework/boot/spring-boot-buildpack-platform/4.1.2/spring-boot-buildpack-platform-4.1.2.pom (3.0 kB at 91 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/net/java/dev/jna/jna-platform/5.17.0/jna-platform-5.17.0.pom
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/net/java/dev/jna/jna-platform/5.17.0/jna-platform-5.17.0.pom (2.3 kB at 70 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/net/java/dev/jna/jna/5.17.0/jna-5.17.0.pom
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/net/java/dev/jna/jna/5.17.0/jna-5.17.0.pom (2.0 kB at 53 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/commons/commons-compress/1.27.1/commons-compress-1.27.1.pom
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/commons/commons-compress/1.27.1/commons-compress-1.27.1.pom (23 kB at 743 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/commons/commons-parent/72/commons-parent-72.pom
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/commons/commons-parent/72/commons-parent-72.pom (78 kB at 2.3 MB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/junit/junit-bom/5.11.0-M2/junit-bom-5.11.0-M2.pom
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/junit/junit-bom/5.11.0-M2/junit-bom-5.11.0-M2.pom (5.7 kB at 173 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/commons-codec/commons-codec/1.17.1/commons-codec-1.17.1.pom
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/commons-codec/commons-codec/1.17.1/commons-codec-1.17.1.pom (18 kB at 539 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/commons/commons-parent/71/commons-parent-71.pom
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/commons/commons-parent/71/commons-parent-71.pom (78 kB at 2.0 MB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/commons/commons-lang3/3.16.0/commons-lang3-3.16.0.pom
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/commons/commons-lang3/3.16.0/commons-lang3-3.16.0.pom (31 kB at 868 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/httpcomponents/client5/httpclient5/5.6.5/httpclient5-5.6.5.pom
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/httpcomponents/client5/httpclient5/5.6.5/httpclient5-5.6.5.pom (6.7 kB at 204 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/httpcomponents/client5/httpclient5-parent/5.6.5/httpclient5-parent-5.6.5.pom
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/httpcomponents/client5/httpclient5-parent/5.6.5/httpclient5-parent-5.6.5.pom (20 kB at 598 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/httpcomponents/httpcomponents-parent/14/httpcomponents-parent-14.pom
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/httpcomponents/httpcomponents-parent/14/httpcomponents-parent-14.pom (30 kB at 893 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/apache/27/apache-27.pom
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/apache/27/apache-27.pom (20 kB at 522 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/junit/junit-bom/5.13.3/junit-bom-5.13.3.pom
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/junit/junit-bom/5.13.3/junit-bom-5.13.3.pom (5.7 kB at 183 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/io/opentelemetry/opentelemetry-bom/1.49.0/opentelemetry-bom-1.49.0.pom
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/io/opentelemetry/opentelemetry-bom/1.49.0/opentelemetry-bom-1.49.0.pom (5.9 kB at 189 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/httpcomponents/core5/httpcore5/5.4.4/httpcore5-5.4.4.pom
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/httpcomponents/core5/httpcore5/5.4.4/httpcore5-5.4.4.pom (3.9 kB at 132 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/httpcomponents/core5/httpcore5-parent/5.4.4/httpcore5-parent-5.4.4.pom
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/httpcomponents/core5/httpcore5-parent/5.4.4/httpcore5-parent-5.4.4.pom (15 kB at 464 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/httpcomponents/core5/httpcore5-h2/5.4.4/httpcore5-h2-5.4.4.pom
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/httpcomponents/core5/httpcore5-h2/5.4.4/httpcore5-h2-5.4.4.pom (3.6 kB at 117 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/commons-logging/commons-logging/1.3.5/commons-logging-1.3.5.pom
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/commons-logging/commons-logging/1.3.5/commons-logging-1.3.5.pom (32 kB at 895 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/tomlj/tomlj/1.0.0/tomlj-1.0.0.pom
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/tomlj/tomlj/1.0.0/tomlj-1.0.0.pom (2.8 kB at 83 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/antlr/antlr4-runtime/4.7.2/antlr4-runtime-4.7.2.pom
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/antlr/antlr4-runtime/4.7.2/antlr4-runtime-4.7.2.pom (3.6 kB at 125 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/antlr/antlr4-master/4.7.2/antlr4-master-4.7.2.pom
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/antlr/antlr4-master/4.7.2/antlr4-master-4.7.2.pom (4.4 kB at 119 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/springframework/boot/spring-boot-loader-tools/4.1.2/spring-boot-loader-tools-4.1.2.pom
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/springframework/boot/spring-boot-loader-tools/4.1.2/spring-boot-loader-tools-4.1.2.pom (2.2 kB at 75 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/io/micrometer/micrometer-observation/1.16.8/micrometer-observation-1.16.8.pom
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/io/micrometer/micrometer-observation/1.16.8/micrometer-observation-1.16.8.pom (2.8 kB at 80 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/io/micrometer/micrometer-commons/1.16.8/micrometer-commons-1.16.8.pom
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/io/micrometer/micrometer-commons/1.16.8/micrometer-commons-1.16.8.pom (2.8 kB at 88 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-shade-plugin/3.6.0/maven-shade-plugin-3.6.0.pom
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-shade-plugin/3.6.0/maven-shade-plugin-3.6.0.pom (12 kB at 415 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-plugins/42/maven-plugins-42.pom
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-plugins/42/maven-plugins-42.pom (7.7 kB at 248 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/codehaus/plexus/plexus-utils/3.5.1/plexus-utils-3.5.1.pom
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/codehaus/plexus/plexus-utils/3.5.1/plexus-utils-3.5.1.pom (8.8 kB at 292 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/codehaus/plexus/plexus/10/plexus-10.pom
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/codehaus/plexus/plexus/10/plexus-10.pom (25 kB at 819 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/ow2/asm/asm/9.7/asm-9.7.pom
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/ow2/asm/asm/9.7/asm-9.7.pom (2.4 kB at 70 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/ow2/asm/asm-commons/9.7/asm-commons-9.7.pom
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/ow2/asm/asm-commons/9.7/asm-commons-9.7.pom (2.8 kB at 100 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/ow2/asm/asm-tree/9.7/asm-tree-9.7.pom
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/ow2/asm/asm-tree/9.7/asm-tree-9.7.pom (2.6 kB at 81 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/jdom/jdom2/2.0.6.1/jdom2-2.0.6.1.pom
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/jdom/jdom2/2.0.6.1/jdom2-2.0.6.1.pom (4.6 kB at 144 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/commons/commons-compress/1.26.2/commons-compress-1.26.2.pom
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/commons/commons-compress/1.26.2/commons-compress-1.26.2.pom (23 kB at 620 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/commons-codec/commons-codec/1.17.0/commons-codec-1.17.0.pom
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/commons-codec/commons-codec/1.17.0/commons-codec-1.17.0.pom (18 kB at 526 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/vafer/jdependency/2.10/jdependency-2.10.pom
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/vafer/jdependency/2.10/jdependency-2.10.pom (14 kB at 390 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/springframework/boot/spring-boot-buildpack-platform/4.1.2/spring-boot-buildpack-platform-4.1.2.jar
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/springframework/boot/spring-boot-buildpack-platform/4.1.2/spring-boot-buildpack-platform-4.1.2.jar (333 kB at 9.3 MB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/net/java/dev/jna/jna-platform/5.17.0/jna-platform-5.17.0.jar
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/net/java/dev/jna/jna/5.17.0/jna-5.17.0.jar
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/commons/commons-compress/1.27.1/commons-compress-1.27.1.jar
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/commons-codec/commons-codec/1.17.1/commons-codec-1.17.1.jar
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/commons/commons-lang3/3.16.0/commons-lang3-3.16.0.jar
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/commons-codec/commons-codec/1.17.1/commons-codec-1.17.1.jar (373 kB at 5.9 MB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/httpcomponents/client5/httpclient5/5.6.5/httpclient5-5.6.5.jar
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/commons/commons-lang3/3.16.0/commons-lang3-3.16.0.jar (674 kB at 10 MB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/httpcomponents/core5/httpcore5/5.4.4/httpcore5-5.4.4.jar
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/net/java/dev/jna/jna-platform/5.17.0/jna-platform-5.17.0.jar (1.4 MB at 10 MB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/httpcomponents/core5/httpcore5-h2/5.4.4/httpcore5-h2-5.4.4.jar
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/httpcomponents/client5/httpclient5/5.6.5/httpclient5-5.6.5.jar (1.1 MB at 7.3 MB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/tomlj/tomlj/1.0.0/tomlj-1.0.0.jar
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/commons/commons-compress/1.27.1/commons-compress-1.27.1.jar (1.1 MB at 7.1 MB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/antlr/antlr4-runtime/4.7.2/antlr4-runtime-4.7.2.jar
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/net/java/dev/jna/jna/5.17.0/jna-5.17.0.jar (2.0 MB at 13 MB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/springframework/boot/spring-boot-loader-tools/4.1.2/spring-boot-loader-tools-4.1.2.jar
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/httpcomponents/core5/httpcore5/5.4.4/httpcore5-5.4.4.jar (955 kB at 5.8 MB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/commons-logging/commons-logging/1.3.5/commons-logging-1.3.5.jar
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/httpcomponents/core5/httpcore5-h2/5.4.4/httpcore5-h2-5.4.4.jar (264 kB at 1.6 MB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/io/micrometer/micrometer-observation/1.16.8/micrometer-observation-1.16.8.jar
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/tomlj/tomlj/1.0.0/tomlj-1.0.0.jar (157 kB at 849 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/io/micrometer/micrometer-commons/1.16.8/micrometer-commons-1.16.8.jar
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/springframework/boot/spring-boot-loader-tools/4.1.2/spring-boot-loader-tools-4.1.2.jar (341 kB at 1.8 MB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-shade-plugin/3.6.0/maven-shade-plugin-3.6.0.jar
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/commons-logging/commons-logging/1.3.5/commons-logging-1.3.5.jar (74 kB at 374 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/codehaus/plexus/plexus-utils/3.5.1/plexus-utils-3.5.1.jar
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/io/micrometer/micrometer-observation/1.16.8/micrometer-observation-1.16.8.jar (83 kB at 419 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/ow2/asm/asm/9.7/asm-9.7.jar
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/antlr/antlr4-runtime/4.7.2/antlr4-runtime-4.7.2.jar (338 kB at 1.6 MB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/ow2/asm/asm-commons/9.7/asm-commons-9.7.jar
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/io/micrometer/micrometer-commons/1.16.8/micrometer-commons-1.16.8.jar (51 kB at 235 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/ow2/asm/asm-tree/9.7/asm-tree-9.7.jar
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-shade-plugin/3.6.0/maven-shade-plugin-3.6.0.jar (150 kB at 660 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/jdom/jdom2/2.0.6.1/jdom2-2.0.6.1.jar
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/ow2/asm/asm/9.7/asm-9.7.jar (125 kB at 543 kB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/commons-io/commons-io/2.16.1/commons-io-2.16.1.jar
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/codehaus/plexus/plexus-utils/3.5.1/plexus-utils-3.5.1.jar (269 kB at 1.2 MB/s)
-[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/vafer/jdependency/2.10/jdependency-2.10.jar
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/ow2/asm/asm-commons/9.7/asm-commons-9.7.jar (73 kB at 305 kB/s)
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/ow2/asm/asm-tree/9.7/asm-tree-9.7.jar (52 kB at 205 kB/s)
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/commons-io/commons-io/2.16.1/commons-io-2.16.1.jar (509 kB at 1.9 MB/s)
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/jdom/jdom2/2.0.6.1/jdom2-2.0.6.1.jar (328 kB at 1.2 MB/s)
-[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/vafer/jdependency/2.10/jdependency-2.10.jar (416 kB at 1.4 MB/s)
 [INFO] Replacing main artifact /home/user/MyPrueba/backend/target/myprueba-backend-0.1.0-SNAPSHOT.jar with repackaged archive, adding nested dependencies in BOOT-INF/.
 [INFO] The original artifact has been renamed to /home/user/MyPrueba/backend/target/myprueba-backend-0.1.0-SNAPSHOT.jar.original
 [INFO] 
 [INFO] --- spotless:3.10.4:check (default) @ myprueba-backend ---
-[INFO] Index file does not exist. Fallback to an empty index
-[INFO] Spotless.Java is keeping 36 files clean - 0 needs changes to be clean, 36 were already clean, 0 were skipped because caching determined they were already clean
+[INFO] Spotless.Java is keeping 58 files clean - 0 needs changes to be clean, 0 were already clean, 58 were skipped because caching determined they were already clean
 [INFO] 
 [INFO] --- jacoco:0.8.16:report (report) @ myprueba-backend ---
 [INFO] Loading execution data file /home/user/MyPrueba/backend/target/jacoco.exec
-[INFO] Analyzed bundle 'myprueba-backend' with 33 classes
+[INFO] Analyzed bundle 'myprueba-backend' with 67 classes
 [INFO] 
 [INFO] --- jacoco:0.8.16:check (check) @ myprueba-backend ---
 [INFO] Loading execution data file /home/user/MyPrueba/backend/target/jacoco.exec
-[INFO] Analyzed bundle 'myprueba-backend' with 33 classes
+[INFO] Analyzed bundle 'myprueba-backend' with 67 classes
 [INFO] All coverage checks have been met.
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  19.920 s
-[INFO] Finished at: 2026-10-28T05:14:07Z
+[INFO] Total time:  23.328 s
+[INFO] Finished at: 2026-10-28T05:20:15Z
 [INFO] ------------------------------------------------------------------------
