@@ -11,7 +11,9 @@ enum MovementType {
     COUNT,
     SALE,
     SALE_EDIT,
-    SALE_DELETE
+    SALE_DELETE,
+    PURCHASE_EDIT,
+    PURCHASE_DELETE
 }
 
 enum AdjustmentType {

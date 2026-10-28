@@ -117,17 +117,15 @@ class ReceivablesRepository {
                 .update();
     }
 
-    record CreditSale(long totalCents, Instant occurredAt, java.time.LocalDate dueDate) {}
-
     /** Credit sales of one customer, oldest first. */
-    List<CreditSale> creditSales(UUID businessId, UUID customerId) {
+    List<Settlement.Owed> creditSales(UUID businessId, UUID customerId) {
         return jdbc.sql("""
                         SELECT total_cents, occurred_at, due_date FROM sales
                         WHERE business_id = ? AND customer_id = ? AND payment_method = 'CREDIT'
                         ORDER BY occurred_at, created_at, id
                         """)
                 .params(businessId.toString(), customerId.toString())
-                .query((rs, n) -> new CreditSale(
+                .query((rs, n) -> new Settlement.Owed(
                         rs.getLong("total_cents"),
                         rs.getTimestamp("occurred_at").toInstant(),
                         LedgerRepository.localDate(rs.getDate("due_date"))))
@@ -162,8 +160,7 @@ class ReceivablesRepository {
                         WHERE s.business_id = ? AND s.customer_id = ?
                         ORDER BY i.sale_id, i.position
                         """).params(businessId.toString(), customerId.toString()).query(rs -> {
-            String line = com.myprueba.shared.Quantity.format(rs.getLong("quantity_milli")) + " × "
-                    + rs.getString("product_name");
+            String line = LedgerRepository.lineSummary(rs.getLong("quantity_milli"), rs.getString("product_name"));
             summaries.merge(UUID.fromString(rs.getString("sale_id")), line, (a, b) -> a + ", " + b);
         });
         return summaries;
@@ -190,6 +187,7 @@ class ReceivablesRepository {
                         rs.getString("concept"),
                         null,
                         rs.getTimestamp("occurred_at").toInstant(),
+                        null,
                         null,
                         null))
                 .list();

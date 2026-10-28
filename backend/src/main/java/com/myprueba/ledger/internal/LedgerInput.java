@@ -34,8 +34,21 @@ final class LedgerInput {
             UUID customerId,
             LocalDate dueDate) {}
 
-    record PaymentInput(
-            UUID customerId, long amountCents, PaymentMethod paymentMethod, Instant occurredAt, String note) {}
+    record ExpenseItemInput(UUID productId, String name, long quantityMilli, Long unitCostCents) {}
+
+    record ExpenseInput(
+            Long amountCents,
+            List<ExpenseItemInput> items,
+            ExpenseCategory category,
+            String concept,
+            PaymentMethod paymentMethod,
+            Instant occurredAt,
+            String note,
+            UUID supplierId,
+            LocalDate dueDate) {}
+
+    /** A payment to settle a debt; {@code partyId} is the customer or the supplier. */
+    record PaymentInput(UUID partyId, long amountCents, PaymentMethod paymentMethod, Instant occurredAt, String note) {}
 
     private LedgerInput() {}
 
@@ -71,9 +84,10 @@ final class LedgerInput {
             }
         }
         String concept = violations.capture(() -> Text.optional("concept", request.concept(), MAX_CONCEPT));
-        SaleStatus status = violations.capture(() -> Text.optionalEnum("status", request.status(), SaleStatus.class));
+        PaymentStatus status =
+                violations.capture(() -> Text.optionalEnum("status", request.status(), PaymentStatus.class));
         // "Fiado" is a status; paymentMethod CREDIT is still accepted as a synonym.
-        boolean credit = status == SaleStatus.CREDIT || "CREDIT".equals(request.paymentMethod());
+        boolean credit = status == PaymentStatus.CREDIT || "CREDIT".equals(request.paymentMethod());
         PaymentMethod method =
                 credit ? PaymentMethod.CREDIT : violations.capture(() -> cashMethod(request.paymentMethod()));
         Instant occurredAt = violations.capture(() -> occurredAt(request.occurredAt(), zone, now));
@@ -93,14 +107,46 @@ final class LedgerInput {
     }
 
     static PaymentInput payment(PaymentRequest request, ZoneId zone, Instant now) {
+        return payment(
+                "customerId",
+                request.customerId(),
+                request.amount(),
+                request.paymentMethod(),
+                request.occurredAt(),
+                request.note(),
+                zone,
+                now);
+    }
+
+    static PaymentInput payment(SupplierPaymentRequest request, ZoneId zone, Instant now) {
+        return payment(
+                "supplierId",
+                request.supplierId(),
+                request.amount(),
+                request.paymentMethod(),
+                request.occurredAt(),
+                request.note(),
+                zone,
+                now);
+    }
+
+    private static PaymentInput payment(
+            String partyField,
+            String rawParty,
+            String rawAmount,
+            String rawMethod,
+            String rawOccurredAt,
+            String rawNote,
+            ZoneId zone,
+            Instant now) {
         Violations violations = new Violations();
-        UUID customerId = violations.capture(() -> uuid("customerId", request.customerId()));
-        Long amount = violations.capture(() -> Money.parseCents("amount", request.amount()));
-        PaymentMethod method = violations.capture(() -> cashMethod(request.paymentMethod()));
-        Instant occurredAt = violations.capture(() -> occurredAt(request.occurredAt(), zone, now));
-        String note = violations.capture(() -> Text.optional("note", request.note(), MAX_NOTE));
+        UUID partyId = violations.capture(() -> uuid(partyField, rawParty));
+        Long amount = violations.capture(() -> Money.parseCents("amount", rawAmount));
+        PaymentMethod method = violations.capture(() -> cashMethod(rawMethod));
+        Instant occurredAt = violations.capture(() -> occurredAt(rawOccurredAt, zone, now));
+        String note = violations.capture(() -> Text.optional("note", rawNote, MAX_NOTE));
         violations.throwIfAny();
-        return new PaymentInput(customerId, amount, method, occurredAt, note);
+        return new PaymentInput(partyId, amount, method, occurredAt, note);
     }
 
     /** A payment method that moves money now: anything but {@link PaymentMethod#CREDIT}. */
@@ -112,18 +158,70 @@ final class LedgerInput {
         return method;
     }
 
-    static ExpenseData expense(ExpenseRequest request, ZoneId zone, Instant now) {
+    /**
+     * An expense has an amount, or product lines (a purchase: its category is PURCHASES and its
+     * amount is the sum of the lines). On credit it is owed to a supplier.
+     */
+    static ExpenseInput expense(ExpenseRequest request, ZoneId zone, Instant now) {
         Violations violations = new Violations();
-        Long amount = violations.capture(() -> Money.parseCents("amount", request.amount()));
-        ExpenseCategory category =
-                violations.capture(() -> Text.requiredEnum("category", request.category(), ExpenseCategory.class));
+        boolean hasAmount = request.amount() != null && !request.amount().isBlank();
+        boolean hasItems = request.items() != null && !request.items().isEmpty();
+        Long amount = null;
+        List<ExpenseItemInput> items = new ArrayList<>();
+        if (hasAmount == hasItems) {
+            violations.add("amount", "expense_kind");
+        } else if (hasAmount) {
+            amount = violations.capture(() -> Money.parseCents("amount", request.amount()));
+        } else {
+            for (int i = 0; i < request.items().size(); i++) {
+                ExpenseItemRequest item = request.items().get(i);
+                String prefix = "items[" + i + "].";
+                boolean byProduct =
+                        item.productId() != null && !item.productId().isBlank();
+                boolean hasCost = item.unitCost() != null && !item.unitCost().isBlank();
+                UUID productId =
+                        byProduct ? violations.capture(() -> uuid(prefix + "productId", item.productId())) : null;
+                String name =
+                        byProduct ? null : violations.capture(() -> Text.required(prefix + "name", item.name(), 80));
+                Long quantity = violations.capture(() -> Quantity.parseMilli(prefix + "quantity", item.quantity()));
+                // A product may supply its own cost; a line without product must bring one.
+                Long unitCost = hasCost || !byProduct
+                        ? violations.capture(() -> Money.parseCents(prefix + "unitCost", item.unitCost()))
+                        : null;
+                if ((productId != null || name != null) && quantity != null) {
+                    items.add(new ExpenseItemInput(productId, name, quantity, unitCost));
+                }
+            }
+        }
+        boolean hasCategory = request.category() != null && !request.category().isBlank();
+        ExpenseCategory category = hasItems && !hasCategory
+                ? ExpenseCategory.PURCHASES
+                : violations.capture(() -> Text.requiredEnum("category", request.category(), ExpenseCategory.class));
+        if (hasItems && category != null && category != ExpenseCategory.PURCHASES) {
+            violations.add("category", "purchase_category");
+        }
         String concept = violations.capture(() -> Text.optional("concept", request.concept(), MAX_CONCEPT));
-        PaymentMethod method = violations.capture(() -> cashMethod(request.paymentMethod()));
+        PaymentStatus status =
+                violations.capture(() -> Text.optionalEnum("status", request.status(), PaymentStatus.class));
+        boolean credit = status == PaymentStatus.CREDIT || "CREDIT".equals(request.paymentMethod());
+        PaymentMethod method =
+                credit ? PaymentMethod.CREDIT : violations.capture(() -> cashMethod(request.paymentMethod()));
         Instant occurredAt = violations.capture(() -> occurredAt(request.occurredAt(), zone, now));
         String note = violations.capture(() -> Text.optional("note", request.note(), MAX_NOTE));
+        boolean hasSupplier =
+                request.supplierId() != null && !request.supplierId().isBlank();
+        UUID supplierId = hasSupplier ? violations.capture(() -> uuid("supplierId", request.supplierId())) : null;
+        if (credit && !hasSupplier) {
+            violations.add("supplierId", "required");
+        }
+        LocalDate dueDate = credit ? violations.capture(() -> date("dueDate", request.dueDate())) : null;
+        if (dueDate != null && occurredAt != null && dueDate.isBefore(LocalDate.ofInstant(occurredAt, zone))) {
+            violations.add("dueDate", "before_expense");
+        }
         violations.throwIfAny();
-        String description = concept != null ? concept : automaticExpenseConcept(occurredAt, zone);
-        return new ExpenseData(amount, category, description, method, occurredAt, note);
+        // A purchase is described by its lines; any other expense without concept by its moment.
+        String description = concept != null || hasItems ? concept : automaticExpenseConcept(occurredAt, zone);
+        return new ExpenseInput(amount, items, category, description, method, occurredAt, note, supplierId, dueDate);
     }
 
     /** An expense without concept is named after its moment, e.g. "Gasto 281026031423" (ddMMyyHHmmss). */

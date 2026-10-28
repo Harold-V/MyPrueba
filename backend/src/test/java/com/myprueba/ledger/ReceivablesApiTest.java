@@ -203,12 +203,13 @@ class ReceivablesApiTest extends ApiTest {
     }
 
     @Test
-    void expensesDoNotAcceptCredit() throws Exception {
+    void creditExpensesNeedASupplier() throws Exception {
+        // Phase 3: an expense on credit is owed to a supplier, never to a customer.
         mvc.perform(json(post("/api/expenses"), """
                         {"amount":"10","category":"RENT","paymentMethod":"CREDIT"}
                         """).cookie(sid))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors[0].field").value("paymentMethod"));
+                .andExpect(jsonPath("$.errors[0].field").value("supplierId"));
     }
 
     @Test

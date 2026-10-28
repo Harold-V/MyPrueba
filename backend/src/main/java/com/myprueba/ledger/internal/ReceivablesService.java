@@ -37,7 +37,8 @@ class ReceivablesService {
                 .map(entry -> {
                     CustomerView customer =
                             customers.find(businessId, entry.getKey()).orElseThrow();
-                    Unpaid unpaid = unpaid(businessId, customer.id(), entry.getValue(), today);
+                    Settlement.Unpaid unpaid = Settlement.unpaid(
+                            receivables.creditSales(businessId, customer.id()), entry.getValue(), today);
                     return new CustomerDebt(
                             customer.id(),
                             customer.name(),
@@ -48,35 +49,6 @@ class ReceivablesService {
                 })
                 .toList();
         return new ReceivablesResponse(Money.format(receivables.totalDebt(businessId)), debts);
-    }
-
-    private record Unpaid(Instant oldest, boolean overdue) {}
-
-    /**
-     * Payments settle the oldest credit sales first. The first sale with a balance left tells "since
-     * when" the customer owes; any unsettled sale past its due date makes the debt overdue.
-     */
-    private Unpaid unpaid(UUID businessId, UUID customerId, long debt, LocalDate today) {
-        if (debt <= 0) {
-            return new Unpaid(null, false);
-        }
-        List<ReceivablesRepository.CreditSale> sales = receivables.creditSales(businessId, customerId);
-        long paid = sales.stream()
-                        .mapToLong(ReceivablesRepository.CreditSale::totalCents)
-                        .sum()
-                - debt;
-        Instant oldest = null;
-        boolean overdue = false;
-        for (ReceivablesRepository.CreditSale sale : sales) {
-            if (paid >= sale.totalCents()) {
-                paid -= sale.totalCents();
-                continue;
-            }
-            paid = 0;
-            oldest = oldest == null ? sale.occurredAt() : oldest;
-            overdue = overdue || (sale.dueDate() != null && sale.dueDate().isBefore(today));
-        }
-        return new Unpaid(oldest, overdue);
     }
 
     PurchasesResponse purchases(UUID businessId, UUID customerId) {
@@ -90,7 +62,7 @@ class ReceivablesService {
         List<PurchaseEntry> items = purchases.stream()
                 .map(p -> new PurchaseEntry(
                         p.id(),
-                        p.credit() ? SaleStatus.CREDIT : SaleStatus.PAID,
+                        p.credit() ? PaymentStatus.CREDIT : PaymentStatus.PAID,
                         Money.format(p.totalCents()),
                         p.concept() != null ? p.concept() : summaries.get(p.id()),
                         p.occurredAt()))
@@ -125,7 +97,7 @@ class ReceivablesService {
         PaymentData previous = receivables.findPayment(businessId, id).orElseThrow(NotFoundException::new);
         LedgerInput.PaymentInput input = LedgerInput.payment(request, zone, now);
         // The payment being edited is already subtracted from its customer's debt: give it back.
-        long credit = input.customerId().equals(previous.customerId()) ? previous.amountCents() : 0;
+        long credit = input.partyId().equals(previous.customerId()) ? previous.amountCents() : 0;
         PaymentData payment = validate(businessId, input, credit);
         receivables.updatePayment(businessId, id, payment, now);
         return toResponse(id, payment);
@@ -152,7 +124,7 @@ class ReceivablesService {
 
     private PaymentData validate(UUID businessId, LedgerInput.PaymentInput input, long credit) {
         CustomerView customer = customers
-                .find(businessId, input.customerId())
+                .find(businessId, input.partyId())
                 .orElseThrow(() -> new NotFoundException("customer_not_found"));
         long available = receivables.debt(businessId, customer.id()) + credit;
         if (input.amountCents() > available) {

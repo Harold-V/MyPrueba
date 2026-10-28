@@ -36,21 +36,40 @@ record SaleResponse(
         String note,
         UUID customerId,
         String customerName,
-        SaleStatus status,
+        PaymentStatus status,
         LocalDate dueDate) {}
 
+/** A purchase line: a product with an optional {@code unitCost} (defaults to the product's cost). */
+record ExpenseItemRequest(String productId, String name, String quantity, String unitCost) {}
+
 record ExpenseRequest(
-        String amount, String category, String concept, String paymentMethod, String occurredAt, String note) {}
+        String amount,
+        List<ExpenseItemRequest> items,
+        String category,
+        String concept,
+        String paymentMethod,
+        String occurredAt,
+        String note,
+        String supplierId,
+        String status,
+        String dueDate) {}
+
+record ExpenseItemResponse(UUID productId, String name, String unitCost, String quantity, String lineTotal) {}
 
 record ExpenseResponse(
         UUID id,
         MovementType type,
         String amount,
+        List<ExpenseItemResponse> items,
         ExpenseCategory category,
         String concept,
         PaymentMethod paymentMethod,
         Instant occurredAt,
-        String note) {}
+        String note,
+        UUID supplierId,
+        String supplierName,
+        PaymentStatus status,
+        LocalDate dueDate) {}
 
 record PeriodView(LocalDate from, LocalDate to) {
 
@@ -67,13 +86,23 @@ record MovementResponse(
         PaymentMethod paymentMethod,
         Instant occurredAt,
         ExpenseCategory category,
-        String customerName) {}
+        String customerName,
+        String supplierName) {}
 
 record MovementsResponse(PeriodView period, List<MovementResponse> items) {}
 
-/** Cash basis: {@code balance = sales (paid) + payments − expenses}; {@code receivable} is all-time. */
+/**
+ * Cash basis: {@code balance = sales (paid) + payments − expenses}, where expenses are paid expenses
+ * plus payments to suppliers. {@code receivable} and {@code payables} are all-time.
+ */
 record BalanceResponse(
-        PeriodView period, String sales, String payments, String expenses, String balance, String receivable) {}
+        PeriodView period,
+        String sales,
+        String payments,
+        String expenses,
+        String balance,
+        String receivable,
+        String payables) {}
 
 record PaymentRequest(String customerId, String amount, String paymentMethod, String occurredAt, String note) {}
 
@@ -97,7 +126,27 @@ record AccountEntry(UUID id, MovementType type, String amount, String descriptio
 
 record AccountResponse(AccountCustomer customer, String debt, List<AccountEntry> entries) {}
 
-record PurchaseEntry(UUID id, SaleStatus status, String total, String description, Instant occurredAt) {}
+record PurchaseEntry(UUID id, PaymentStatus status, String total, String description, Instant occurredAt) {}
 
-/** Every sale of one customer, paid or on credit, newest first. */
+/** Every sale of one customer (or expense with one supplier), paid or on credit, newest first. */
 record PurchasesResponse(String total, int count, List<PurchaseEntry> items) {}
+
+record SupplierPaymentRequest(String supplierId, String amount, String paymentMethod, String occurredAt, String note) {}
+
+record SupplierPaymentResponse(
+        UUID id,
+        MovementType type,
+        UUID supplierId,
+        String supplierName,
+        String amount,
+        PaymentMethod paymentMethod,
+        Instant occurredAt,
+        String note) {}
+
+record SupplierDebt(UUID supplierId, String name, String phone, String debt, Instant oldestDebtAt, boolean overdue) {}
+
+record PayablesResponse(String total, List<SupplierDebt> suppliers) {}
+
+record AccountSupplier(UUID id, String name, String phone) {}
+
+record SupplierAccountResponse(AccountSupplier supplier, String debt, List<AccountEntry> entries) {}

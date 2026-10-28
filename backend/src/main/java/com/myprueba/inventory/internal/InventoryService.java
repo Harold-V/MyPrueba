@@ -5,6 +5,7 @@ import com.myprueba.catalog.ProductCatalog;
 import com.myprueba.catalog.ProductCreated;
 import com.myprueba.catalog.ProductView;
 import com.myprueba.inventory.internal.InventoryRepository.Stock;
+import com.myprueba.ledger.PurchaseItemsChanged;
 import com.myprueba.ledger.SaleItemsChanged;
 import com.myprueba.shared.ApiException;
 import com.myprueba.shared.Money;
@@ -24,7 +25,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Every product has stock. Sales move it through ledger events; owners adjust it by hand. */
+/** Every product has stock. Sales and purchases move it through ledger events; owners adjust it by hand. */
 @Service
 class InventoryService {
 
@@ -161,6 +162,30 @@ class InventoryService {
             }
             inventory.save(event.businessId(), new Stock(productId, true, after, stock.minMilli()), now);
             inventory.addMovement(event.businessId(), productId, type, -sold, after, null, event.saleId(), now);
+        }
+    }
+
+    /** Runs inside the purchase's transaction: what is bought enters stock, and leaves it when undone. */
+    @EventListener
+    void on(PurchaseItemsChanged event) {
+        Set<UUID> products = new HashSet<>(event.before().keySet());
+        products.addAll(event.after().keySet());
+        MovementType type = switch (event.kind()) {
+            case RECORDED -> MovementType.PURCHASE;
+            case EDITED -> MovementType.PURCHASE_EDIT;
+            case DELETED -> MovementType.PURCHASE_DELETE;
+        };
+        Instant now = clock.instant();
+        for (UUID productId : products) {
+            long bought =
+                    event.after().getOrDefault(productId, 0L) - event.before().getOrDefault(productId, 0L);
+            if (bought == 0) {
+                continue;
+            }
+            Stock stock = current(event.businessId(), productId);
+            long after = stock.quantityMilli() + bought;
+            inventory.save(event.businessId(), new Stock(productId, true, after, stock.minMilli()), now);
+            inventory.addMovement(event.businessId(), productId, type, bought, after, null, null, now);
         }
     }
 

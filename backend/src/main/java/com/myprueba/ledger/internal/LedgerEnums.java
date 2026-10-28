@@ -9,7 +9,7 @@ enum PaymentMethod {
     DAVIPLATA,
     PAYMENT_LINK,
     OTHER,
-    /** Fiado: the customer pays later. Only valid on sales, and requires a customer. */
+    /** Paid later: a credit sale requires a customer, a credit expense requires a supplier. */
     CREDIT
 }
 
@@ -27,8 +27,11 @@ enum ExpenseCategory {
     OTHER
 }
 
-/** A sale is paid now or owed by a customer (fiado). Stored as payment method CREDIT. */
-enum SaleStatus {
+/**
+ * Paid now, or owed: a credit sale is owed by a customer (fiado), a credit expense is owed to a
+ * supplier. Stored as payment method CREDIT.
+ */
+enum PaymentStatus {
     PAID,
     CREDIT
 }
@@ -41,5 +44,6 @@ enum SaleKind {
 enum MovementType {
     SALE,
     EXPENSE,
-    PAYMENT
+    PAYMENT,
+    SUPPLIER_PAYMENT
 }
