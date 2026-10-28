@@ -19,7 +19,7 @@ topic: sdd
 | ✅ 3 | `proveedores-compras` | Proveedores; **compra de mercancía** (gasto con productos que sube el stock); compras y gastos a crédito; **cuentas por pagar** con abonos; historial por proveedor | 1, 2 |
 | ✅ 4 | `catalogo-productos` | Categorías; código de barras/SKU; **variantes** con stock propio; **carga masiva desde Excel** | 1 |
 | 5 | `reportes-estadisticas` | Número de transacciones; comparativa con periodo anterior; más vendidos; descarga de ventas, gastos e inventario | 3, 4 |
-| 6 | `ventas-avanzadas` | Descuentos; **comprobantes digitales** con datos del cliente | 2, 4 |
+| 6 | `sistema-ventas` (antes `ventas-avanzadas`) | **Punto de venta**; descuentos; **comprobantes digitales** numerados; **caja** con apertura y cierre | 2, 4 |
 | 7 | `empleados` | Empleados, permisos y ventas por empleado (habilita rendimiento por empleado) | 5 |
 | 8 | `catalogo-virtual` | Catálogo público compartible con fotos y precios | 4 |
 
