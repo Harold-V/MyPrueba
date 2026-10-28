@@ -58,8 +58,9 @@ POST   /api/sales SaleInput -> 201 Sale | 400 | 404 code=product_not_found
 GET    /api/sales/{id} -> 200 Sale | 404
 PUT    /api/sales/{id} SaleInput -> 200 Sale | 400 | 404
 DELETE /api/sales/{id} -> 204 | 404
-SaleInput = {amount?, items?:[{productId, quantity, unitPrice?}], concept?, paymentMethod, occurredAt?, note?}
+SaleInput = {amount?, items?:[{productId?, name?, quantity, unitPrice?}], concept?, paymentMethod, occurredAt?, note?}
   - exactamente uno de `amount` (venta libre) o `items` (≥ 1 línea) → si no, 400 code=sale_kind
+  - línea sin `productId` (producto eliminado): exige `name` y `unitPrice`
 Sale = {id, type:"SALE", kind:"FREE"|"ITEMS", total, items:[{productId|null, name, unitPrice, quantity, lineTotal}],
         concept|null, paymentMethod, occurredAt, note|null}
 paymentMethod ∈ {CASH, CARD, TRANSFER, OTHER}

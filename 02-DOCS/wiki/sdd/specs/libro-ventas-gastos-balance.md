@@ -69,6 +69,8 @@ atención a clientes: necesita anotar rápido y consultar el balance al cerrar e
 - Edge: la fecha de un movimiento no puede ser futura.
 - Edge: cambiar el precio o eliminar un producto no altera las ventas ya registradas: cada venta
   conserva nombre, precio y cantidad tal como se vendió.
+- Edge: al editar una venta cuyo producto fue eliminado, sus líneas se conservan con el nombre y
+  precio guardados y pueden corregirse; nunca desaparecen en silencio.
 - Edge: los periodos se calculan en la zona horaria del negocio; la semana va de lunes a domingo.
 - Edge: un periodo sin movimientos muestra totales en cero y un estado vacío que invita a registrar.
 - Edge: los totales son exactos al centavo, sin errores de redondeo, con cualquier cantidad de
@@ -89,6 +91,8 @@ atención a clientes: necesita anotar rápido y consultar el balance al cerrar e
   sube 50.000 y el balance baja 50.000.
 - Given ventas por 100.000 y gastos por 130.000 en el mes, When ve el balance del mes, Then el balance
   es −30.000.
+- Given una venta con un producto que luego se eliminó, When el dueño edita la venta y la guarda,
+  Then la línea sigue en la venta con su nombre y precio.
 - Given 3 ventas de 0,10, When ve el total, Then es exactamente 0,30.
 - Given un valor de 0, negativo o con 3 decimales, When intenta guardar una venta o gasto, Then se
   rechaza indicando el campo.
@@ -115,3 +119,8 @@ atención a clientes: necesita anotar rápido y consultar el balance al cerrar e
 - **decisión diferida** — Costo del producto y utilidad: llega con inventario.
 - **área no formulable** — Cómo afectará la llegada de inventario (stock) a las ventas con productos
   ya registradas.
+
+## Revisions
+
+- 2026-10-28 — Añadido el caso "editar una venta con producto eliminado" (edge + criterio). Lo
+  encontró la revisión adversarial durante `verify`: el formulario descartaba esas líneas al editar.

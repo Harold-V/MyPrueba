@@ -16,6 +16,9 @@ title: Knowledge map
 | Spec — Libro de ventas, gastos y balance | [sdd/specs/libro-ventas-gastos-balance.md](sdd/specs/libro-ventas-gastos-balance.md) |
 | Plan — Libro de ventas, gastos y balance | [sdd/plans/libro-ventas-gastos-balance.md](sdd/plans/libro-ventas-gastos-balance.md) |
 
+| Verificación — núcleo | [sdd/verifications/2026-10-28-nucleo.md](sdd/verifications/2026-10-28-nucleo.md) |
+| Revisión — núcleo | [sdd/reviews/nucleo.md](sdd/reviews/nucleo.md) |
+
 ## harness
 
 | Artefacto | Ruta |
