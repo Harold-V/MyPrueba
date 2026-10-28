@@ -307,3 +307,85 @@ describe('payment page', () => {
     await waitFor(() => expect(calls.some((c) => c.method === 'DELETE')).toBe(true));
   });
 });
+
+describe('customer details (phase 2)', () => {
+  it('shows the purchase history and edits document and address', async () => {
+    const calls = mockApi({
+      'GET /api/me': { body: me },
+      'GET /api/customers': { body: [{ ...juan, document: '1020304050', address: null }] },
+      'GET /api/customers/c1/account': { body: account },
+      'GET /api/customers/c1/purchases': {
+        body: {
+          total: '15000.00',
+          count: 2,
+          items: [
+            {
+              id: 's2',
+              status: 'CREDIT',
+              total: '5000.00',
+              description: 'Mercado',
+              occurredAt: '2026-10-26T15:00:00Z',
+            },
+            {
+              id: 's1',
+              status: 'PAID',
+              total: '10000.00',
+              description: '20 × Pan',
+              occurredAt: '2026-10-01T15:00:00Z',
+            },
+          ],
+        },
+      },
+      'PUT /api/customers/c1': { body: { ...juan } },
+    });
+    renderAt('/clientes/c1');
+    const history = await screen.findByRole('list', { name: 'Historial de compras' });
+    expect(within(history).getByText('20 × Pan')).toBeInTheDocument();
+    expect(within(history).getByText('Fiada')).toBeInTheDocument();
+    expect(screen.getByText('Total comprado: $15.000 · 2 compras')).toBeInTheDocument();
+
+    const user = userEvent.setup();
+    await waitFor(() =>
+      expect(screen.getByLabelText('Documento (opcional)')).toHaveValue('1020304050'),
+    );
+    await user.type(screen.getByLabelText('Dirección (opcional)'), 'Cra 7 # 12-34');
+    await user.click(screen.getByRole('button', { name: 'Guardar cliente' }));
+    await waitFor(() => expect(calls.some((c) => c.method === 'PUT')).toBe(true));
+    expect(calls.find((c) => c.method === 'PUT')?.body).toEqual({
+      name: 'Juan',
+      phone: '300 123 4567',
+      document: '1020304050',
+      address: 'Cra 7 # 12-34',
+    });
+  });
+
+  it('creates a customer from the sale without leaving it', async () => {
+    const calls = mockApi({
+      'GET /api/me': { body: me },
+      'GET /api/products': { body: [] },
+      'GET /api/customers': { body: [ana] },
+      'POST /api/customers': (body) => ({
+        status: 201,
+        body: { id: 'c9', phone: null, note: null, ...(body as object) },
+      }),
+      'POST /api/sales': { status: 201, body: { id: 's9' } },
+      'GET /api/balance': { body: emptyBalance },
+      'GET /api/movements': { body: { period, items: [] } },
+    });
+    renderAt('/ventas/nueva');
+    const user = userEvent.setup();
+    await user.type(await screen.findByLabelText('Valor'), '7.000');
+    await user.click(screen.getByRole('button', { name: 'Nuevo cliente' }));
+    await user.type(screen.getByLabelText('Nombre del cliente'), 'Pedro');
+    await user.type(screen.getByLabelText('Teléfono del cliente (opcional)'), '311 222 3333');
+    await user.click(screen.getByRole('button', { name: 'Crear cliente' }));
+    await waitFor(() => expect(screen.getByLabelText('Cliente')).toHaveValue('c9'));
+    expect(calls.find((c) => c.path === '/api/customers' && c.method === 'POST')?.body).toEqual({
+      name: 'Pedro',
+      phone: '311 222 3333',
+    });
+    await user.click(screen.getByRole('button', { name: 'Guardar venta' }));
+    await waitFor(() => expect(calls.some((c) => c.path === '/api/sales')).toBe(true));
+    expect(calls.find((c) => c.path === '/api/sales')?.body).toMatchObject({ customerId: 'c9' });
+  });
+});

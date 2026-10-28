@@ -123,6 +123,20 @@ export interface Customer {
   name: string;
   phone: string | null;
   note: string | null;
+  document?: string | null;
+  address?: string | null;
+}
+
+export interface CustomerPurchases {
+  total: string;
+  count: number;
+  items: {
+    id: string;
+    status: 'PAID' | 'CREDIT';
+    total: string;
+    description: string | null;
+    occurredAt: string;
+  }[];
 }
 
 export interface Receivables {

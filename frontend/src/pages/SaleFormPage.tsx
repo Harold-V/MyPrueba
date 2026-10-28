@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useParams } from 'react-router';
-import { api, compact } from '../api/client';
+import { api, ApiError, compact } from '../api/client';
 import type {
   Customer,
   Inventory,
@@ -25,6 +25,62 @@ interface Line {
   name: string;
   quantity: string;
   unitPrice: string;
+}
+
+/** Registers a customer at the till, without leaving the sale. */
+function NewCustomer({ onCreated }: { onCreated: (customer: Customer) => void }) {
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  async function create() {
+    try {
+      const customer = await api.post<Customer>('/api/customers', compact({ name, phone }));
+      onCreated(customer);
+      setOpen(false);
+      setName('');
+      setPhone('');
+      setErrors({});
+    } catch (error) {
+      setErrors(error instanceof ApiError ? error.fieldErrors() : {});
+    }
+  }
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        className="text-sm font-semibold text-emerald-800 underline"
+        onClick={() => setOpen(true)}
+      >
+        Nuevo cliente
+      </button>
+    );
+  }
+  return (
+    <div className="space-y-3 rounded-lg border border-slate-200 bg-white p-3">
+      <TextField
+        label="Nombre del cliente"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        error={errors.name}
+      />
+      <TextField
+        label="Teléfono del cliente (opcional)"
+        type="tel"
+        value={phone}
+        onChange={(e) => setPhone(e.target.value)}
+        error={errors.phone}
+      />
+      <div className="flex gap-2">
+        <Button onClick={() => void create()}>Crear cliente</Button>
+        <Button variant="secondary" onClick={() => setOpen(false)}>
+          Cancelar
+        </Button>
+      </div>
+    </div>
+  );
 }
 
 function productLabel(product: Product, item: InventoryItem | undefined): string {
@@ -310,11 +366,12 @@ export function SaleFormPage() {
         onChange={(e) => setCustomerId(e.target.value)}
         error={errors.customerId}
       />
-      {status === 'CREDIT' && customers.length === 0 && (
-        <Link to="/clientes" className="text-sm font-semibold text-emerald-800 underline">
-          Crear un cliente
-        </Link>
-      )}
+      <NewCustomer
+        onCreated={(customer) => {
+          setCustomers([...customers, customer]);
+          setCustomerId(customer.id);
+        }}
+      />
       <TextField
         label="Fecha"
         type="date"

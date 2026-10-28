@@ -29,7 +29,7 @@ Leyenda: ✅ hecho · ⚠️ parcial o distinto · ❌ falta.
 ## Control de inventarios
 | Funcionalidad | Estado |
 |---|---|
-| Stock baja automáticamente con cada venta | ✅ (solo si el producto tiene control activo ⚠️; en Treinta todo producto tiene stock) |
+| Stock baja automáticamente con cada venta | ✅ (todo producto con stock desde la fase 1) |
 | Vista del stock en tiempo real, alertas de stock bajo | ✅ |
 | Stock sube al registrar una **compra de mercancía** como gasto | ❌ |
 | **Categorías** de productos | ❌ |
@@ -56,11 +56,11 @@ Leyenda: ✅ hecho · ⚠️ parcial o distinto · ❌ falta.
 ## Clientes
 | Funcionalidad | Estado |
 |---|---|
-| Ficha: nombre, teléfono, **documento**, **dirección** | ⚠️ faltan documento y dirección |
-| **Historial de compras** por cliente (todas sus ventas) | ⚠️ solo fiados y abonos |
-| Deudas y abonos, "cuánto y **desde cuándo**" | ✅ · ⚠️ falta antigüedad |
+| Ficha: nombre, teléfono, **documento**, **dirección** | ✅ (fase 2) |
+| **Historial de compras** por cliente (todas sus ventas) | ✅ (fase 2) |
+| Deudas y abonos, "cuánto y **desde cuándo**" | ✅ (antigüedad y vencidas en fase 1) |
 | Datos del cliente en **comprobantes** | ❌ (no hay comprobantes) |
-| **Crear cliente desde la venta** sin salir del flujo | ❌ |
+| **Crear cliente desde la venta** sin salir del flujo | ✅ (fase 2) |
 
 ## Deudas
 | Funcionalidad | Estado |

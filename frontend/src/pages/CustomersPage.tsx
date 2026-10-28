@@ -1,7 +1,13 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { api, ApiError, compact } from '../api/client';
-import type { Customer, CustomerAccount, PaymentMethod, Receivables } from '../api/types';
+import type {
+  Customer,
+  CustomerAccount,
+  CustomerPurchases,
+  PaymentMethod,
+  Receivables,
+} from '../api/types';
 import { useMe } from '../auth/session-context';
 import { ConfirmDelete } from '../components/ConfirmDelete';
 import { Button, FormAlert, Loading, SelectField, TextField } from '../components/ui';
@@ -274,6 +280,9 @@ export function CustomerPage() {
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
+  const [documentId, setDocumentId] = useState('');
+  const [address, setAddress] = useState('');
+  const [purchases, setPurchases] = useState<CustomerPurchases | null>(null);
   const [version, setVersion] = useState(0);
   const [saved, setSaved] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -281,6 +290,9 @@ export function CustomerPage() {
 
   useEffect(() => {
     api.get<CustomerAccount>(`/api/customers/${id}/account`).then(setAccount, fail);
+    api
+      .get<CustomerPurchases>(`/api/customers/${id}/purchases`)
+      .then(setPurchases, () => undefined);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, version]);
 
@@ -290,6 +302,8 @@ export function CustomerPage() {
       setCustomer(found);
       setName(found?.name ?? '');
       setPhone(found?.phone ?? '');
+      setDocumentId(found?.document ?? '');
+      setAddress(found?.address ?? '');
     }, fail);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
@@ -300,7 +314,7 @@ export function CustomerPage() {
     try {
       const updated = await api.put<Customer>(
         `/api/customers/${id}`,
-        compact({ name, phone, note: customer?.note }),
+        compact({ name, phone, note: customer?.note, document: documentId, address }),
       );
       setCustomer(updated);
       clear();
@@ -350,6 +364,19 @@ export function CustomerPage() {
               onName={setName}
               onPhone={setPhone}
             />
+            <TextField
+              label="Documento (opcional)"
+              value={documentId}
+              onChange={(e) => setDocumentId(e.target.value)}
+              error={errors.document}
+            />
+            <TextField
+              label="Dirección (opcional)"
+              autoComplete="street-address"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              error={errors.address}
+            />
             <Button type="submit">Guardar cliente</Button>
             <p role="status" className="text-sm text-emerald-800">
               {saved ? 'Cambios guardados.' : ''}
@@ -362,48 +389,84 @@ export function CustomerPage() {
             <FormAlert message={deleteError} />
           </form>
         </div>
-        <section className="rounded-xl bg-white shadow-sm">
-          <h2 className="px-4 pt-4 font-semibold">Fiados y abonos</h2>
-          {account.entries.length === 0 && (
-            <p className="p-4 text-slate-600">Sin fiados ni abonos todavía.</p>
-          )}
-          <ul aria-label="Fiados y abonos" className="divide-y divide-slate-100">
-            {account.entries.map((entry) => {
-              const isSale = entry.type === 'SALE';
-              const title = isSale
-                ? entry.description
-                  ? `Fiado: ${entry.description}`
-                  : 'Fiado'
-                : 'Abono';
-              return (
-                <li key={entry.id}>
+        <div className="space-y-5">
+          <section className="rounded-xl bg-white shadow-sm">
+            <h2 className="px-4 pt-4 font-semibold">Historial de compras</h2>
+            {purchases && (
+              <p className="px-4 text-sm text-slate-600">
+                {`Total comprado: ${formatMoney(purchases.total)} · ${purchases.count} ${purchases.count === 1 ? 'compra' : 'compras'}`}
+              </p>
+            )}
+            <ul aria-label="Historial de compras" className="divide-y divide-slate-100">
+              {purchases?.items.map((p) => (
+                <li key={p.id}>
                   <Link
-                    to={isSale ? `/ventas/${entry.id}` : `/abonos/${entry.id}`}
+                    to={`/ventas/${p.id}`}
                     className="flex items-center justify-between gap-3 px-4 py-3"
                   >
                     <span>
-                      <span className="block font-medium">{title}</span>
+                      <span className="block font-medium">{p.description ?? 'Venta'}</span>
                       <span className="block text-sm text-slate-600">
-                        {[
-                          formatDateTime(entry.occurredAt, business.timeZone),
-                          isSale ? null : entry.description,
-                        ]
-                          .filter(Boolean)
-                          .join(' · ')}
+                        {formatDateTime(p.occurredAt, business.timeZone)}
                       </span>
                     </span>
-                    <span
-                      className={`shrink-0 font-semibold ${isSale ? 'text-red-700' : 'text-emerald-800'}`}
-                    >
-                      {isSale ? '+' : '−'}
-                      {formatMoney(entry.amount)}
+                    <span className="flex shrink-0 flex-col items-end">
+                      <span className="font-semibold">{formatMoney(p.total)}</span>
+                      <span className="text-xs text-slate-600">
+                        {p.status === 'CREDIT' ? 'Fiada' : 'Pagada'}
+                      </span>
                     </span>
                   </Link>
                 </li>
-              );
-            })}
-          </ul>
-        </section>
+              ))}
+            </ul>
+            {purchases?.items.length === 0 && (
+              <p className="p-4 text-slate-600">Este cliente aún no tiene compras.</p>
+            )}
+          </section>
+          <section className="rounded-xl bg-white shadow-sm">
+            <h2 className="px-4 pt-4 font-semibold">Fiados y abonos</h2>
+            {account.entries.length === 0 && (
+              <p className="p-4 text-slate-600">Sin fiados ni abonos todavía.</p>
+            )}
+            <ul aria-label="Fiados y abonos" className="divide-y divide-slate-100">
+              {account.entries.map((entry) => {
+                const isSale = entry.type === 'SALE';
+                const title = isSale
+                  ? entry.description
+                    ? `Fiado: ${entry.description}`
+                    : 'Fiado'
+                  : 'Abono';
+                return (
+                  <li key={entry.id}>
+                    <Link
+                      to={isSale ? `/ventas/${entry.id}` : `/abonos/${entry.id}`}
+                      className="flex items-center justify-between gap-3 px-4 py-3"
+                    >
+                      <span>
+                        <span className="block font-medium">{title}</span>
+                        <span className="block text-sm text-slate-600">
+                          {[
+                            formatDateTime(entry.occurredAt, business.timeZone),
+                            isSale ? null : entry.description,
+                          ]
+                            .filter(Boolean)
+                            .join(' · ')}
+                        </span>
+                      </span>
+                      <span
+                        className={`shrink-0 font-semibold ${isSale ? 'text-red-700' : 'text-emerald-800'}`}
+                      >
+                        {isSale ? '+' : '−'}
+                        {formatMoney(entry.amount)}
+                      </span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        </div>
       </div>
     </div>
   );
