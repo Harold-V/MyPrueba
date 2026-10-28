@@ -19,6 +19,12 @@ title: Knowledge map
 | Verificación — núcleo | [sdd/verifications/2026-10-28-nucleo.md](sdd/verifications/2026-10-28-nucleo.md) |
 | Revisión — núcleo | [sdd/reviews/nucleo.md](sdd/reviews/nucleo.md) |
 
+## product
+
+| Artefacto | Ruta |
+|-----------|------|
+| Plataforma: la app es web | [product/plataforma.md](product/plataforma.md) |
+
 ## harness
 
 | Artefacto | Ruta |
