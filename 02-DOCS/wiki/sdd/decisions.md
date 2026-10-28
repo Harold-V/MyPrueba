@@ -30,3 +30,4 @@ topic: sdd
 | 2026-10-28 | Siguiente módulo: Deudas y fiados, autopiloto, misma rama. | PR primero. | "continúa" del usuario. |
 | 2026-10-28 | "Fiado" como método de pago (CREDIT) y balance de caja (fiado no es ingreso hasta el abono). | Flag `paid`; balance por lo vendido. | Encaja en el flujo existente; responde "¿cuánto dinero me quedó?". |
 | 2026-10-28 | Deudas en `ledger`; `customers` es directorio y su borrado se veta con un evento síncrono. | Deudas en `customers`. | Evita ciclo entre módulos. |
+| 2026-10-28 | Alcance de la réplica = funcionalidades públicas de treinta.co (6 páginas) + evidencia REA del HAR. Hoja de ruta en 8 fases. | Copiar todas las rutas de la app. | Indicación del usuario. |
